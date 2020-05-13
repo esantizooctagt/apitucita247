@@ -203,6 +203,7 @@ Resources:
             Path: /apps/{id}
             Method: get
             ApiId: !Ref HttpApi
+  
   # AdminHelloWorld:
   #   Type: AWS::Serverless::Function
   #   Properties:

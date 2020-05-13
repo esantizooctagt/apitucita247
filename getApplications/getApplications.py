@@ -5,7 +5,7 @@ import json
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
-from dynamodb_json import json_util as json_dynamodb
+# from dynamodb_json import json_util as json_dynamodb
 
 import os
 
@@ -23,10 +23,11 @@ def lambda_handler(event, context):
     body = ''
     cors = ''
     stage = event['headers']
-    if stage['origin'] != "http://localhost:4200":
-        cors = os.environ['prodCors']
-    else:
-        cors = os.environ['devCors']
+    cors = "http://localhost:4200"
+    # if stage['origin'] != "http://localhost:4200":
+    #     cors = os.environ['prodCors']
+    # else:
+    #     cors = os.environ['devCors']
 
     records =[]
     try:

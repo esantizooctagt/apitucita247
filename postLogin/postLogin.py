@@ -104,10 +104,11 @@ def decrypt(encrypted, passphrase):
 def lambda_handler(event, context):
     region = context.invoked_function_arn.split(':')[3]
     stage = event['headers']
-    if stage['origin'] != "http://localhost:4200":
-        cors = os.environ['prodCors']
-    else:
-        cors = os.environ['devCors']
+    cors = "http://localhost:4200"
+    # if stage['origin'] != "http://localhost:4200":
+    #     cors = os.environ['prodCors']
+    # else:
+    #     cors = os.environ['devCors']
     countryCode = stage['cloudfront-viewer-country']
 
     try:
@@ -287,17 +288,17 @@ def lambda_handler(event, context):
     }
     return response
 
-def getUser(userName, total):
+def getUser(email, total):
     res = ''
     error = ''
     try:
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            IndexName="TuCita247_Index",
-            KeyConditionExpression='GS1PK = :username',
+            # IndexName="TuCita247_Index",
+            KeyConditionExpression='PKID = :email',
             ExpressionAttributeValues={
-                ':username': {'S': 'USERNAME#' + userName.upper()}
+                ':email': {'S': 'EMAIL#' + email}
             },
             Limit=1
         )
