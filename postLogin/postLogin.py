@@ -189,11 +189,11 @@ def lambda_handler(event, context):
             
         if fact == '1' and data['MFact_Auth'] != '':
             #Europe/Berlin
-            region = ''
-            if countryCode == 'GT':
-                region = 'America/Guatemala'
-            else:
-                region = 'Europe/Berlin'
+            region = 'America/Guatemala'
+            # if countryCode == 'GT':
+            #     region = 'America/Guatemala'
+            # else:
+            #     region = 'Europe/Berlin'
                 
             country_date = dateutil.tz.gettz(region)
             country_now = datetime.datetime.now(tz=country_date).timestamp()
