@@ -24,8 +24,8 @@ Resources:
         # DefaultAuthorizer: CognitoAuth
         Authorizers:
           CognitoAuth:
-            # AuthorizationScopes:
-            #   - email
+            AuthorizationScopes:
+              - email
             IdentitySource: "$request.header.Authorization"
             JwtConfiguration:
               issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${AWS::Region}_${UserPoolId}
@@ -44,7 +44,7 @@ Resources:
         AllowHeaders:
           - content-type
           - authorization
-        MaxAge: "20"
+        MaxAge: "10"
         AllowCredentials: True
 
   HelloWorldFunction:
@@ -52,6 +52,10 @@ Resources:
     Properties:
       CodeUri: hello_world/
       Handler: getHello.lambda_handler
+      Role:
+        - arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
       Events:
         RootGet:
           Type: HttpApi
