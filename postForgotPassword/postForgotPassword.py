@@ -4,8 +4,6 @@ import json
 
 import boto3
 import botocore.exceptions
-from boto3.dynamodb.conditions import Key, Attr
-from dynamodb_json import json_util as json_dynamodb
 
 import hmac
 import hashlib
@@ -16,9 +14,6 @@ REGION = 'us-east-1'
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
-logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def get_secret_hash(username):
     msg = username + '52k0o8239mueu31uu5fihccbbf'
