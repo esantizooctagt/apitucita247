@@ -27,7 +27,7 @@ dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def get_secret_hash(username):
-    msg = username + '42u5aeal715thv1944dohqv2tr'
+    msg = username + '52k0o8239mueu31uu5fihccbbf'
     dig = hmac.new(str('1jnl1mp5jfkjnnm2qomj95b0vtdqi268datf1g55iffam676r83g').encode('utf-8'), 
         msg = str(msg).encode('utf-8'), digestmod=hashlib.sha256).digest()
     d2 = base64.b64encode(dig).decode()
@@ -79,7 +79,7 @@ def lambda_handler(event, context):
                 try:
                     client = boto3.client('cognito-idp')
                     response = client.confirm_sign_up(
-                                    ClientId='42u5aeal715thv1944dohqv2tr',
+                                    ClientId='52k0o8239mueu31uu5fihccbbf',
                                     SecretHash=get_secret_hash(userName),
                                     Username= userName,
                                     ConfirmationCode=code,
@@ -87,7 +87,7 @@ def lambda_handler(event, context):
                                 )
                     
                     resp = client.admin_set_user_password(
-                                    UserPoolId='us-east-1_Ao154wNnK',
+                                    UserPoolId='us-east-1_gXhBD4bsG',
                                     Username=userName,
                                     Password=password,
                                     Permanent=True
@@ -131,7 +131,7 @@ def lambda_handler(event, context):
             try:
                 client = boto3.client('cognito-idp')
                 response = client.resend_confirmation_code(
-                    ClientId='42u5aeal715thv1944dohqv2tr',
+                    ClientId='52k0o8239mueu31uu5fihccbbf',
                     SecretHash=get_secret_hash(userName),
                     Username=userName
                 )

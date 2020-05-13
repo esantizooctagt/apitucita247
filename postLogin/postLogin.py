@@ -55,6 +55,7 @@ def initiate_auth(client, username, password):
     error = None
     auth = None
     try:
+        logger.info("init")
         resp = client.admin_initiate_auth(
                 UserPoolId = 'us-east-1_gXhBD4bsG',
                 ClientId = '52k0o8239mueu31uu5fihccbbf',
@@ -68,6 +69,7 @@ def initiate_auth(client, username, password):
                     'username': username,
                     'password': password,
             })
+        logger.info("resp")
         auth = resp
     except client.exceptions.NotAuthorizedException:
         error = "The username or password is incorrect"
@@ -102,7 +104,6 @@ def decrypt(encrypted, passphrase):
     return unpad(aes.decrypt(encrypted[16:]))
 
 def lambda_handler(event, context):
-    logger.info(event)
     region = context.invoked_function_arn.split(':')[3]
     stage = event['headers']
     cors = "http://localhost:4200"
@@ -114,9 +115,7 @@ def lambda_handler(event, context):
 
     try:
         data = json.loads(event['body'])
-        logger.info(data)
         fact, error = getUser(data['UserName'], 0)
-        logger.info(fact)
         if fact == '0':
             key = secreKey.encode()
             ct_b64 = data['Password'] 
@@ -127,6 +126,8 @@ def lambda_handler(event, context):
             resp, msg = initiate_auth(client, data['UserName'], passDecrypt.decode('utf-8'))
             logger.info('respuesta')
             logger.info(resp)
+            logger.info('mensaje')
+            logger.info(msg)
             if msg != None:
                 error = {
                             'statusCode' : 404,
