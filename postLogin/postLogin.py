@@ -113,22 +113,16 @@ def lambda_handler(event, context):
 
     try:
         data = json.loads(event['body'])
-        fact, error = getUser(data['UserName'], 0)
+        email = data['Email']
+        
+        fact, error = getMfacAuth(email)
         if fact == '0':
             key = secreKey.encode()
             ct_b64 = data['Password'] 
             passDecrypt = decrypt(ct_b64, key)
 
             client = boto3.client('cognito-idp')
-            response = client.admin_reset_user_password(
-                            UserPoolId = 'us-east-1_gXhBD4bsG',
-                            UserName = 'vladimirsantizo@gmail.com',
-                            ClientMetadata = {
-                                'username': 'vladimirsantizo@gmail.com',
-                                'password': 'TuCita247$',
-                            })
-
-            resp, msg = initiate_auth(client, data['UserName'], passDecrypt.decode('utf-8'))
+            resp, msg = initiate_auth(client, email, passDecrypt.decode('utf-8'))
             if msg != '':
                 error = {
                             'statusCode' : 404,
@@ -158,36 +152,25 @@ def lambda_handler(event, context):
                 #         "token_type": resp["AuthenticationResult"]["TokenType"]
                 #         }}
             
-                user, error = getUser(data['UserName'], 1)
+                user, error = getUser(email)
                 if error != '':
                     statusCode = 404
                     body = json.dumps({'Message':'Auth failed','Code':400})
                 if user != None:
-                    company, error = getCompany(user['GS1SK'])
-                    if error != '':
-                        statusCode = 404
-                        body = json.dumps({'Message':'Auth failed','Code':400})
-                    else:
-                        country = json.loads(company['ADDRESS'])
-                        recordset = {
-                            'User_Id': user['USERID'],
-                            'User_Name': user['USERNAME'].lower(),
-                            'Email': user['EMAIL'],
-                            'Is_Admin': int(user['IS_ADMIN']),
-                            'Company_Id': user['GS1SK'].split('#')[1],
-                            'Avatar': user['AVATAR'],
-                            'Currency': company['CURRENCY'],
-                            'Country': country['Country'], 
-                            'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
-                            'Store_Id': user['STOREID'],
-                            'Language_Id': user['LANGUAGE'],
-                            'Cashier_Id': '',
-                            'Region': region
-                        }
-                        result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
-                        #context.invoked_function_arn.split(':')[3]
-                        statusCode = 200
-                        body = json.dumps(result)
+                    recordset = {
+                        'User_Id': user['USERID'],
+                        'Email': user['SKID'].split('#')[1],
+                        'Is_Admin': int(user['IS_ADMIN']),
+                        'Company_Id': user['GS1SK'].split('#')[1],
+                        'Avatar': user['AVATAR'],
+                        'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
+                        'Location_Id': user['LOCATIONID'],
+                        'Language_Id': user['LANGUAGE']
+                    }
+                    result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
+                    #context.invoked_function_arn.split(':')[3]
+                    statusCode = 200
+                    body = json.dumps(result)
                         
         if fact == '1' and data['MFact_Auth'] == '':
             statusCode = 200
@@ -216,15 +199,7 @@ def lambda_handler(event, context):
                 passDecrypt = decrypt(ct_b64, key)
                 
                 client = boto3.client('cognito-idp')
-                response = client.admin_reset_user_password(
-                            UserPoolId = 'us-east-1_gXhBD4bsG',
-                            UserName = 'vladimirsantizo@gmail.com',
-                            ClientMetadata = {
-                                'username': 'vladimirsantizo@gmail.com',
-                                'password': 'TuCita247$',
-                            })
-                            
-                resp, msg = initiate_auth(client, data['UserName'], passDecrypt.decode('utf-8'))
+                resp, msg = initiate_auth(client, email, passDecrypt.decode('utf-8'))
                 if msg != None:
                     error = {
                             'statusCode' : 404,
@@ -254,36 +229,25 @@ def lambda_handler(event, context):
                     #         }}
                 
                 
-                    user, error = getUser(data['UserName'], 1)
+                    user, error = getUser(email)
                     if error != '':
                         statusCode = 404
                         body = json.dumps({'Message':'Auth failed','Code':400})
                     if user != None:
-                        company, error = getCompany(user['GS1SK'])
-                        if error != '':
-                            statusCode = 404
-                            body = json.dumps({'Message':'Auth failed','Code':400})
-                        else:
-                            country = json.loads(company['ADDRESS'])
-                            recordset = {
-                                'User_Id': user['USERID'],
-                                'User_Name': user['USERNAME'].lower(),
-                                'Email': user['EMAIL'],
-                                'Is_Admin': int(user['IS_ADMIN']),
-                                'Company_Id': user['GS1SK'].split('#')[1],
-                                'Avatar': user['AVATAR'],
-                                'Currency': company['CURRENCY'],
-                                'Country': country['Country'], 
-                                'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
-                                'Store_Id': user['STOREID'],
-                                'Language_Id': user['LANGUAGE'],
-                                'Cashier_Id': '',
-                                'Region': region
-                            }
-                            result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
-                            #context.invoked_function_arn.split(':')[3]
-                            statusCode = 200
-                            body = json.dumps(result)
+                        recordset = {
+                            'User_Id': user['USERID'],
+                            'Email': user['SKID'].split('#')[1],
+                            'Is_Admin': int(user['IS_ADMIN']),
+                            'Company_Id': user['GS1SK'].split('#')[1],
+                            'Avatar': user['AVATAR'],
+                            'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
+                            'Location_Id': user['LOCATIONID'],
+                            'Language_Id': user['LANGUAGE']
+                        }
+                        result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
+                        #context.invoked_function_arn.split(':')[3]
+                        statusCode = 200
+                        body = json.dumps(result)
 
         if error != '':
             statusCode = 404
@@ -304,14 +268,13 @@ def lambda_handler(event, context):
     }
     return response
 
-def getUser(email, total):
+def getMfacAuth(email):
     res = ''
     error = ''
     try:
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            # IndexName="TuCita247_Index",
             KeyConditionExpression='PKID = :email',
             ExpressionAttributeValues={
                 ':email': {'S': 'EMAIL#' + email}
@@ -323,29 +286,26 @@ def getUser(email, total):
             error = json.dumps({'Message':'Auth failed','Code':400})
         if response['Count'] > 0:
             item = response['Items']
-            if total == 0:
-                res = item[0]['MFACT_AUTH']['S']
-            else:
-                res = json_dynamodb.loads(item[0])
+            res = item[0]['MFACT_AUTH']['S']
+
     except Exception as e:
         error = json.dumps(str(e))
     return res, error
 
-def getCompany(companyId):
+def getUser(email):
     res = ''
     error = ''
     try:
         response = dynamodb.query(
             TableName="TuCita247",
+            IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :companyId AND begins_with ( SKID , :metadata )',
+            KeyConditionExpression='PKID = :email',
             ExpressionAttributeValues={
-                ':companyId': {'S': companyId},
-                ':metadata': {'S': 'METADATA#'}
+                ':email': {'S': 'EMAIL#' + email}
             },
             Limit=1
         )
-        logger.info(response)
         if response['Count'] == 0:
             error = json.dumps({'Message':'Auth failed','Code':400})
         if response['Count'] > 0:
@@ -354,3 +314,27 @@ def getCompany(companyId):
     except Exception as e:
         error = json.dumps(str(e))
     return res, error
+
+# def getCompany(companyId):
+#     res = ''
+#     error = ''
+#     try:
+#         response = dynamodb.query(
+#             TableName="TuCita247",
+#             ReturnConsumedCapacity='TOTAL',
+#             KeyConditionExpression='PKID = :companyId AND begins_with ( SKID , :metadata )',
+#             ExpressionAttributeValues={
+#                 ':companyId': {'S': companyId},
+#                 ':metadata': {'S': 'METADATA#'}
+#             },
+#             Limit=1
+#         )
+#         logger.info(response)
+#         if response['Count'] == 0:
+#             error = json.dumps({'Message':'Auth failed','Code':400})
+#         if response['Count'] > 0:
+#             item = response['Items']
+#             res = json_dynamodb.loads(item[0])
+#     except Exception as e:
+#         error = json.dumps(str(e))
+#     return res, error
