@@ -52,10 +52,16 @@ Resources:
     Properties:
       CodeUri: hello_world/
       Handler: getHello.lambda_handler
-      Role:
-        - arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+      SecurityGroupIds:
+        - vpc-6664731c
+      SubnetIds:
+        - subnet-a0a8a79e
+        - subnet-d5599ff4
+        - subnet-24916a42
+        - subnet-297ac727
       Events:
         RootGet:
           Type: HttpApi
