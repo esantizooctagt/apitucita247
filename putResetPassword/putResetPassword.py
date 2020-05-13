@@ -1,12 +1,6 @@
 import sys
 import logging
-
 import json
-import boto3
-import botocore.exceptions
-import hmac
-import hashlib
-import base64
 
 import boto3
 import botocore.exceptions
@@ -29,8 +23,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 def get_secret_hash(username):
-    msg = username + '42u5aeal715thv1944dohqv2tr'
-    dig = hmac.new(str('1jnl1mp5jfkjnnm2qomj95b0vtdqi268datf1g55iffam676r83g').encode('utf-8'), 
+    msg = username + '52k0o8239mueu31uu5fihccbbf'
+    dig = hmac.new(str('1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt').encode('utf-8'), 
         msg = str(msg).encode('utf-8'), digestmod=hashlib.sha256).digest()
     d2 = base64.b64encode(dig).decode()
     return d2
@@ -60,10 +54,11 @@ def decrypt(encrypted, passphrase):
     
 def lambda_handler(event, context):
     stage = event['headers']
-    if stage['origin'] != "http://localhost:4200":
-        cors = os.environ['prodCors']
-    else:
-        cors = os.environ['devCors']
+    cors = "http://localhost:4200"
+    # if stage['origin'] != "http://localhost:4200":
+    #     cors = os.environ['prodCors']
+    # else:
+    #     cors = os.environ['devCors']
         
     try:
         statusCode = ''
@@ -78,7 +73,7 @@ def lambda_handler(event, context):
         client = boto3.client('cognito-idp')
         client.confirm_forgot_password(
             ClientId='42u5aeal715thv1944dohqv2tr',
-            SecretHash=get_secret_hash(username),
+            # SecretHash=get_secret_hash(username),
             Username=username,
             ConfirmationCode=code,
             Password=passDecrypt.decode('utf-8'),
