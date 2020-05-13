@@ -55,7 +55,7 @@ def initiate_auth(client, username, password):
     error = None
     auth = None
     try:
-        logger.info("init")
+        logger.info("pass " + password)
         resp = client.admin_initiate_auth(
                 UserPoolId = 'us-east-1_gXhBD4bsG',
                 ClientId = '52k0o8239mueu31uu5fihccbbf',
@@ -72,11 +72,14 @@ def initiate_auth(client, username, password):
         logger.info("resp")
         auth = resp
     except client.exceptions.NotAuthorizedException:
+        logger.info("The username or password is incorrect")
         error = "The username or password is incorrect"
     except client.exceptions.UserNotConfirmedException:
         error = "User is not confirmed"
+        logger.info("User is not confirmed")
     except Exception as e:
         error = e.__str__()
+        logger.info(error)
 
     return auth, error
     
