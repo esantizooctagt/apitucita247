@@ -121,9 +121,12 @@ def lambda_handler(event, context):
             key = secreKey.encode()
             ct_b64 = data['Password'] 
             passDecrypt = decrypt(ct_b64, key)
-            
+            logger.info(passDecrypt.decode('utf-8'))
+
             client = boto3.client('cognito-idp')
             resp, msg = initiate_auth(client, data['UserName'], passDecrypt.decode('utf-8'))
+            logger.info('respuesta')
+            logger.info(resp)
             if msg != None:
                 error = {
                             'statusCode' : 404,
