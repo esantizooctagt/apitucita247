@@ -45,13 +45,13 @@ def default(self, o):
         
 def get_secret_hash(username):
     msg = username + '52k0o8239mueu31uu5fihccbbf'
-    dig = hmac.new(str('1jnl1mp5jfkjnnm2qomj95b0vtdqi268datf1g55iffam676r83g').encode('utf-8'), 
+    dig = hmac.new(str('1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt').encode('utf-8'), 
         msg = str(msg).encode('utf-8'), digestmod=hashlib.sha256).digest()
     d2 = base64.b64encode(dig).decode()
     return d2
 
 def initiate_auth(client, username, password):
-    secret_hash = get_secret_hash('vladimirsantizo')
+    secret_hash = get_secret_hash(username)
     error = None
     auth = None
     try:
