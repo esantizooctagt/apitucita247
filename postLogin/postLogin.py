@@ -51,7 +51,7 @@ def get_secret_hash(username):
     return d2
 
 def initiate_auth(client, username, password):
-    secret_hash = get_secret_hash(username)
+    secret_hash = get_secret_hash('vladimirsantizo')
     error = None
     auth = None
     try:
