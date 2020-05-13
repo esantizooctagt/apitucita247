@@ -57,8 +57,7 @@ Resources:
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
       VpcConfig:
-        SecurityGroupIds:
-          - vpc-6664731c
+        SecurityGroupIds: vpc-6664731c
         SubnetIds:
           - subnet-a0a8a79e
           - subnet-d5599ff4
