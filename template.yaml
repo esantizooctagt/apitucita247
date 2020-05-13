@@ -161,6 +161,8 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
+            Auth:
+              Authorizer: CognitoAuth
             Path: /user/validate/{username}
             Method: get
             ApiId: !Ref HttpApi
@@ -196,6 +198,8 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
+            Auth:
+              Authorizer: CognitoAuth
             Path: /apps/{id}
             Method: get
             ApiId: !Ref HttpApi
