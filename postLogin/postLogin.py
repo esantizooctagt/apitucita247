@@ -109,7 +109,6 @@ def lambda_handler(event, context):
     #     cors = os.environ['prodCors']
     # else:
     #     cors = os.environ['devCors']
-    # countryCode = stage['cloudfront-viewer-country']
 
     try:
         data = json.loads(event['body'])
@@ -168,7 +167,6 @@ def lambda_handler(event, context):
                         'Language_Id': user['LANGUAGE']
                     }
                     result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
-                    #context.invoked_function_arn.split(':')[3]
                     statusCode = 200
                     body = json.dumps(result)
                         
@@ -177,13 +175,7 @@ def lambda_handler(event, context):
             body = json.dumps({'Message': 'Missing Google Authenticator','Code':300})
             
         if fact == '1' and data['MFact_Auth'] != '':
-            #Europe/Berlin
-            region = 'America/Guatemala'
-            # if countryCode == 'GT':
-            #     region = 'America/Guatemala'
-            # else:
-            #     region = 'Europe/Berlin'
-                
+            region = 'America/Guatemala'                
             country_date = dateutil.tz.gettz(region)
             country_now = datetime.datetime.now(tz=country_date).timestamp()
 
@@ -245,7 +237,6 @@ def lambda_handler(event, context):
                             'Language_Id': user['LANGUAGE']
                         }
                         result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
-                        #context.invoked_function_arn.split(':')[3]
                         statusCode = 200
                         body = json.dumps(result)
 
@@ -256,7 +247,6 @@ def lambda_handler(event, context):
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})
-        #str(e)
 
     response = {
         'statusCode' : statusCode,
@@ -281,7 +271,7 @@ def getMfacAuth(email):
             },
             Limit=1
         )
-        logger.info(response)
+
         if response['Count'] == 0:
             error = json.dumps({'Message':'Auth failed','Code':400})
         if response['Count'] > 0:
@@ -314,27 +304,3 @@ def getUser(email):
     except Exception as e:
         error = json.dumps(str(e))
     return res, error
-
-# def getCompany(companyId):
-#     res = ''
-#     error = ''
-#     try:
-#         response = dynamodb.query(
-#             TableName="TuCita247",
-#             ReturnConsumedCapacity='TOTAL',
-#             KeyConditionExpression='PKID = :companyId AND begins_with ( SKID , :metadata )',
-#             ExpressionAttributeValues={
-#                 ':companyId': {'S': companyId},
-#                 ':metadata': {'S': 'METADATA#'}
-#             },
-#             Limit=1
-#         )
-#         logger.info(response)
-#         if response['Count'] == 0:
-#             error = json.dumps({'Message':'Auth failed','Code':400})
-#         if response['Count'] > 0:
-#             item = response['Items']
-#             res = json_dynamodb.loads(item[0])
-#     except Exception as e:
-#         error = json.dumps(str(e))
-#     return res, error
