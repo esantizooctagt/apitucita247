@@ -102,6 +102,7 @@ def decrypt(encrypted, passphrase):
     return unpad(aes.decrypt(encrypted[16:]))
 
 def lambda_handler(event, context):
+    logger.info(event)
     region = context.invoked_function_arn.split(':')[3]
     stage = event['headers']
     cors = "http://localhost:4200"
@@ -109,12 +110,13 @@ def lambda_handler(event, context):
     #     cors = os.environ['prodCors']
     # else:
     #     cors = os.environ['devCors']
-    countryCode = stage['cloudfront-viewer-country']
+    # countryCode = stage['cloudfront-viewer-country']
 
     try:
         data = json.loads(event['body'])
+        logger.info(data)
         fact, error = getUser(data['UserName'], 0)
-        
+        logger.info(fact)
         if fact == '0':
             key = secreKey.encode()
             ct_b64 = data['Password'] 
