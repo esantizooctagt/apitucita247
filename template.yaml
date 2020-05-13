@@ -24,11 +24,11 @@ Resources:
         # DefaultAuthorizer: CognitoAuth
         Authorizers:
           CognitoAuth:
-            AuthorizationScopes:
-              - email
+            # AuthorizationScopes:
+            #   - email
             IdentitySource: "$request.header.Authorization"
             JwtConfiguration:
-              issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}
+              issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${AWS::Region}_${UserPoolId}
               audience:
                 - !Ref Audience
       CorsConfiguration:
@@ -44,7 +44,7 @@ Resources:
         AllowHeaders:
           - content-type
           - authorization
-        MaxAge: "10"
+        MaxAge: "20"
         AllowCredentials: True
 
   HelloWorldFunction:
