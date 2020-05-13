@@ -26,7 +26,6 @@ from hashlib import md5
 import os
 #REGION = 'us-east-1'
 
-
 secreKey = 'K968G66S4dC1Y5tNA5zKGT5KIjeMcpc8'
 AUTH_KEY = 'INQXG2DJMVZDER3PJ5BVIQKHKQZDAMRQ'
 
@@ -155,7 +154,7 @@ def lambda_handler(event, context):
                     statusCode = 404
                     body = json.dumps({'Message':'Auth failed','Code':400})
                 if user != None:
-                    company, error = getCompany(user['GS1SK'].split('#')[1])
+                    company, error = getCompany(user['GS1SK'])
                     if error != '':
                         statusCode = 404
                         body = json.dumps({'Message':'Auth failed','Code':400})
@@ -243,7 +242,7 @@ def lambda_handler(event, context):
                         statusCode = 404
                         body = json.dumps({'Message':'Auth failed','Code':400})
                     if user != None:
-                        company, error = getCompany(user['GS1SK'].split('#')[1])
+                        company, error = getCompany(user['GS1SK'])
                         if error != '':
                             statusCode = 404
                             body = json.dumps({'Message':'Auth failed','Code':400})
@@ -324,7 +323,7 @@ def getCompany(companyId):
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='PKID = :companyId AND begins_with ( SKID , :metadata )',
             ExpressionAttributeValues={
-                ':companyId': {'S': 'BUS#' + companyId},
+                ':companyId': {'S': companyId},
                 ':metadata': {'S': 'METADATA#'}
             },
             Limit=1

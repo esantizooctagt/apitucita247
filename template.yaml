@@ -90,7 +90,7 @@ Resources:
   #           ApiId: !Ref HttpApi
   
   LoginFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: PostLogin
       CodeUri: postLogin/
@@ -113,6 +113,92 @@ Resources:
             Method: post
             ApiId: !Ref HttpApi
 
+  ForgotPassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostForgotPassword
+      CodeUri: postForgotPassword/
+      Handler: postForgotPassword.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /user/forgotpassword
+            Method: post
+            ApiId: !Ref HttpApi
+
+  ResetPassFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutResetPassword
+      CodeUri: putResetPassword/
+      Handler: putResetPassword.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /user/reset/{userId}/{code}
+            Method: put
+            ApiId: !Ref HttpApi
+
+  UserNameFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetUserName
+      CodeUri: getUserName/
+      Handler: getUserName.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /user/validate/{username}
+            Method: get
+            ApiId: !Ref HttpApi
+  
+  VerificationCodeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutVerificationCode
+      CodeUri: putVerificationCode/
+      Handler: putVerificationCode.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /user/verification/{userName}/{code}
+            Method: put
+            ApiId: !Ref HttpApi
+  
+  ApplicationsAccessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetApplications
+      CodeUri: getApplications/
+      Handler: getApplications.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /apps/{id}
+            Method: get
+            ApiId: !Ref HttpApi
   # AdminHelloWorld:
   #   Type: AWS::Serverless::Function
   #   Properties:
