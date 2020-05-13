@@ -35,13 +35,13 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
-# def default(self, o):
-#     if isinstance(o, decimal.Decimal):
-#         if abs(o) % 1 > 0:
-#             return float(o)
-#         else:
-#             return int(o)
-#     return super(DecimalEncoder, self).default(o)
+def default(self, o):
+    if isinstance(o, decimal.Decimal):
+        if abs(o) % 1 > 0:
+            return float(o)
+        else:
+            return int(o)
+    return super(DecimalEncoder, self).default(o)
         
 def get_secret_hash(username):
     msg = username + '52k0o8239mueu31uu5fihccbbf'
@@ -52,10 +52,9 @@ def get_secret_hash(username):
 
 def initiate_auth(client, username, password):
     secret_hash = get_secret_hash(username)
-    error = None
-    auth = None
+    error = ''
+    auth = ''
     try:
-        logger.info("pass " + password)
         resp = client.admin_initiate_auth(
                 UserPoolId = 'us-east-1_gXhBD4bsG',
                 ClientId = '52k0o8239mueu31uu5fihccbbf',
@@ -69,18 +68,13 @@ def initiate_auth(client, username, password):
                     'username': username,
                     'password': password,
             })
-
-        logger.info("resp")
         auth = resp
     except client.exceptions.NotAuthorizedException:
-        logger.info("The username or password is incorrect")
         error = "The username or password is incorrect"
     except client.exceptions.UserNotConfirmedException:
         error = "User is not confirmed"
-        logger.info("User is not confirmed")
     except Exception as e:
         error = e.__str__()
-        logger.info(error)
 
     return auth, error
     
@@ -124,15 +118,18 @@ def lambda_handler(event, context):
             key = secreKey.encode()
             ct_b64 = data['Password'] 
             passDecrypt = decrypt(ct_b64, key)
-            logger.info(passDecrypt.decode('utf-8'))
 
             client = boto3.client('cognito-idp')
+            response = client.admin_reset_user_password(
+                            UserPoolId = 'us-east-1_gXhBD4bsG',
+                            UserName = 'vladimirsantizo@gmail.com',
+                            ClientMetadata = {
+                                'username': 'vladimirsantizo@gmail.com',
+                                'password': 'TuCita247$',
+                            })
+
             resp, msg = initiate_auth(client, data['UserName'], passDecrypt.decode('utf-8'))
-            logger.info('respuesta')
-            logger.info(resp)
-            logger.info('mensaje')
-            logger.info(msg)
-            if msg != None:
+            if msg != '':
                 error = {
                             'statusCode' : 404,
                             'headers' : {
@@ -142,6 +139,7 @@ def lambda_handler(event, context):
                             'body' : json.dumps({'Message': msg, "Code": 404, "error": True, "success": False, "data": None})
                         }
                 return error
+
             if resp.get("AuthenticationResult"):
                 try:
                     response = client.global_sign_out(
@@ -218,6 +216,14 @@ def lambda_handler(event, context):
                 passDecrypt = decrypt(ct_b64, key)
                 
                 client = boto3.client('cognito-idp')
+                response = client.admin_reset_user_password(
+                            UserPoolId = 'us-east-1_gXhBD4bsG',
+                            UserName = 'vladimirsantizo@gmail.com',
+                            ClientMetadata = {
+                                'username': 'vladimirsantizo@gmail.com',
+                                'password': 'TuCita247$',
+                            })
+                            
                 resp, msg = initiate_auth(client, data['UserName'], passDecrypt.decode('utf-8'))
                 if msg != None:
                     error = {
