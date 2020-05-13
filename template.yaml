@@ -24,7 +24,7 @@ Globals:
     VpcConfig:
       SecurityGroupIds: !Ref SecurityGroupIds
       SubnetIds: 
-        - !Ref SubnetIds
+        - !Ref VpcSubnetIds
 
 Resources:
   HttpApi:
