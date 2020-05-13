@@ -290,7 +290,7 @@ def getUser(email):
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :email',
+            KeyConditionExpression='GSI1PK = :email',
             ExpressionAttributeValues={
                 ':email': {'S': 'EMAIL#' + email}
             },
