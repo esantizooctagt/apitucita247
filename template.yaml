@@ -10,11 +10,13 @@ Parameters:
     Type: String
     Description: Client id for user pool
   SecurityGroupIds: 
-    Type: List<AWS::EC2::SecurityGroup::Id>
+    Type: CommaDelimitedList
     Description: Security Group IDs that Lambda will use
+    Default: sg-04131f24
   VpcSubnetIds: 
-    Type: List<AWS::EC2::Subnet::Id>
+    Type: CommaDelimitedList
     Description: VPC Subnet IDs that Lambda will use (min 2 for HA)
+    Default: "subnet-a0a8a79e, subnet-d5599ff4, subnet-24916a42, subnet-297ac727"
 
 Globals:
   Function:
@@ -24,7 +26,7 @@ Globals:
     VpcConfig:
       SecurityGroupIds: !Ref SecurityGroupIds
       SubnetIds: 
-        - !Ref SubnetIds
+        - !Ref VpcSubnetIds
 
 Resources:
   HttpApi:
