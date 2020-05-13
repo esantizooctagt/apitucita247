@@ -44,7 +44,7 @@ def default(self, o):
     return super(DecimalEncoder, self).default(o)
         
 def get_secret_hash(username):
-    msg = username + '42u5aeal715thv1944dohqv2tr'
+    msg = username + '52k0o8239mueu31uu5fihccbbf'
     dig = hmac.new(str('1jnl1mp5jfkjnnm2qomj95b0vtdqi268datf1g55iffam676r83g').encode('utf-8'), 
         msg = str(msg).encode('utf-8'), digestmod=hashlib.sha256).digest()
     d2 = base64.b64encode(dig).decode()
@@ -56,8 +56,8 @@ def initiate_auth(client, username, password):
     auth = None
     try:
         resp = client.admin_initiate_auth(
-                UserPoolId = 'us-east-1_TrUdzLGjb',
-                ClientId = '42u5aeal715thv1944dohqv2tr',
+                UserPoolId = 'us-east-1_gXhBD4bsG',
+                ClientId = '52k0o8239mueu31uu5fihccbbf',
                 AuthFlow = 'ADMIN_NO_SRP_AUTH',
                 AuthParameters = {
                     'USERNAME': username,
