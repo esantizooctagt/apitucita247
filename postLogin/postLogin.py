@@ -35,13 +35,13 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
-def default(self, o):
-    if isinstance(o, decimal.Decimal):
-        if abs(o) % 1 > 0:
-            return float(o)
-        else:
-            return int(o)
-    return super(DecimalEncoder, self).default(o)
+# def default(self, o):
+#     if isinstance(o, decimal.Decimal):
+#         if abs(o) % 1 > 0:
+#             return float(o)
+#         else:
+#             return int(o)
+#     return super(DecimalEncoder, self).default(o)
         
 def get_secret_hash(username):
     msg = username + '52k0o8239mueu31uu5fihccbbf'
@@ -69,6 +69,7 @@ def initiate_auth(client, username, password):
                     'username': username,
                     'password': password,
             })
+
         logger.info("resp")
         auth = resp
     except client.exceptions.NotAuthorizedException:
