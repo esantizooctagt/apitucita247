@@ -97,10 +97,11 @@ Resources:
       Handler: postLogin.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
       Layers: 
-        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
         - arn:aws:lambda:us-east-1:821843840552:layer:pyopt:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
       # VpcConfig:
       #   SecurityGroupIds: !Ref SecurityGroupIds
       #   SubnetIds: !Ref VpcSubnetIds
@@ -122,7 +123,8 @@ Resources:
       Handler: postForgotPassword.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
       Layers: 
-        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
       Events:
         RootGet:
           Type: HttpApi
@@ -139,7 +141,8 @@ Resources:
       Handler: putResetPassword.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
       Layers: 
-        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
         - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
       Events:
         RootGet:
@@ -157,7 +160,8 @@ Resources:
       Handler: getUserName.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaDynamo
       Layers: 
-        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
       Events:
         RootGet:
           Type: HttpApi
@@ -176,7 +180,8 @@ Resources:
       Handler: putVerificationCode.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
       Layers: 
-        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
         - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
       Events:
         RootGet:
@@ -194,7 +199,8 @@ Resources:
       Handler: getApplications.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaDynamo
       Layers: 
-        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
       Events:
         RootGet:
           Type: HttpApi
