@@ -9,14 +9,18 @@ Parameters:
   Audience:
     Type: String
     Description: Client id for user pool
-  SecurityGroupIds: 
-    Type: CommaDelimitedList
-    Description: Security Group IDs that Lambda will use
-    Default: sg-04131f24
-  VpcSubnetIds: 
-    Type: CommaDelimitedList
-    Description: VPC Subnet IDs that Lambda will use (min 2 for HA)
-    Default: "subnet-a0a8a79e, subnet-d5599ff4, subnet-24916a42, subnet-297ac727"
+  # SecurityGroupIds: 
+  #   Type: List<AWS::EC2::SecurityGroup::Id>
+  #   Description: Security Group IDs that Lambda will use
+  #   Default: sg-04131f24
+  # VpcSubnetIds: 
+  #   Type: List<AWS::EC2::SecurityGroup::Id>
+  #   Description: VPC Subnet IDs that Lambda will use (min 2 for HA)
+  #   Default: 
+  #     - subnet-a0a8a79e
+  #     - subnet-d5599ff4
+  #     - subnet-24916a42
+  #     - subnet-297ac727
 
 Globals:
   Function:
@@ -24,9 +28,15 @@ Globals:
     MemorySize: 128
     Runtime: python3.8
     VpcConfig:
-      SecurityGroupIds: !Ref SecurityGroupIds
+      SecurityGroupIds: 
+        - sg-04131f24
+        # !Ref SecurityGroupIds
       SubnetIds: 
-        - !Ref VpcSubnetIds
+        - subnet-a0a8a79e
+        - subnet-d5599ff4
+        - subnet-24916a42
+        - subnet-297ac727
+        # - !Ref VpcSubnetIds
 
 Resources:
   HttpApi:
@@ -90,6 +100,9 @@ Resources:
     Properties:
       CodeUri: hello_world/
       Handler: getHello.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
       Events:
         RootGet:
           Type: HttpApi
