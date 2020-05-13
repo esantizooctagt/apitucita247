@@ -69,15 +69,37 @@ Resources:
         MaxAge: "10"
         AllowCredentials: True
 
-  HelloWorldFunction:
+  # HelloWorldFunction:
+  #   Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  #   Properties:
+  #     FunctionName: GetHelloWorld
+  #     CodeUri: hello_world/
+  #     Handler: getHello.lambda_handler
+  #     Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+  #     Layers: 
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+  #     # VpcConfig:
+  #     #   SecurityGroupIds: !Ref SecurityGroupIds
+  #     #   SubnetIds: !Ref VpcSubnetIds
+  #     Events:
+  #       RootGet:
+  #         Type: HttpApi
+  #         Properties:
+  #           Path: /
+  #           Method: get
+  #           ApiId: !Ref HttpApi
+  
+  LoginFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      FunctionName: GetHelloWorld
-      CodeUri: hello_world/
-      Handler: getHello.lambda_handler
+      FunctionName: PostLogin
+      CodeUri: postLogin/
+      Handler: postLogin.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
       # VpcConfig:
       #   SecurityGroupIds: !Ref SecurityGroupIds
       #   SubnetIds: !Ref VpcSubnetIds
@@ -85,33 +107,29 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /
-            Method: get
+            # Auth:
+            #   Authorizer: CognitoAuth
+            Path: /user/login
+            Method: post
             ApiId: !Ref HttpApi
-      # Events:
-      #   HelloWorld:
-      #     Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-      #     Properties:
-      #       Path: /hello
-      #       Method: get
 
-  AdminHelloWorld:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: hello_world/
-      Handler: getHello.lambda_handler
-      Role: arn:aws:iam::821843840552:role/LambdaDynamo
-      Layers: 
-        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
-      Events:
-        RootGet:
-          Type: HttpApi
-          Properties:
-            Auth:
-              Authorizer: CognitoAuth
-            Path: /admin
-            Method: get
-            ApiId: !Ref HttpApi
+  # AdminHelloWorld:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: hello_world/
+  #     Handler: getHello.lambda_handler
+  #     Role: arn:aws:iam::821843840552:role/LambdaDynamo
+  #     Layers: 
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+  #     Events:
+  #       RootGet:
+  #         Type: HttpApi
+  #         Properties:
+  #           Auth:
+  #             Authorizer: CognitoAuth
+  #           Path: /admin
+  #           Method: get
+  #           ApiId: !Ref HttpApi
 
 # Outputs:
 #   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
