@@ -72,26 +72,6 @@ Resources:
           - authorization
         MaxAge: "10"
         AllowCredentials: True
-
-  # HelloWorldFunction:
-  #   Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-  #   Properties:
-  #     FunctionName: GetHelloWorld
-  #     CodeUri: hello_world/
-  #     Handler: getHello.lambda_handler
-  #     Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
-  #     Layers: 
-  #       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
-  #     # VpcConfig:
-  #     #   SecurityGroupIds: !Ref SecurityGroupIds
-  #     #   SubnetIds: !Ref VpcSubnetIds
-  #     Events:
-  #       RootGet:
-  #         Type: HttpApi
-  #         Properties:
-  #           Path: /
-  #           Method: get
-  #           ApiId: !Ref HttpApi
   
   LoginFunction:
     Type: AWS::Serverless::Function
@@ -156,12 +136,12 @@ Resources:
             Method: put
             ApiId: !Ref HttpApi
 
-  UserNameFunction:
+  EmailFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: GetUserName
-      CodeUri: getUserName/
-      Handler: getUserName.lambda_handler
+      FunctionName: GetEmail
+      CodeUri: getEmail/
+      Handler: getEmail.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
@@ -172,7 +152,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /user/validate/{username}
+            Path: /user/validate/{email}
             Method: get
             ApiId: !Ref HttpApi
   
@@ -216,24 +196,26 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
   
-  # AdminHelloWorld:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     CodeUri: hello_world/
-  #     Handler: getHello.lambda_handler
-  #     Role: arn:aws:iam::821843840552:role/LambdaDynamo
-  #     Layers: 
-  #       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
-  #     Events:
-  #       RootGet:
-  #         Type: HttpApi
-  #         Properties:
-  #           Auth:
-  #             Authorizer: CognitoAuth
-  #           Path: /admin
-  #           Method: get
-  #           ApiId: !Ref HttpApi
-
+  ProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetUser
+      CodeUri: getUser/
+      Handler: getUser.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /apps/{id}/{businessId}
+            Method: get
+            ApiId: !Ref HttpApi
 # Outputs:
 #   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
 #   # Find out more about other implicit resources you can reference within SAM
@@ -247,3 +229,22 @@ Resources:
 #   HelloWorldFunctionIamRole:
 #     Description: "Implicit IAM Role created for Hello World function"
 #     Value: !GetAtt HelloWorldFunctionRole.Arn
+# HelloWorldFunction:
+#   Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+#   Properties:
+#     FunctionName: GetHelloWorld
+#     CodeUri: hello_world/
+#     Handler: getHello.lambda_handler
+#     Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+#     Layers: 
+#       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
+#     # VpcConfig:
+#     #   SecurityGroupIds: !Ref SecurityGroupIds
+#     #   SubnetIds: !Ref VpcSubnetIds
+#     Events:
+#       RootGet:
+#         Type: HttpApi
+#         Properties:
+#           Path: /
+#           Method: get
+#           ApiId: !Ref HttpApi

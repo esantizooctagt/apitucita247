@@ -24,20 +24,19 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
-        UserName = event['pathParameters']['username']
+        Email = event['pathParameters']['email']
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            IndexName="TuCita247_Index",
-            KeyConditionExpression='GS1PK = :username',
+            KeyConditionExpression='PKID = :email',
             ExpressionAttributeValues={
-                ':username': {'S': 'USERNAME#' + UserName.upper()}
+                ':email': {'S': 'EMAIL#' + Email}
             },
             Limit=1
         )
         if response == None:
             statusCode = 404
-            body = json.dumps({'Message':'No valid entry found for username'})
+            body = json.dumps({'Message':'No valid entry found for email'})
         else:
             if response['Count'] > 0:
                 recordset = {
