@@ -50,9 +50,9 @@ def lambda_handler(event, context):
             )
             for row in response['Items']:
                 recordset = {
-                    'Application_Id': row['APPLICATIONID'],
+                    'Application_Id': row['SKID'],
                     'Name': row['NAME'],
-                    'Active': row['ACTIVE'],
+                    'Active': row['STATUS'],
                     'Icon': row['ICON'],
                     'Route': row['ROUTE']
                 }
@@ -84,9 +84,9 @@ def lambda_handler(event, context):
                 )
                 for row in response02['Items']:
                     recordset = {
-                        'Application_Id': row['APPLICATIONID'],
+                        'Application_Id': row['SKID'],
                         'Name': row['NAME'],
-                        'Active': row['ACTIVE'],
+                        'Active': row['STATUS'],
                         'Icon': row['ICON'],
                         'Route': row['ROUTE']
                     }
