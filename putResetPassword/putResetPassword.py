@@ -72,8 +72,8 @@ def lambda_handler(event, context):
         
         client = boto3.client('cognito-idp')
         client.confirm_forgot_password(
-            ClientId='42u5aeal715thv1944dohqv2tr',
-            # SecretHash=get_secret_hash(username),
+            ClientId='52k0o8239mueu31uu5fihccbbf',
+            SecretHash=get_secret_hash(username),
             Username=username,
             ConfirmationCode=code,
             Password=passDecrypt.decode('utf-8'),
