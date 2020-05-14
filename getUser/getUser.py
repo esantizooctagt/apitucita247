@@ -2,6 +2,11 @@ import sys
 import logging
 import json
 
+import boto3
+import botocore.exceptions
+from boto3.dynamodb.conditions import Key, Attr
+from dynamodb_json import json_util as json_dynamodb
+
 import os
 
 REGION = 'us-east-1'
@@ -11,10 +16,11 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     stage = event['headers']
-    if stage['origin'] != "http://localhost:4200":
-        cors = os.environ['prodCors']
-    else:
-        cors = os.environ['devCors']
+    cors = "http://localhost:4200"
+    # if stage['origin'] != "http://localhost:4200":
+    #     cors = os.environ['prodCors']
+    # else:
+    #     cors = os.environ['devCors']
         
     try:
         userId = event['pathParameters']['id']

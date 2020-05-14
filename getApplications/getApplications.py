@@ -23,11 +23,10 @@ def lambda_handler(event, context):
     body = ''
     cors = ''
     stage = event['headers']
-    cors = "http://localhost:4200"
-    # if stage['origin'] != "http://localhost:4200":
-    #     cors = os.environ['prodCors']
-    # else:
-    #     cors = os.environ['devCors']
+    if stage['origin'] != "http://localhost:4200":
+        cors = os.environ['prodCors']
+    else:
+        cors = os.environ['devCors']
 
     records =[]
     try:
@@ -83,7 +82,8 @@ def lambda_handler(event, context):
                         ':stat' : {'N': '1'}
                     }
                 )
-                for row in response02['Items']:
+                items = json_dynamodb.loads(response02['Items'])
+                for row in items:
                     recordset = {
                         'Application_Id': row['SKID'],
                         'Name': row['NAME'],
