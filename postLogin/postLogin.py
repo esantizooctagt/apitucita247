@@ -159,10 +159,10 @@ def lambda_handler(event, context):
                         'User_Id': user['USERID'],
                         'Email': user['SKID'].replace('EMAIL#',''),
                         'Is_Admin': int(user['IS_ADMIN']),
-                        'Company_Id': user['PKID'].replace('BUS#',''),
+                        'Business_Id': user['PKID'].replace('BUS#',''),
                         'Avatar': user['AVATAR'],
                         'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
-                        'Language_Id': user['LANGUAGE']
+                        'Language': user['LANGUAGE']
                     }
                     result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
                     statusCode = 200
@@ -228,10 +228,10 @@ def lambda_handler(event, context):
                             'User_Id': user['USERID'],
                             'Email': user['SKID'].replace('EMAIL#',''),
                             'Is_Admin': int(user['IS_ADMIN']),
-                            'Company_Id': user['PKID'].replace('BUS#',''),
+                            'Business_Id': user['PKID'].replace('BUS#',''),
                             'Avatar': user['AVATAR'],
                             'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
-                            'Language_Id': user['LANGUAGE']
+                            'Language': user['LANGUAGE']
                         }
                         result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
                         statusCode = 200
