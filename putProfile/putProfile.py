@@ -42,7 +42,7 @@ def lambda_handler(event, context):
                 ':lastName': data['Last_Name'],
                 ':phone': data['Phone'],
                 ':factor': data['MFact_Auth'],
-                ':language': data['LanguageId']
+                ':language': data['Language']
             }
             # ReturnValues="UPDATED_NEW"
         )
