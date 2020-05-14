@@ -46,8 +46,8 @@ Resources:
         # DefaultAuthorizer: CognitoAuth
         Authorizers:
           CognitoAuth:
-            AuthorizationScopes:
-              - email
+            # AuthorizationScopes:
+            #   - email
             IdentitySource: "$request.header.Authorization"
             JwtConfiguration:
               issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${AWS::Region}_${UserPoolId}
