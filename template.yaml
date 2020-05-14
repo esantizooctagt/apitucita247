@@ -235,7 +235,7 @@ Resources:
             Auth:
               Authorizer: CognitoAuth
             Path: /user/profile/{id}
-            Method: get
+            Method: put
             ApiId: !Ref HttpApi
   
 # Outputs:
