@@ -53,7 +53,7 @@ def lambda_handler(event, context):
                 'Status': record['STATUS'],
                 'Role_Id': '' if record['IS_ADMIN'] == 1 else record['ROLEID'],
                 'MFact_Auth': record['MFACT_AUTH'],
-                'Language_Id': record['LANGUAGE']
+                'Language': record['LANGUAGE']
             }
         statusCode = 200
         body = json.dumps(recordset)
