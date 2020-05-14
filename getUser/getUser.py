@@ -47,7 +47,7 @@ def lambda_handler(event, context):
                 'First_Name': record['FIRST_NAME'],
                 'Last_Name': record['LAST_NAME'],
                 'Avatar': record['AVATAR'],
-                'Location_Id': record['LOCATIONID'],
+                'Phone': record['PHONE'],
                 'Is_Admin': record['IS_ADMIN'],
                 'Company_Id': record['PKID'].replace('BUS#',''),
                 'Status': record['STATUS'],
