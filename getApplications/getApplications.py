@@ -5,7 +5,7 @@ import json
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
-# from dynamodb_json import json_util as json_dynamodb
+from dynamodb_json import json_util as json_dynamodb
 
 import os
 
@@ -33,9 +33,10 @@ def lambda_handler(event, context):
     try:
         roleId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
+        
+        e = {'#s': 'STATUS'}
+        f = '#s = :stat'
         if roleId == '0':
-            e = {'#s': 'STATUS'}
-            f = '#s = :stat'
             response = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -67,6 +68,7 @@ def lambda_handler(event, context):
                 }
             )
             for line in response['Items']:
+                app = json_dynamodb.loads(line)
                 response02 = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
@@ -76,7 +78,7 @@ def lambda_handler(event, context):
                     Limit=1,
                     ExpressionAttributeValues={
                         ':apps': {'S': 'APPS'},
-                        ':appId': {'S': line['SKID'].replace('ROL#'+roleId+'#','')},
+                        ':appId': {'S': app['SKID'].replace('ROL#'+roleId+'#','')},
                         ':stat' : {'N': '1'}
                     }
                 )
