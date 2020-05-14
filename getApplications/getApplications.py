@@ -48,7 +48,8 @@ def lambda_handler(event, context):
                     ':stat' : {'N': '1'}
                 }
             )
-            for row in response['Items']:
+            items = json_dynamodb.loads(response['Items'])
+            for row in items:
                 recordset = {
                     'Application_Id': row['SKID'],
                     'Name': row['NAME'],
