@@ -27,18 +27,19 @@ def lambda_handler(event, context):
     try:
         userId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
-
+        logger.info("prev query")
         response = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='SKID = :userId',
+            KeyConditionExpression='PKID = :businessId AND SKID = :userId',
             ExpressionAttributeValues={
-                ':userId': {'S': 'USER#' + userId},
-                ':businessId': {'S': 'BUS#' + businessId}
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':userId': {'S': 'USER#' + userId}
             },
             Limit=1
         )
+        logger.info(response)
         for row in response['Items']:
             record = json_dynamodb.loads(row)
             recordset = {
