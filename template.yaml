@@ -29,7 +29,7 @@ Globals:
     Runtime: python3.8
     Environment:
         Variables:
-            devCors: "http://localhost:4200",
+            devCors: "http://localhost:4200"
             prodCors: "https://console.tucita247.com"
     VpcConfig:
       SecurityGroupIds: 
