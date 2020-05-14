@@ -67,7 +67,7 @@ def lambda_handler(event, context):
                 }
             )
             for line in response['Items']:
-                response = dynamodb.query(
+                response02 = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :apps AND SKID = :appId',
@@ -80,7 +80,7 @@ def lambda_handler(event, context):
                         ':stat' : {'N': '1'}
                     }
                 )
-                for row in response['Items']:
+                for row in response02['Items']:
                     recordset = {
                         'Application_Id': row['APPLICATIONID'],
                         'Name': row['NAME'],
