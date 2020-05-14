@@ -30,13 +30,15 @@ def lambda_handler(event, context):
         userId = event['pathParameters']['id']
         businessId = data['BusinessId']
 
+        e = {'#l': 'LANGUAGE'}
         table = dynamodb.Table('TuCita247')
         response = table.update_item(
             Key={
                 'PKID': 'BUS#' + businessId,
-                'SKID': 'EMAIL#' + userId
+                'SKID': 'USER#' + userId
             },
-            UpdateExpression="set FIRST_NAME = :firstName, LAST_NAME = :lastName, PHONE = :phone, MFACT_AUTH = :factor, LANGUAGE = :language",
+            UpdateExpression="set FIRST_NAME = :firstName, LAST_NAME = :lastName, PHONE = :phone, MFACT_AUTH = :factor, #l = :language",
+            ExpressionAttributeNames=e,
             ExpressionAttributeValues={
                 ':firstName': data['First_Name'],
                 ':lastName': data['Last_Name'],

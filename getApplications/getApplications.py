@@ -64,7 +64,7 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :roleId )',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
-                    ':roleId': {'S': 'ROL#' + roleId}
+                    ':roleId': {'S': 'ACCESS#' + roleId}
                 }
             )
             for line in response['Items']:
@@ -78,7 +78,7 @@ def lambda_handler(event, context):
                     Limit=1,
                     ExpressionAttributeValues={
                         ':apps': {'S': 'APPS'},
-                        ':appId': {'S': app['SKID'].replace('ROL#'+roleId+'#','')},
+                        ':appId': {'S': app['SKID'].replace('ACCESS#'+roleId+'#','')},
                         ':stat' : {'N': '1'}
                     }
                 )
