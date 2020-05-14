@@ -54,7 +54,7 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :roleId )',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
-                    ':roleId': {'S', 'ROL#' + roleId}
+                    ':roleId': {'S': 'ROL#' + roleId}
                 }
             )
         #     cur.execute("SELECT REPLACE(BIN_TO_UUID(APPLICATIONID, true),'-','') AS APPLICATIONID, NAME, 0 AS ACTIVE, ICON, ROUTE FROM APPLICATIONS WHERE STATUS IN (0,1) ORDER BY ORDERAPP")
