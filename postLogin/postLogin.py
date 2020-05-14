@@ -162,7 +162,6 @@ def lambda_handler(event, context):
                         'Company_Id': user['PKID'].replace('BUS#',''),
                         'Avatar': user['AVATAR'],
                         'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
-                        'Location_Id': user['LOCATIONID'],
                         'Language_Id': user['LANGUAGE']
                     }
                     result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
@@ -232,7 +231,6 @@ def lambda_handler(event, context):
                             'Company_Id': user['PKID'].replace('BUS#',''),
                             'Avatar': user['AVATAR'],
                             'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
-                            'Location_Id': user['LOCATIONID'],
                             'Language_Id': user['LANGUAGE']
                         }
                         result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
