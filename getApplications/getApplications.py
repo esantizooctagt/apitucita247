@@ -32,34 +32,50 @@ def lambda_handler(event, context):
     records =[]
     try:
         roleId = event['pathParameters']['id']
-        # if roleId == '0':
+        businessId = event['pathParameters']['businessId']
+        if roleId == '0':
+            e = {'#s': 'STATUS'}
+            f = '#s = :stat'
+            response = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :apps',
+                ExpressionAttributeNames=e,
+                FilterExpression=f,
+                ExpressionAttributeValues={
+                    ':apps': {'S': 'APPS'},
+                    ':stat' : {'N': '1'}
+                }
+            )
+        else:
+            response = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :roleId )',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + businessId},
+                    ':roleId': {'S', 'ROL#' + roleId}
+                }
+            )
         #     cur.execute("SELECT REPLACE(BIN_TO_UUID(APPLICATIONID, true),'-','') AS APPLICATIONID, NAME, 0 AS ACTIVE, ICON, ROUTE FROM APPLICATIONS WHERE STATUS IN (0,1) ORDER BY ORDERAPP")
         # elif roleId == '1':
         #     cur.execute("SELECT REPLACE(BIN_TO_UUID(APPLICATIONID, true),'-','') AS APPLICATIONID, NAME, 1 AS ACTIVE, ICON, ROUTE FROM APPLICATIONS WHERE STATUS IN (0,1) ORDER BY ORDERAPP")
         # else:
         #     cur.execute("SELECT REPLACE(BIN_TO_UUID(APPLICATIONS.APPLICATIONID, true),'-','') AS APPLICATIONID, APPLICATIONS.NAME, CASE WHEN ROLEID IS NULL THEN 0 ELSE 1 END AS ACTIVE, ICON, ROUTE FROM APPLICATIONS LEFT JOIN ACCESS ON APPLICATIONS.APPLICATIONID = ACCESS.APPLICATIONID AND REPLACE(BIN_TO_UUID(ACCESS.ROLEID, true),'-','') = %s WHERE APPLICATIONS.STATUS IN (0,1) ORDER BY ORDERAPP", (roleId))
-        response = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            # IndexName="TuCita247_Index",
-            # KeyConditionExpression='GS1PK = :email',
-            # ExpressionAttributeValues={
-            #     ':email': {'S': 'EMAIL#' + data['Email']}
-            # },
-            Limit=1
-        )
-        for row in response['Items']:
-            recordset = {
-                'Application_Id': row['APPLICATIONID'],
-                'Name': row['NAME'],
-                'Active': row['ACTIVE'],
-                'Icon': row['ICON'],
-                'Route': row['ROUTE']
-            }
-            records.append(recordset)
+        
+        logger.info(response)
+        # for row in response['Items']:
+        #     recordset = {
+        #         'Application_Id': row['APPLICATIONID'],
+        #         'Name': row['NAME'],
+        #         'Active': row['ACTIVE'],
+        #         'Icon': row['ICON'],
+        #         'Route': row['ROUTE']
+        #     }
+        #     records.append(recordset)
             
-            statusCode = 200
-            body = json.dumps(records)
+        statusCode = 200
+        body = json.dumps(records)
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})
