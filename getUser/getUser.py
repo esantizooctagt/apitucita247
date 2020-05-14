@@ -30,7 +30,6 @@ def lambda_handler(event, context):
         logger.info("prev query")
         response = dynamodb.query(
             TableName="TuCita247",
-            IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='PKID = :businessId AND SKID = :userId',
             ExpressionAttributeValues={
