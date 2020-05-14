@@ -157,9 +157,9 @@ def lambda_handler(event, context):
                 if user != None:
                     recordset = {
                         'User_Id': user['USERID'],
-                        'Email': user['SKID'].split('#')[1],
+                        'Email': user['SKID'].replace('EMAIL#',''),
                         'Is_Admin': int(user['IS_ADMIN']),
-                        'Company_Id': user['GSI1SK'].split('#')[1],
+                        'Company_Id': user['PKID'].replace('BUS#',''),
                         'Avatar': user['AVATAR'],
                         'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
                         'Location_Id': user['LOCATIONID'],
@@ -227,9 +227,9 @@ def lambda_handler(event, context):
                     if user != None:
                         recordset = {
                             'User_Id': user['USERID'],
-                            'Email': user['SKID'].split('#')[1],
+                            'Email': user['SKID'].replace('EMAIL#',''),
                             'Is_Admin': int(user['IS_ADMIN']),
-                            'Company_Id': user['GSI1SK'].split('#')[1],
+                            'Company_Id': user['PKID'].replace('BUS#',''),
                             'Avatar': user['AVATAR'],
                             'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
                             'Location_Id': user['LOCATIONID'],
