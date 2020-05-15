@@ -77,8 +77,8 @@ def lambda_handler(event, context):
                     "Put": {
                         "TableName": "TuCita247",
                         "Item": {
-                            "PK": {"S": 'BUS#'+data['BusinessId']},
-                            "SK": {"S": 'USER#' + userId },
+                            "PKID": {"S": 'BUS#'+data['BusinessId']},
+                            "SKID": {"S": 'USER#' + userId },
                             "GSI1PK": {"S": 'EMAIL#' + email},
                             "GSI1SK": {"S": 'USER#' + userId},
                             "FIRST_NAME": {"S": data['First_Name']},
@@ -90,7 +90,7 @@ def lambda_handler(event, context):
                             "USERID": {"S": userId },
                             "STATUS": {"N": "1"}
                         },
-                        "ConditionExpression": "attribute_not_exists(SK)",
+                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         # "ExpressionAttributeNames": {'#s': 'STATUS'},
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     },
@@ -99,11 +99,11 @@ def lambda_handler(event, context):
                     "Put": {
                         "TableName": "TuCita247",
                         "Item": {
-                            "PK": {"S": 'EMAIL#'+email},
-                            "SK": {"S": 'EMAIL#'+email},
+                            "PKID": {"S": 'EMAIL#'+email},
+                            "SKID": {"S": 'EMAIL#'+email},
                             "MFACT_AUTH": {"N": "0"}
                         },
-                        "ConditionExpression": "attribute_not_exists(SK)",
+                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     }
                 }
