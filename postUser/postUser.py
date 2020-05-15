@@ -84,14 +84,14 @@ def lambda_handler(event, context):
                             "FIRST_NAME": {"S": data['First_Name']},
                             "LAST_NAME": {"S": data['Last_Name']},
                             "PHONE": {"S": data['Phone']},
-                            "MFACT_AUTH": {"N": 0},
-                            "IS_ADMIN": {"N": 0},
+                            "MFACT_AUTH": {"N": "0"},
+                            "IS_ADMIN": {"N": "0"},
                             "ROLEID": {"S": data['Phone']},
                             "USERID": {"S": userId },
-                            "#s": {"N": 1}
+                            "#s": {"N": "1"}
                         },
                         "ConditionExpression": "attribute_not_exists(SK)",
-                        "ExpressionAttributeName": {'#s': 'STATUS'},
+                        "ExpressionAttributeNames": {'#s': 'STATUS'},
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     },
                 },
@@ -101,7 +101,7 @@ def lambda_handler(event, context):
                         "Item": {
                             "PK": {"S": 'EMAIL#'+email},
                             "SK": {"S": 'EMAIL#'+email},
-                            "MFACT_AUTH": {"N": 0}
+                            "MFACT_AUTH": {"N": "0"}
                         },
                         "ConditionExpression": "attribute_not_exists(SK)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
