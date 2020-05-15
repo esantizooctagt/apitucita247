@@ -86,7 +86,7 @@ def lambda_handler(event, context):
                             "PHONE": {"S": data['Phone']},
                             "MFACT_AUTH": {"N": "0"},
                             "IS_ADMIN": {"N": "0"},
-                            "ROLEID": {"S": data['Phone']},
+                            "ROLEID": {"S": data['RoleId']},
                             "USERID": {"S": userId },
                             "STATUS": {"N": "1"}
                         },
