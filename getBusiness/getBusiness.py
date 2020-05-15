@@ -2,6 +2,11 @@ import sys
 import logging
 import json
 
+import boto3
+import botocore.exceptions
+from boto3.dynamodb.conditions import Key, Attr
+from dynamodb_json import json_util as json_dynamodb
+
 import os
 
 REGION = 'us-east-1'
@@ -9,6 +14,8 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
     stage = event['headers']
@@ -16,26 +23,52 @@ def lambda_handler(event, context):
         cors = os.environ['prodCors']
     else:
         cors = os.environ['devCors']
-        
+
+
     try:
         businessId = event['pathParameters']['id']
-        # cur.execute("SELECT REPLACE(BIN_TO_UUID(COMPANYID, true),'-','') AS COMPANYID, NAME, ADDRESS, HOUSE_NO, COUNTRY, STATE, PHONE, POSTAL_CODE, TAX_NUMBER, EMAIL, STORE_NO, STATUS, IFNULL(CURRENCY,'') AS CURRENCY, CASHIER_NO FROM COMPANIES WHERE STATUS IN (0,1) AND REPLACE(BIN_TO_UUID(COMPANYID, true),'-','') = %s", companyId)
-        recordset = {
-            'Company_Id': record[0],
-            'Name': record[1],
-            'Address': record[2],
-            'House_No': record[3],
-            'Country': record[4],
-            'State': record[5],
-            'Phone': record[6],
-            'Postal_Code': record[7],
-            'Tax_Number': record[8],
-            'Email': record[9],
-            'Store_No': record[10],
-            'Status': record[11],
-            'Currency': record[12],
-            'Cashier_No': record[13]
-        }
+        response = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':metadata': {'S': 'METADATA#'}
+            },
+            Limit=1
+        )
+        itemsbusiness = json_dynamodb.loads(response['Items'])
+        response = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :category )',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':category': {'S': 'CAT#'}
+            }
+        )
+        items = json_dynamodb.loads(response['Items'])
+
+        records =[]
+        for row in items:
+            recordset1 = {
+                'Category_Id': row['SKID'].replace('CAT#',''),
+                'Name': row['NAME']
+            } 
+            records.append(recordset1)
+         
+        for row in itemsbusiness:
+            recordset = {
+                'Business_Id': row['SKID'].replace('BUS#',''),
+                'Name': row['NAME'],
+                'Address': row['ADDRESS'],
+                'City': row['CITY'],
+                'Contact': row['CONTACT'],
+                'Country': row['COUNTRY'],
+                'GeoLocation': row['GEOLOCATION'],
+                'Categories':  records
+            }
+        
         statusCode = 200
         body = json.dumps(recordset)
     except:
