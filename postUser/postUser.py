@@ -4,6 +4,7 @@ import json
 
 import boto3
 import botocore.exceptions
+from boto3.dynamodb.conditions import Key, Attr
 
 import hmac
 import hashlib
@@ -68,7 +69,7 @@ def lambda_handler(event, context):
         userId = str(uuid.uuid4()).replace("-","")
         data = json.loads(event['body'])
         email = data['Email']
-
+        logger.info(email)
         #STATUS 3 PENDIENTE DE VERIFICACION DE CUENTA
         response = dynamodb.transact_write_items(
             TransactItems=[
@@ -108,15 +109,12 @@ def lambda_handler(event, context):
                 }
             ]
         )
-        # sql = """INSERT INTO USERS (USERID, EMAIL, USERNAME, FIRST_NAME, LAST_NAME, PASSWORD, COMPANYID, STOREID, ROLEID, IS_ADMIN, STATUS, USERLOGID) 
-        #             VALUES
-        #             (UUID_TO_BIN(REPLACE(UUID(),'-',''), true), %s, %s, %s, %s, MD5(%s), UUID_TO_BIN(%s, true), NULL, UUID_TO_BIN(%s, true), 0, 3, %s)"""
-        # cur.execute(sql, (data['Email'], data['UserName'], data['First_Name'], data['Last_Name'], data['Password'], data['CompanyId'], data['RoleId'], data['UserLogId'])) 
+        logger.info("data")
         try:
             key = secreKey.encode()
             ct_b64 = data['Password'] 
             passDecrypt = decrypt(ct_b64, key)
-            
+            logger.info(passDecrypt)
             client = boto3.client('cognito-idp')
             response = client.sign_up(
                         ClientId='52k0o8239mueu31uu5fihccbbf',
