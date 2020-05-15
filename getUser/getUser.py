@@ -49,7 +49,7 @@ def lambda_handler(event, context):
                 'Avatar': record['AVATAR'],
                 'Phone': record['PHONE'],
                 'Is_Admin': record['IS_ADMIN'],
-                'Company_Id': record['PKID'].replace('BUS#',''),
+                'Business_Id': record['PKID'].replace('BUS#',''),
                 'Status': record['STATUS'],
                 'Role_Id': '' if record['IS_ADMIN'] == 1 else record['ROLEID'],
                 'MFact_Auth': record['MFACT_AUTH'],
