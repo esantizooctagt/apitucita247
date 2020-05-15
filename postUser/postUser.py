@@ -88,10 +88,10 @@ def lambda_handler(event, context):
                             "IS_ADMIN": {"N": "0"},
                             "ROLEID": {"S": data['Phone']},
                             "USERID": {"S": userId },
-                            "#s": {"N": "1"}
+                            "STATUS": {"N": "1"}
                         },
                         "ConditionExpression": "attribute_not_exists(SK)",
-                        "ExpressionAttributeNames": {'#s': 'STATUS'},
+                        # "ExpressionAttributeNames": {'#s': 'STATUS'},
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     },
                 },
@@ -176,7 +176,7 @@ def lambda_handler(event, context):
             body = json.dumps({'Message': 'Error on added user'})
     except Exception as e:
         statusCode = 500
-        body = json.dumps({'Message': 'Error on request try again'})
+        body = json.dumps({'Message': 'Error on request try again ' + str(e)})
 
     response = {
         'statusCode' : statusCode,
