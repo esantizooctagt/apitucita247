@@ -174,6 +174,13 @@ def lambda_handler(event, context):
         if statusCode == '':
             statusCode = 500
             body = json.dumps({'Message': 'Error on added user'})
+
+    except dynamodb.exceptions.TransactionCanceledException as e:
+            statusCode = 404
+            body = json.dumps({"Code":400,"error": False, 
+                    "success": True, 
+                    "message": str(e), 
+                    "data": None})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})
