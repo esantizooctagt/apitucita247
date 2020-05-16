@@ -281,7 +281,7 @@ Resources:
             Path: /user
             Method: put
             ApiId: !Ref HttpApi
-    
+  
   DeleteBusinessUserFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -399,3 +399,4 @@ Resources:
 #           Path: /
 #           Method: get
 #           ApiId: !Ref HttpApi
+#           come
