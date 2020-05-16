@@ -28,7 +28,7 @@ def lambda_handler(event, context):
         userId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
         
-        table = dynamodb.Table('Cashier2Go')
+        table = dynamodb.Table('TuCita247')
         response = table.update_item(
             Key={
                 'PKID': 'BUS#' + businessId,
@@ -51,7 +51,7 @@ def lambda_handler(event, context):
             body = json.dumps({'Message': 'Error on delete user'})
     except Exception as e:
         statusCode = 500
-        body = json.dumps({'Message': 'Error on request try again'})  #str(e) })
+        body = json.dumps({'Message': 'Error on request try again ' + str(e)})
 
     response = {
         'statusCode' : statusCode,
