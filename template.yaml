@@ -271,6 +271,7 @@ Resources:
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
       Events:
         RootGet:
           Type: HttpApi
@@ -280,7 +281,28 @@ Resources:
             Path: /user
             Method: put
             ApiId: !Ref HttpApi
-    
+  
+  DeleteBusinessUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DeleteUser
+      CodeUri: delUser/
+      Handler: delUser.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /user/{id}/{businessId}
+            Method: delete
+            ApiId: !Ref HttpApi
+
   VerificationCodeFunction:
     Type: AWS::Serverless::Function
     Properties:

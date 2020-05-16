@@ -46,14 +46,14 @@ def lambda_handler(event, context):
                 'Email': record['GSI1PK'].replace('EMAIL#',''),
                 'First_Name': record['FIRST_NAME'],
                 'Last_Name': record['LAST_NAME'],
-                'Avatar': record['AVATAR'],
+                'Avatar': '' if "AVATAR" not in record else record['AVATAR'],
                 'Phone': record['PHONE'],
                 'Is_Admin': record['IS_ADMIN'],
                 'Business_Id': record['PKID'].replace('BUS#',''),
                 'Status': record['STATUS'],
                 'Role_Id': '' if record['IS_ADMIN'] == 1 else record['ROLEID'],
                 'MFact_Auth': record['MFACT_AUTH'],
-                'Language': record['LANGUAGE']
+                'Language': '' if "LANGUAGE" not in record else record['LANGUAGE']
             }
         statusCode = 200
         body = json.dumps(recordset)
