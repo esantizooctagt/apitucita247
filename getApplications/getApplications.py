@@ -52,7 +52,7 @@ def lambda_handler(event, context):
                 recordset = {
                     'Application_Id': row['SKID'],
                     'Name': row['NAME'],
-                    'Active': row['STATUS'],
+                    'Active': row['ACTIVE'],
                     'Icon': row['ICON'],
                     'Route': row['ROUTE']
                 }
@@ -87,7 +87,7 @@ def lambda_handler(event, context):
                     recordset = {
                         'Application_Id': row['SKID'],
                         'Name': row['NAME'],
-                        'Active': row['STATUS'],
+                        'Active': row['ACTIVE'],
                         'Icon': row['ICON'],
                         'Route': row['ROUTE']
                     }
