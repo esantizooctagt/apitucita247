@@ -52,7 +52,29 @@ def lambda_handler(event, context):
                 recordset = {
                     'Application_Id': row['SKID'],
                     'Name': row['NAME'],
-                    'Active': row['ACTIVE'],
+                    'Active': 0,
+                    'Icon': row['ICON'],
+                    'Route': row['ROUTE']
+                }
+                records.append(recordset)
+        elif roleId == '1':
+            response = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :apps',
+                ExpressionAttributeNames=e,
+                FilterExpression=f,
+                ExpressionAttributeValues={
+                    ':apps': {'S': 'APPS'},
+                    ':stat' : {'N': '1'}
+                }
+            )
+            items = json_dynamodb.loads(response['Items'])
+            for row in items:
+                recordset = {
+                    'Application_Id': row['SKID'],
+                    'Name': row['NAME'],
+                    'Active': 1,
                     'Icon': row['ICON'],
                     'Route': row['ROUTE']
                 }
