@@ -42,7 +42,7 @@ def lambda_handler(event, context):
             ExpressionAttributeValues={
                 ':firstName': data['First_Name'],
                 ':lastName': data['Last_Name'],
-                ':phone': data['Phone'],
+                ':phone': data['Phone'].replace('(','').replace(')','').replace('-','').replace(' ',''),
                 ':factor': "0",
                 # data['MFact_Auth'],
                 ':role': data['RoleId'],
