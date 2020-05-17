@@ -18,6 +18,10 @@ dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
+    stage = ''
+    businessId = ''
+    body = ''
+    cors = ''
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
         cors = os.environ['prodCors']
@@ -38,6 +42,8 @@ def lambda_handler(event, context):
             Limit=1
         )
         itemsbusiness = json_dynamodb.loads(response['Items'])
+       
+       
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -48,7 +54,6 @@ def lambda_handler(event, context):
             }
         )
         items = json_dynamodb.loads(response['Items'])
-
         records =[]
         for row in items:
             recordset1 = {
@@ -56,10 +61,11 @@ def lambda_handler(event, context):
                 'Name': row['NAME']
             } 
             records.append(recordset1)
-         
+            
+            
         for row in itemsbusiness:
             recordset = {
-                'Business_Id': row['SKID'].replace('BUS#',''),
+                'Business_Id': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME'],
                 'Address': row['ADDRESS'],
                 'City': row['CITY'],
@@ -71,9 +77,9 @@ def lambda_handler(event, context):
         
         statusCode = 200
         body = json.dumps(recordset)
-    except:
+    except Exception as e:
         statusCode = 500
-        body = json.dumps({'Message':'Error on request try again'})
+        body = json.dumps({'Message':'Error on request try again'+ str(e)})
 
     response = {
         'statusCode' : statusCode,
