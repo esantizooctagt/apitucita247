@@ -18,6 +18,10 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def listToDict(lst):
+    op = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
+    return op
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -36,7 +40,7 @@ def lambda_handler(event, context):
                         "TableName": "TuCita247",
                         "Item": {
                             "PKID": {"S": 'BUS#'+data['BusinessId']},
-                            "SKID": {"S": 'ACCESS#'+roleId+'#'+items['Application_Id']},
+                            "SKID": {"S": 'ACCESS#'+roleId+'#'+items['ApplicationId']},
                             "LEVEL_ACCESS": {"N": items['Level_Access']}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
@@ -44,7 +48,9 @@ def lambda_handler(event, context):
                     }
                 }
             records.append(recordset)
-        logger.info(records)
+
+        elements = listToDict(records)
+        logger.info(elements)
         response = dynamodb.transact_write_items(
             TransactItems=[
                 {
@@ -60,7 +66,7 @@ def lambda_handler(event, context):
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     },
                 },
-                records
+                elements
             ]
         )
         logger.info(response)
