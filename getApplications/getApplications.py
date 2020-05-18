@@ -50,7 +50,7 @@ def lambda_handler(event, context):
             items = json_dynamodb.loads(response['Items'])
             for row in items:
                 recordset = {
-                    'Application_Id': row['SKID'],
+                    'ApplicationId': row['SKID'],
                     'Name': row['NAME'],
                     'Active': 0,
                     'Icon': row['ICON'],
@@ -72,7 +72,7 @@ def lambda_handler(event, context):
             items = json_dynamodb.loads(response['Items'])
             for row in items:
                 recordset = {
-                    'Application_Id': row['SKID'],
+                    'ApplicationId': row['SKID'],
                     'Name': row['NAME'],
                     'Active': 1,
                     'Icon': row['ICON'],
@@ -107,7 +107,7 @@ def lambda_handler(event, context):
                 items = json_dynamodb.loads(response02['Items'])
                 for row in items:
                     recordset = {
-                        'Application_Id': row['SKID'],
+                        'ApplicationId': row['SKID'],
                         'Name': row['NAME'],
                         'Active': row['ACTIVE'],
                         'Icon': row['ICON'],
