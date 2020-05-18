@@ -15,7 +15,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -37,7 +37,7 @@ def lambda_handler(event, context):
                         "Item": {
                             "PKID": {"S": 'BUS#'+data['BusinessId']},
                             "SKID": {"S": 'ACCESS#'+roleId+'#'+items['Application_Id']},
-                            "MFACT_AUTH": {"N": "0"}
+                            "LEVEL_ACCESS": {"N": items['Level_Access']}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -53,7 +53,7 @@ def lambda_handler(event, context):
                         "Item": {
                             "PKID": {"S": 'BUS#'+data['BusinessId']},
                             "SKID": {"S": 'ROL#' + roleId },
-                            "NAME": {"S": data['NAME']},
+                            "NAME": {"S": data['Name']},
                             "STATUS": {"N": "1"}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
