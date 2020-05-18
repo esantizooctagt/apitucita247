@@ -239,7 +239,49 @@ Resources:
             Path: /roles/{businessId}
             Method: get
             ApiId: !Ref HttpApi
+      
+  BusinessRoleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetRole
+      CodeUri: getRole/
+      Handler: getRole.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /role/{id}/{businessId}
+            Method: get
+            ApiId: !Ref HttpApi
     
+  BusinessAddRoleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostRole
+      CodeUri: postRole/
+      Handler: postRole.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /role
+            Method: post
+            ApiId: !Ref HttpApi
+
   NewBusinessUserFunction:
     Type: AWS::Serverless::Function
     Properties:

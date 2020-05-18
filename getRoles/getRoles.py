@@ -45,7 +45,7 @@ def lambda_handler(event, context):
         for row in items:
             recordset = {
                 'Role_Id': row['SKID'].replace('ROL#',''),
-                'Company_Id': row['PKID'].replace('BUS#',''),
+                'Business_Id': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME']
             }
             records.append(recordset)

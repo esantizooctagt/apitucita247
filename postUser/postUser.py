@@ -69,7 +69,7 @@ def lambda_handler(event, context):
         userId = str(uuid.uuid4()).replace("-","")
         data = json.loads(event['body'])
         email = data['Email']
-        logger.info(email)
+
         #STATUS 3 PENDIENTE DE VERIFICACION DE CUENTA
         response = dynamodb.transact_write_items(
             TransactItems=[
