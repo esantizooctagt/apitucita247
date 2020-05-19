@@ -26,9 +26,9 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
-        roleId = str(uuid.uuid4()).replace("-","")
         data = json.loads(event['body'])
-
+        roleId = data['RoleId']
+        
         recordList = {}
         i=0
         for items in data['Access']:
@@ -66,12 +66,16 @@ def lambda_handler(event, context):
             },
         }
         items.append(rows)
+
         rows = {
             "Delete":{
                 "TableName":"TuCita247",
                 "Key": {
                     "PKID": {"S": 'BUS#'+data['BusinessId']},
-                    "SKID": {"S": 'begins_with (SKID , ACCESS#' + roleId + ')'}
+                    "SKID": {"S": 'begins_with (SKID , :role)'}
+                },
+                "ExpressionAttributeValues": { 
+                    ":role": {"S": str('ACCESS#' + roleId)}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },
