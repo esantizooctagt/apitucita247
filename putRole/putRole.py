@@ -38,7 +38,7 @@ def lambda_handler(event, context):
                                 "Item": {
                                     "PKID": {"S": 'BUS#'+data['BusinessId']},
                                     "SKID": {"S": 'ACCESS#'+roleId+'#'+items['ApplicationId']},
-                                    "LEVEL_ACCESS": {"N": items['Level_Access']}
+                                    "LEVEL_ACCESS": {"N": str(items['Level_Access'])}
                                 },
                                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -56,7 +56,11 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#'+data['BusinessId']},
                     "SKID": {"S": 'ROL#' + roleId }
                 },
-                "UpdateExpression":"set NAME = '" + data['NAME'] + "', STATUS = " + data['STATUS'],
+                "UpdateExpression":"set NAME = :name, STATUS = :status",
+                "ExpressionAttributeValues": { 
+                    ":name": data['Name'],
+                    ":status": data['Status'] 
+                },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },
         },
