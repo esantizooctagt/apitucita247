@@ -47,14 +47,14 @@ def lambda_handler(event, context):
                     ':stat' : {'N': '1'}
                 }
             )
-            items = json_dynamodb.loads(response['Items'])
-            for row in items:
+            for row in response['Items']:
+                apps = json_dynamodb.loads(row)
                 recordset = {
-                    'ApplicationId': row['SKID'],
-                    'Name': row['NAME'],
+                    'ApplicationId': apps['SKID'],
+                    'Name': apps['NAME'],
                     'Active': 0,
-                    'Icon': row['ICON'],
-                    'Route': row['ROUTE']
+                    'Icon': apps['ICON'],
+                    'Route': apps['ROUTE']
                 }
                 records.append(recordset)
         elif roleId == '1':
@@ -69,14 +69,14 @@ def lambda_handler(event, context):
                     ':stat' : {'N': '1'}
                 }
             )
-            items = json_dynamodb.loads(response['Items'])
-            for row in items:
+            for row in response['Items']:
+                apps = json_dynamodb.loads(row)
                 recordset = {
-                    'ApplicationId': row['SKID'],
-                    'Name': row['NAME'],
+                    'ApplicationId': apps['SKID'],
+                    'Name': apps['NAME'],
                     'Active': 1,
-                    'Icon': row['ICON'],
-                    'Route': row['ROUTE']
+                    'Icon': apps['ICON'],
+                    'Route': apps['ROUTE']
                 }
                 records.append(recordset)
         else:
@@ -86,13 +86,11 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :apps',
                 ExpressionAttributeNames=e,
                 FilterExpression=f,
-                Limit=1,
                 ExpressionAttributeValues={
                     ':apps': {'S': 'APPS'},
                     ':stat' : {'N': '1'}
                 }
             )
-            #  AND SKID = :appId     ':appId': {'S': app['SKID'].replace('ACCESS#'+roleId+'#','')},
             for line in response['Items']:
                 apps = json_dynamodb.loads(line)
                 response02 = dynamodb.query(
@@ -104,24 +102,23 @@ def lambda_handler(event, context):
                         ':roleId': {'S': 'ACCESS#' + roleId + "#" + apps['SKID']}
                         }
                 )
-                for row in items:
-                    items = json_dynamodb.loads(response02['Items'])
+                
+                if response02['Count'] == 0:
                     recordset = {
                         'ApplicationId': apps['SKID'],
                         'Name': apps['NAME'],
-                        'Level_Access': row['LEVEL_ACCESS'],
-                        'Icon': apps['ICON'],
-                        'Route': apps['ROUTE']
+                        'Level_Access': '0'
                     }
-                if response02['Count'] == 0:
-                     recordset = {
+                    records.append(recordset)
+                    
+                for row in response02['Items']:
+                    items = json_dynamodb.loads(row)
+                    recordset = {
                         'ApplicationId': apps['SKID'],
                         'Name': apps['NAME'],
-                        'Level_Access': 0,
-                        'Icon': apps['ICON'],
-                        'Route': apps['ROUTE']
+                        'Level_Access': str(items['LEVEL_ACCESS'])
                     }
-                records.append(recordset)
+                    records.append(recordset)
  
         statusCode = 200
         body = json.dumps(records)
