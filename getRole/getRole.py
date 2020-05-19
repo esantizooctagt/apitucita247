@@ -43,7 +43,6 @@ def lambda_handler(event, context):
                 'Role_Id': row['SKID'].replace('ROL#',''),
                 'Business_Id': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME'],
-                'Level_Access': row['LEVEL_ACCESS'],
                 'Status': row['STATUS']
             }
         
