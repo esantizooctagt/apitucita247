@@ -59,7 +59,7 @@ def lambda_handler(event, context):
                 "UpdateExpression":"set NAME = :name, STATUS = :status",
                 "ExpressionAttributeValues": { 
                     ":name": {"S": data['Name']},
-                    ":status": {"N": data['Status']} 
+                    ":status": {"N": str(data['Status'])} 
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },
