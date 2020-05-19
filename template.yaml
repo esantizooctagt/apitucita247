@@ -300,7 +300,7 @@ Resources:
             Auth:
               Authorizer: CognitoAuth
             Path: /role
-            Method: put
+            Method: patch
             ApiId: !Ref HttpApi
 
   NewBusinessUserFunction:

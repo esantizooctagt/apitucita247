@@ -18,10 +18,6 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
-def listToDict(lst):
-    op = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
-    return op
-
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
