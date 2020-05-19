@@ -31,6 +31,23 @@ def lambda_handler(event, context):
         
         recordList = {}
         i=0
+        response = dynamodb.query(
+            TableName = "TuCita247",
+            ReturnConsumedCapacity = 'TOTAL',
+            KeyConditionExpression = 'PKID = :businessId AND begins_with( SKID , :roles )',
+            ExpressionAttributeValues = {
+                ':businessId': {'S': 'BUS#' + data['BusinessId']},
+                ':roles': {'S': 'ACCESS#' + roleId}
+            }
+        )
+
+        appAct = []
+        y=0
+        for apps in response['Items']:
+            row = json_dynamodb.loads(apps)
+            appAct.append(row['SKID'].replace('ACCESS#'+roleId,''))
+            y=y+1
+        
         for items in data['Access']:
             recordset = {
                             "Put": {
@@ -66,21 +83,23 @@ def lambda_handler(event, context):
             },
         }
         items.append(rows)
-
-        rows = {
-            "Delete":{
-                "TableName":"TuCita247",
-                "Key": {
-                    "PKID": {"S": 'BUS#'+data['BusinessId']},
-                    "SKID": {"S": 'begins_with (SKID , :role)'}
+        
+        for j in range(y):
+            rows = {
+                "Delete":{
+                    "TableName":"TuCita247",
+                    "Key": {
+                        "PKID": {"S": 'BUS#'+data['BusinessId']},
+                        "SKID": {"S": 'begins_with (SKID , :role)'}
+                    },
+                    "ExpressionAttributeValues": { 
+                        ":role": {"S": str('ACCESS#' + roleId + '#' + appAct[j])}
+                    },
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                 },
-                "ExpressionAttributeValues": { 
-                    ":role": {"S": str('ACCESS#' + roleId)}
-                },
-                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-            },
-        }
-        items.append(rows)
+            }
+            items.append(rows)
+            logger.info(rows)
 
         for x in range(i):
             items.append(recordList[x])    
