@@ -53,18 +53,19 @@ def lambda_handler(event, context):
             "Update": {
                 "TableName": "TuCita247",
                 "Key": {
-                    "PKID": {"S": 'BUS#'+data['BusinessId']},
+                    "PKID": {"S": 'BUS#' + data['BusinessId'] },
                     "SKID": {"S": 'ROL#' + roleId }
                 },
                 "UpdateExpression":"set NAME = :name, STATUS = :status",
                 "ExpressionAttributeValues": { 
-                    ":name": data['Name'],
-                    ":status": data['Status'] 
+                    ":name": {"S": data['Name']},
+                    ":status": {"N": data['Status']} 
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },
-        },
-        {
+        }
+        items.append(rows)
+        rows = {
             "Delete":{
                 "TableName":"TuCita247",
                 "Key": {
