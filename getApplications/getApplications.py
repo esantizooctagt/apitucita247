@@ -83,37 +83,45 @@ def lambda_handler(event, context):
             response = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :roleId )',
+                KeyConditionExpression='PKID = :apps',
+                ExpressionAttributeNames=e,
+                FilterExpression=f,
+                Limit=1,
                 ExpressionAttributeValues={
-                    ':businessId': {'S': 'BUS#' + businessId},
-                    ':roleId': {'S': 'ACCESS#' + roleId}
+                    ':apps': {'S': 'APPS'},
+                    ':stat' : {'N': '1'}
                 }
             )
+            #  AND SKID = :appId     ':appId': {'S': app['SKID'].replace('ACCESS#'+roleId+'#','')},
             for line in response['Items']:
-                app = json_dynamodb.loads(line)
+                apps = json_dynamodb.loads(line)
                 response02 = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :apps AND SKID = :appId',
-                    ExpressionAttributeNames=e,
-                    FilterExpression=f,
-                    Limit=1,
+                    KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :roleId )',
                     ExpressionAttributeValues={
-                        ':apps': {'S': 'APPS'},
-                        ':appId': {'S': app['SKID'].replace('ACCESS#'+roleId+'#','')},
-                        ':stat' : {'N': '1'}
-                    }
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':roleId': {'S': 'ACCESS#' + roleId + "#" + apps['SKID']}
+                        }
                 )
-                items = json_dynamodb.loads(response02['Items'])
                 for row in items:
+                    items = json_dynamodb.loads(response02['Items'])
                     recordset = {
-                        'ApplicationId': row['SKID'],
-                        'Name': row['NAME'],
-                        'Level_Access': app['LEVEL_ACCESS'],
-                        'Icon': row['ICON'],
-                        'Route': row['ROUTE']
+                        'ApplicationId': apps['SKID'],
+                        'Name': apps['NAME'],
+                        'Level_Access': row['LEVEL_ACCESS'],
+                        'Icon': apps['ICON'],
+                        'Route': apps['ROUTE']
                     }
-                    records.append(recordset)
+                if response02['Count'] == 0:
+                     recordset = {
+                        'ApplicationId': apps['SKID'],
+                        'Name': apps['NAME'],
+                        'Level_Access': 0,
+                        'Icon': apps['ICON'],
+                        'Route': apps['ROUTE']
+                    }
+                records.append(recordset)
  
         statusCode = 200
         body = json.dumps(records)
