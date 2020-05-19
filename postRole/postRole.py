@@ -32,42 +32,48 @@ def lambda_handler(event, context):
     try:
         roleId = str(uuid.uuid4()).replace("-","")
         data = json.loads(event['body'])
-        records = []
-        logger.info(data)
+
+        recordList = {}
+        i=0
         for items in data['Access']:
             recordset = {
-                    "Put": {
-                        "TableName": "TuCita247",
-                        "Item": {
-                            "PKID": {"S": 'BUS#'+data['BusinessId']},
-                            "SKID": {"S": 'ACCESS#'+roleId+'#'+items['ApplicationId']},
-                            "LEVEL_ACCESS": {"N": items['Level_Access']}
-                        },
-                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                    }
-                }
-            records.append(recordset)
-
-        elements = listToDict(records)
-        logger.info(elements)
-        response = dynamodb.transact_write_items(
-            TransactItems=[
-                {
-                    "Put": {
-                        "TableName": "TuCita247",
-                        "Item": {
-                            "PKID": {"S": 'BUS#'+data['BusinessId']},
-                            "SKID": {"S": 'ROL#' + roleId },
-                            "NAME": {"S": data['Name']},
-                            "STATUS": {"N": "1"}
-                        },
-                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                    },
+                            "Put": {
+                                "TableName": "TuCita247",
+                                "Item": {
+                                    "PKID": {"S": 'BUS#'+data['BusinessId']},
+                                    "SKID": {"S": 'ACCESS#'+roleId+'#'+items['ApplicationId']},
+                                    "LEVEL_ACCESS": {"N": items['Level_Access']}
+                                },
+                                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                            }
+                        }
+            recordList[i] = recordset
+            i=i+1
+        
+        items = []
+        rows = {}
+        rows = {
+            "Put": {
+                "TableName": "TuCita247",
+                "Item": {
+                    "PKID": {"S": 'BUS#'+data['BusinessId']},
+                    "SKID": {"S": 'ROL#' + roleId },
+                    "NAME": {"S": data['Name']},
+                    "STATUS": {"N": "1"}
                 },
-                elements
-            ]
+                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+            },
+        }
+        items.append(rows)
+
+        for x in range(i):
+            items.append(recordList[x])    
+
+        response = dynamodb.transact_write_items(
+            TransactItems = items
+            
         )
         logger.info(response)
         statusCode = 200
