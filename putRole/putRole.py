@@ -42,25 +42,54 @@ def lambda_handler(event, context):
         )
 
         appAct = []
+        updApp = []
         y=0
         for apps in response['Items']:
             row = json_dynamodb.loads(apps)
-            appAct.append(row['SKID'].replace('ACCESS#'+roleId,''))
-            y=y+1
+            appId = row['SKID'].replace('ACCESS#'+roleId+'#','')
+            encontro = 0
+            for items in data['Access']:
+                if items['ApplicationId'] == appId:
+                    encontro = 1
+                    updApp.append(items['ApplicationId'])
+                    break
+            if encontro == 0:
+                appAct.append(row['SKID'].replace('ACCESS#'+roleId+'#',''))
+                y=y+1
         
         for items in data['Access']:
-            recordset = {
-                            "Put": {
-                                "TableName": "TuCita247",
-                                "Item": {
-                                    "PKID": {"S": 'BUS#'+data['BusinessId']},
-                                    "SKID": {"S": 'ACCESS#'+roleId+'#'+items['ApplicationId']},
-                                    "LEVEL_ACCESS": {"N": str(items['Level_Access'])}
-                                },
-                                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+            entro = 0
+            for upApp in updApp:
+                if upApp == items['ApplicationId']:
+                    entro = 1
+                    break
+            
+            if entro == 0:
+                recordset = {
+                                "Put": {
+                                    "TableName": "TuCita247",
+                                    "Item": {
+                                        "PKID": {"S": 'BUS#'+data['BusinessId']},
+                                        "SKID": {"S": 'ACCESS#'+roleId+'#'+items['ApplicationId']},
+                                        "LEVEL_ACCESS": {"N": str(items['Level_Access'])}
+                                    },
+                                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                                }
                             }
-                        }
+            else:
+                recordset = {
+                                "Put": {
+                                    "TableName": "TuCita247",
+                                    "Item": {
+                                        "PKID": {"S": 'BUS#'+data['BusinessId']},
+                                        "SKID": {"S": 'ACCESS#'+roleId+'#'+items['ApplicationId']},
+                                        "LEVEL_ACCESS": {"N": str(items['Level_Access'])}
+                                    },
+                                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                                }
+                            }
             recordList[i] = recordset
             i=i+1
         
@@ -85,25 +114,24 @@ def lambda_handler(event, context):
         items.append(rows)
         
         for j in range(y):
-            rows = {
+            deletes = {}
+            deletes = {
                 "Delete":{
                     "TableName":"TuCita247",
                     "Key": {
                         "PKID": {"S": 'BUS#'+data['BusinessId']},
-                        "SKID": {"S": 'begins_with (SKID , :role)'}
-                    },
-                    "ExpressionAttributeValues": { 
-                        ":role": {"S": str('ACCESS#' + roleId + '#' + appAct[j])}
+                        "SKID": {"S": 'ACCESS#' + roleId + '#' + appAct[j]}
                     },
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                 },
             }
-            items.append(rows)
-            logger.info(rows)
-
+            items.append(deletes)
+            logger.info(deletes)
+            
         for x in range(i):
             items.append(recordList[x])    
-
+        
+        logger.info(items)
         response = dynamodb.transact_write_items(
             TransactItems = items
             
