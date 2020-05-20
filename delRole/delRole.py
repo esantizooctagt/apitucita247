@@ -25,6 +25,7 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
+        statusCode = ''
         data = json.loads(event['body'])
         roleId = data['RoleId']
         businessId = data['BusinessId']
