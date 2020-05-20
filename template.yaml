@@ -318,7 +318,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /role
+            Path: /role/{id}/{businessId}
             Method: delete
             ApiId: !Ref HttpApi
 
