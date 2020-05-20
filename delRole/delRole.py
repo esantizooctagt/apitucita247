@@ -5,7 +5,6 @@ import json
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
-from dynamodb_json import json_util as json_dynamodb
 
 import os
 
@@ -26,9 +25,8 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
-        data = json.loads(event['body'])
-        roleId = data['RoleId']
-        businessId = data['BusinessId']
+        roleId = event['pathParameters']['id']
+        businessId = event['pathParameters']['businessId']
 
         e = {'#s': 'STATUS'}
         table = dynamodb.Table('TuCita247')
