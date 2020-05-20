@@ -67,9 +67,9 @@ def lambda_handler(event, context):
             recordset = {
                 'Business_Id': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME'],
-                'Address': row['ADDRESS'],
+                'Address': row['ADDRESS'].replace("'",'"'),
                 'City': row['CITY'],
-                'Contact': row['CONTACT'],
+                'Contact': row['CONTACT'].replace("'",'"'),
                 'Country': row['COUNTRY'],
                 'GeoLocation': row['GEOLOCATION'],
                 'Categories':  records
