@@ -451,7 +451,7 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
 
-  NewBusinessCustomerFunction:
+  CustomerFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: PostClientApp
@@ -470,6 +470,26 @@ Resources:
             #   Authorizer: CognitoAuth
             Path: /client
             Method: post
+            ApiId: !Ref HttpApi
+  
+  CustomerActivateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutActivateClient
+      CodeUri: putActivateClient/
+      Handler: putActivateClient.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            # Auth:
+            #   Authorizer: CognitoAuth
+            Path: /client
+            Method: put
             ApiId: !Ref HttpApi
   
 # Outputs:

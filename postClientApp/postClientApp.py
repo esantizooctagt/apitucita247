@@ -98,6 +98,7 @@ def lambda_handler(event, context):
                             "GENDER": {"S": data['Gender']},
                             "PREFERENCES": {"S": data['Preferences']},
                             "ACTIVATION_CODE": {"N": code},
+                            "STATUS": {"N": "2"},
                             "PASSWORD": {"S":  passDecrypt.decode('utf-8')}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
