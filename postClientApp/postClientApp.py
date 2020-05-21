@@ -16,6 +16,7 @@ from hashlib import md5
 
 import uuid
 import os
+import random
 
 REGION = 'us-east-1'
 
@@ -56,7 +57,12 @@ def decrypt(encrypted, passphrase):
     iv = key_iv[32:]
     aes = AES.new(key, AES.MODE_CBC, iv)
     return unpad(aes.decrypt(encrypted[16:]))
-    
+
+def randN(N):
+	min = pow(10, N-1)
+	max = pow(10, N) - 1
+	return random.randint(min, max)
+
 def lambda_handler(event, context):
     stage = event['headers']
     # if stage['origin'] != "http://localhost:4200":
@@ -66,6 +72,7 @@ def lambda_handler(event, context):
     cors = "http://localhost:8100"
     try:
         statusCode = ''
+        code = str(randN(6))
         clientId = str(uuid.uuid4()).replace("-","")
         data = json.loads(event['body'])
         phone = data['Phone'].replace('(','').replace(')','').replace('-','').replace(' ','')
@@ -90,6 +97,7 @@ def lambda_handler(event, context):
                             "DOB": {"S": data['DOB']},
                             "GENDER": {"S": data['Gender']},
                             "PREFERENCES": {"S": data['Preferences']},
+                            "ACTIVATION_CODE": {"N": code},
                             "PASSWORD": {"S":  passDecrypt.decode('utf-8')}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
@@ -109,9 +117,22 @@ def lambda_handler(event, context):
                 }
             ]
         )
+        # from twilio.rest import Client
+
+        # # Your Account SID from twilio.com/console
+        # account_sid = "ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        # # Your Auth Token from twilio.com/console
+        # auth_token  = "your_auth_token"
+
+        # client = Client(account_sid, auth_token)
+
+        # message = client.messages.create(
+        #     to="+15558675309", 
+        #     from_="+15017250604",
+        #     body="Hello from Python!")
         logger.info("data")
         statusCode = 200
-        body = json.dumps({'Message': 'User added successfully', 'Code': 200})
+        body = json.dumps({'Message': 'User added successfully', 'Code': 200, 'ActivateCode': code})
         # try:
         #     key = secreKey.encode()
         #     ct_b64 = data['Password'] 
