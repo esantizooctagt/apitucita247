@@ -66,6 +66,7 @@ Resources:
           - POST
         AllowOrigins:
           - http://localhost:4200
+          - http://localhost:8100
           - https://console.tucita247.com
         AllowHeaders:
           - content-type

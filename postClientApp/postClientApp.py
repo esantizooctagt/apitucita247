@@ -59,11 +59,11 @@ def decrypt(encrypted, passphrase):
     
 def lambda_handler(event, context):
     stage = event['headers']
-    if stage['origin'] != "http://localhost:4200":
-        cors = os.environ['prodCors']
-    else:
-        cors = os.environ['devCors']
-        
+    # if stage['origin'] != "http://localhost:4200":
+    #     cors = os.environ['prodCors']
+    # else:
+    #     cors = os.environ['devCors']
+    cors = "http://localhost:8100"
     try:
         statusCode = ''
         clientId = str(uuid.uuid4()).replace("-","")
