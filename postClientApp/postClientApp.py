@@ -90,7 +90,7 @@ def lambda_handler(event, context):
                             "DOB": {"S": data['DOB']},
                             "GENDER": {"N": data['Gender']},
                             "PREFERENCES": {"S": data['Preferences']},
-                            "PASSWORD": {"S":  passDecrypt}
+                            "PASSWORD": {"S":  passDecrypt.decode('utf-8')}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
