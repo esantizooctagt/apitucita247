@@ -110,6 +110,8 @@ def lambda_handler(event, context):
             ]
         )
         logger.info("data")
+        statusCode = 200
+        body = json.dumps({'Message': 'User added successfully', 'Code': 200})
         # try:
         #     key = secreKey.encode()
         #     ct_b64 = data['Password'] 
@@ -141,8 +143,8 @@ def lambda_handler(event, context):
         #                 ]
         #             )
 
-        #     statusCode = 200
-        #     body = json.dumps({'Message': 'User added successfully'})
+            # statusCode = 200
+            # body = json.dumps({'Message': 'User added successfully'})
 
         # except client.exceptions.UsernameExistsException as e:
         #     statusCode = 404
@@ -173,7 +175,7 @@ def lambda_handler(event, context):
 
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Message': 'Error on added user', 'Code': 200})
+            body = json.dumps({'Message': 'Error on added user', 'Code': 400})
 
     except dynamodb.exceptions.TransactionCanceledException as e:
             statusCode = 404
@@ -183,7 +185,7 @@ def lambda_handler(event, context):
                     "data": None})
     except Exception as e:
         statusCode = 500
-        body = json.dumps({'Message': 'Error on request try again ' + str(e)})
+        body = json.dumps({'Message': 'Error on request try again ' + str(e), 'Code': 400})
 
     response = {
         'statusCode' : statusCode,
