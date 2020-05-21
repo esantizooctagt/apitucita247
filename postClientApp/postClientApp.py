@@ -88,7 +88,7 @@ def lambda_handler(event, context):
                             "NAME": {"S": data['Name']},
                             "EMAIL": {"S": data['Email']},
                             "DOB": {"S": data['DOB']},
-                            "GENDER": {"N": data['Gender']},
+                            "GENDER": {"S": data['Gender']},
                             "PREFERENCES": {"S": data['Preferences']},
                             "PASSWORD": {"S":  passDecrypt.decode('utf-8')}
                         },
