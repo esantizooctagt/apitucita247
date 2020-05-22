@@ -26,7 +26,8 @@ def lambda_handler(event, context):
     # else:
     #     cors = os.environ['devCors']
     cors = "http://localhost:8100"
-
+    
+    # DELETE VPC FROM LAMBDA FUNCTION NEEDS CONNECTION TO INTERNET TO CALL ENDPOINT_URL
     try:
         queryStr = event['pathParameters']['search']
 
