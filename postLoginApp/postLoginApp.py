@@ -72,7 +72,6 @@ def lambda_handler(event, context):
         passDecrypt = decrypt(ct_b64, key)
         response = dynamodb.query(
             TableName = "TuCita247",
-            IndexName = "TuCita247",
             ReturnConsumedCapacity ='TOTAL',
             KeyConditionExpression ='PKID = :phone AND begins_with( SKID, :clientId ) ',
             FilterExpression = 'PASSWORD = :password',
