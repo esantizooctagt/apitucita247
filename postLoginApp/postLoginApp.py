@@ -97,17 +97,17 @@ def lambda_handler(event, context):
                     'Gender': item['GENDER'],
                     'Preferences': item['PREFERENCES']
                 }
-                result = { 'Code': 100, 'user' : recordset, 'token' : '123', 'access': '456' }
+                result = { 'Code': 200, 'user' : recordset, 'token' : '123', 'access': '456' }
             
                 statusCode = 200
                 body = json.dumps(result)
 
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Code': 500, 'Message': 'Error on update user'})
+            body = json.dumps({'Code': 400, 'Message': 'Error on update user'})
     except Exception as e:
         statusCode = 500
-        body = json.dumps({'Code': 500, 'Message': 'Error on request try again ' + str(e)})
+        body = json.dumps({'Code': 400, 'Message': 'Error on request try again ' + str(e)})
 
     response = {
         'statusCode' : statusCode,
