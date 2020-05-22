@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     try:
         statusCode = ''
         data = json.loads(event['body'])
-        mobilePhone = data['BusinessId']
+        mobilePhone = data['Phone']
 
         e = {'#s': 'STATUS'}
         table = dynamodb.Table('TuCita247')
