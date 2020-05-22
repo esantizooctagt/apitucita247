@@ -5,7 +5,6 @@ import json
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
-from dynamodb_json import json_util as json_dynamodb
 
 import os
 
@@ -41,7 +40,6 @@ def lambda_handler(event, context):
             ExpressionAttributeValues={
                 ':status': "1"
             }
-            # ReturnValues="UPDATED_NEW"
         )
         statusCode = 200
         body = json.dumps({'Message': 'User activated successfully', 'Code': 200})
