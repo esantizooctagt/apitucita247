@@ -11,6 +11,7 @@ import time
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
+from dynamodb_json import json_util as json_dynamodb
 
 import hmac
 import hashlib
@@ -85,7 +86,8 @@ def lambda_handler(event, context):
         if response['Count'] == 0:
             error = json.dumps({'Message':'Auth failed','Code':400})
         else:
-            for item in response['Items']:
+            for row in response['Items']:
+                item = json_dynamodb.loads(row)
                 recordset = {
                     'ClientId': item['SKID'].replace('CUS#',''),
                     'Phone': item['PKID'].replace('MOB#',''),
