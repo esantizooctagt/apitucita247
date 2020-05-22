@@ -79,7 +79,7 @@ def lambda_handler(event, context):
                 'Instagram': row['INSTAGRAM'],
                 'Email': row['EMAIL'],
                 'OperationHours': row['OPERATIONHOURS'],
-                'Categories': row['CATEGORIES'],
+                'Categories': records,
                 'Tags': row['TAGS'],
                 'Status': row['STATUS']
             }
