@@ -133,7 +133,7 @@ def lambda_handler(event, context):
         #     body="Hello from Python!")
         logger.info("data")
         statusCode = 200
-        body = json.dumps({'Message': 'User added successfully', 'Code': 200, 'ActivateCode': code})
+        body = json.dumps({'Message': 'User added successfully', 'Code': 200, 'ActivateCode': code, 'ClientId': clientId})
         # try:
         #     key = secreKey.encode()
         #     ct_b64 = data['Password'] 

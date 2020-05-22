@@ -28,18 +28,10 @@ def lambda_handler(event, context):
         statusCode = ''
         data = json.loads(event['body'])
         mobilePhone = data['Phone']
+        clientId = data['ClientId']
 
         e = {'#s': 'STATUS'}
         table = dynamodb.Table('TuCita247')
-
-        response = table.get_item(
-            Key={
-                'PKID': 'MOB#' + mobilePhone
-            }
-        )
-        for item in response['Items']:
-            clientId = item['SKID'].replace('CUS#','')
-
         response = table.update_item(
             Key={
                 'PKID': 'MOB#' + mobilePhone,
