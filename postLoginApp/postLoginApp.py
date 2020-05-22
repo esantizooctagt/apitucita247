@@ -66,7 +66,7 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         phone = data['Phone']
 
-        client = 'CUS#'
+        clientId = 'CUS#'
         key = secreKey.encode()
         ct_b64 = data['Password'] 
         passDecrypt = decrypt(ct_b64, key)
@@ -74,10 +74,11 @@ def lambda_handler(event, context):
             TableName = "TuCita247",
             IndexName = "TuCita247",
             ReturnConsumedCapacity ='TOTAL',
-            KeyConditionExpression ='PKID = :phone AND begins_with( SKID, :client ) ',
+            KeyConditionExpression ='PKID = :phone AND begins_with( SKID, :clientId ) ',
             FilterExpression = 'PASSWORD = :password',
             ExpressionAttributeValues = {
                 ':phone': {'S': 'MOB#' + phone},
+                ':clientId': {'S': clientId},
                 ':password' : {'S' : passDecrypt.decode('utf-8')}
             },
             Limit=1
