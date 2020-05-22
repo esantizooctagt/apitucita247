@@ -530,7 +530,7 @@ Resources:
           Properties:
             # Auth:
             #   Authorizer: CognitoAuth
-            Path: /client/search
+            Path: /client/search/{search}
             Method: get
             ApiId: !Ref HttpApi
 # Outputs:

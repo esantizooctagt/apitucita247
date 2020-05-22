@@ -16,7 +16,7 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
-cloudsearch = boto3.client('tucita247')
+cloudsearch = boto3.client('cloudsearchdomain', endpoint_url="https://search-tucita247-djl3mvkaapbmo5zjxat7pcnepu.us-east-1.cloudsearch.amazonaws.com")
 logger.info("SUCCESS: Connection to CloudSearch")
 
 def lambda_handler(event, context):
@@ -28,15 +28,20 @@ def lambda_handler(event, context):
     cors = "http://localhost:8100"
 
     try:
+        queryStr = event['pathParameters']['search']
+
         response = cloudsearch.search(
-            query="(and NAME:'inge')",
-            queryParser='structured',
-            returnFields='NAME, PKID, SKID, GSI1PK, GSI1SK',
-            size=10
+            query=queryStr,
+            queryParser='simple',
+            # returnFields='_all',
+            # size=10
         )
                 
         statusCode = 200
         body = json.dumps(response)
+    except botocore.exceptions.EndpointConnectionError as e:
+        statusCode = 500
+        body = json.dumps({'Message':'Error on request try again ' + str(e)})
     except:
         statusCode = 500
         body = json.dumps({'Message':'Error on request try again'})
