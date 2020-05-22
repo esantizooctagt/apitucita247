@@ -450,8 +450,8 @@ Resources:
             Path: /business/{id}
             Method: get
             ApiId: !Ref HttpApi
-
-  CustomerFunction:
+            
+   CustomerFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: PostClientApp
