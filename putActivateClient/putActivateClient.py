@@ -33,7 +33,8 @@ def lambda_handler(event, context):
         table = dynamodb.Table('TuCita247')
         response = table.update_item(
             Key={
-                'PKID': 'MOB#' + mobilePhone
+                'PKID': 'MOB#' + mobilePhone,
+                'SKID': 'begins_with (SKID, "MOB#")'
             },
             UpdateExpression="set #s = :status",
             ExpressionAttributeNames=e,
