@@ -61,7 +61,7 @@ def lambda_handler(event, context):
     # else:
     #     cors = os.environ['devCors']
     cors = "http://localhost:8100"
-    
+
     try:
         data = json.loads(event['body'])
         phone = data['Phone']
@@ -78,7 +78,7 @@ def lambda_handler(event, context):
             FilterExpression = 'PASSWORD = :password',
             ExpressionAttributeValues = {
                 ':phone': {'S': 'MOB#' + phone},
-                ':password' : {'S' : passDecrypt}
+                ':password' : {'S' : passDecrypt.decode('utf-8')}
             },
             Limit=1
         )
