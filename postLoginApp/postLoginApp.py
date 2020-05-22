@@ -56,11 +56,12 @@ def decrypt(encrypted, passphrase):
 def lambda_handler(event, context):
     region = context.invoked_function_arn.split(':')[3]
     stage = event['headers']
-    if stage['origin'] != "http://localhost:4200":
-        cors = os.environ['prodCors']
-    else:
-        cors = os.environ['devCors']
-
+    # if stage['origin'] != "http://localhost:4200":
+    #     cors = os.environ['prodCors']
+    # else:
+    #     cors = os.environ['devCors']
+    cors = "http://localhost:8100"
+    
     try:
         data = json.loads(event['body'])
         phone = data['Phone']

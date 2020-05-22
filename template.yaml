@@ -491,7 +491,7 @@ Resources:
             Path: /client
             Method: put
             ApiId: !Ref HttpApi
-      
+  
   CustomerLoginFunction:
     Type: AWS::Serverless::Function
     Properties:
