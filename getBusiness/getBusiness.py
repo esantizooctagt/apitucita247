@@ -67,14 +67,23 @@ def lambda_handler(event, context):
             recordset = {
                 'Business_Id': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME'],
-                'Address': row['ADDRESS'].replace("'",'"'),
-                'City': row['CITY'],
-                'Contact': row['CONTACT'].replace("'",'"'),
                 'Country': row['COUNTRY'],
-                'GeoLocation': row['GEOLOCATION'],
-                'Categories':  records
+                'Address': row['ADDRESS'],
+                'City': row['CITY'],
+                'ZipCode': row['ZIPCODE'],
+                'Geolocation': row['GEOLOCATION'],
+                'Phone': row['PHONE'],
+                'WebSite': row['WEBSITE'],
+                'Facebook': row['FACEBOOK'],
+                'Twitter': row['TWITTER'],
+                'Instagram': row['INSTAGRAM'],
+                'Email': row['EMAIL'],
+                'OperationHours': row['OPERATIONHOURS'],
+                'Categories': row['CATEGORIES'],
+                'Tags': row['TAGS'],
+                'Status': row['STATUS']
             }
-        
+            
         statusCode = 200
         body = json.dumps(recordset)
     except Exception as e:
