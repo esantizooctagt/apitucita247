@@ -28,17 +28,15 @@ def lambda_handler(event, context):
     try:
         e = {'#s': 'STATUS'}
         f = '#s = :stat'
-        category = event['pathParameters']['name']
         response = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :categories AND begins_with( GSI1SK, :name )',
+            KeyConditionExpression='GSI1PK = :categories',
             ExpressionAttributeNames=e,
             FilterExpression=f,
             ExpressionAttributeValues={
                 ':businessId': {'S': 'PARAM#CAT'},
-                ':name': {'S': category },
                 ':stat' : {'N': '1'}
             },
             Limit=5

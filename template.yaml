@@ -551,7 +551,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /categories/{name}
+            Path: /categories
             Method: get
             ApiId: !Ref HttpApi
 # Outputs:
