@@ -28,7 +28,6 @@ def lambda_handler(event, context):
         statusCode = ''
         data = json.loads(event['body'])
         businessId = event['pathParameters']['id']
-
         # BUSINESS CATEGORIES
         response = dynamodb.query(
             TableName = "TuCita247",
