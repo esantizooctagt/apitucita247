@@ -28,7 +28,6 @@ def lambda_handler(event, context):
     else:
         cors = os.environ['devCors']
 
-
     try:
         businessId = event['pathParameters']['id']
         response = dynamodb.query(
@@ -54,15 +53,16 @@ def lambda_handler(event, context):
             }
         )
         items = json_dynamodb.loads(response['Items'])
-        records =[]
+        records = []
+        recordset1 = {}
         for row in items:
             recordset1 = {
                 'CategoryId': row['SKID'].replace('CAT#',''),
                 'Name': row['NAME']
             } 
             records.append(recordset1)
-            
-            
+        
+        recordset = {}
         for row in itemsbusiness:
             recordset = {
                 'Business_Id': row['PKID'].replace('BUS#',''),
