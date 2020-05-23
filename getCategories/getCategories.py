@@ -36,10 +36,9 @@ def lambda_handler(event, context):
             ExpressionAttributeNames=e,
             FilterExpression=f,
             ExpressionAttributeValues={
-                ':businessId': {'S': 'PARAM#CAT'},
+                ':categories': {'S': 'PARAM#CAT'},
                 ':stat' : {'N': '1'}
             },
-            Limit=5
         )
         items = json_dynamodb.loads(response['Items'])
         for row in items:
@@ -51,9 +50,9 @@ def lambda_handler(event, context):
         
         statusCode = 200
         body = json.dumps(records)
-    except: #Exception as e:
+    except Exception as e:
         statusCode = 500
-        body = json.dumps({'Message': 'Error on request try again'})
+        body = json.dumps({'Message': 'Error on request try again ' + str(e)})
 
     response = {
         'statusCode' : statusCode,
