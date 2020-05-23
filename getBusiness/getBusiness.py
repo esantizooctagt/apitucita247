@@ -36,7 +36,7 @@ def lambda_handler(event, context):
             KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
-                ':metadata': {'S': 'METADATA#'}
+                ':metadata': {'S': 'METADATA'}
             },
             Limit=1
         )
