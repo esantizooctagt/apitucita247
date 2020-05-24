@@ -42,34 +42,47 @@ def lambda_handler(event, context):
         items = []
         for cats in response['Items']:
             row = json_dynamodb.loads(cats)
-            deletes = {}
-            deletes = {
-                "Delete":{
-                    "TableName":"TuCita247",
-                    "Key": {
-                        "PKID": {"S": 'BUS#'+businessId},
-                        "SKID": {"S":row['SKID']}
+            encontro = 0
+            for cat in data['Categories']:
+                if 'CAT#'+cat['CategoryId'] == row['SKID']:
+                    encontro =1
+                    break
+            if encontro == 0:
+                deletes = {}
+                deletes = {
+                    "Delete":{
+                        "TableName":"TuCita247",
+                        "Key": {
+                            "PKID": {"S": 'BUS#'+businessId},
+                            "SKID": {"S":row['SKID']}
+                        },
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     },
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                },
-            }
-            items.append(deletes)
-
-        for items in data['Categories']:
-            row = json_dynamodb.loads(items)
-            recordset = {
-                "Put": {
-                    "TableName": "TuCita247",
-                    "Item": {
-                        "PKID": {"S": 'BUS#'+businessId},
-                        "SKID": {"S": row['CategoryId']},
-                        "NAME": {"N": str(row['Name'])}
-                    },
-                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                 }
-            }
-            items.append(recordset)
+                items.append(deletes)
+
+        for row in data['Categories']:
+            encontro = 0
+            for cats in response['Items']:
+                catego = json_dynamodb.loads(cats)
+                if (catego['SKID'] == 'CAT#'+row['CategoryId']):
+                    encontro = 1
+                    break
+            if encontro == 0:
+                recordset = {}
+                recordset = {
+                    "Put": {
+                        "TableName": "TuCita247",
+                        "Item": {
+                            "PKID": {"S": 'BUS#'+businessId},
+                            "SKID": {"S": 'CAT#'+row['CategoryId']},
+                            "NAME": {"S": str(row['Name'])}
+                        },
+                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                    }
+                }
+                items.append(recordset)
         
         rows = {}
         rows = {
@@ -79,7 +92,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA' }
                 },
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, OPERATIONHOURS = :operationsHours, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode",
+                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, OPERATIONHOURS = :operationHours, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode",
                 "ExpressionAttributeNames": { '#n': 'NAME' },
                 "ExpressionAttributeValues": { 
                     ":address": {"S": data['Address']},
@@ -108,11 +121,11 @@ def lambda_handler(event, context):
         logger.info(response)
 
         statusCode = 200
-        body = json.dumps({'Message': 'User updated successfully'})
+        body = json.dumps({'Message': 'Business updated successfully'})
 
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Message': 'Error on update user'})
+            body = json.dumps({'Message': 'Error on update business'})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})
