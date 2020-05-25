@@ -36,7 +36,7 @@ def lambda_handler(event, context):
             KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :locations )',
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
-                ':metadata': {'S': 'LOC#'}
+                ':locations': {'S': 'LOC#'}
             }
         )
         locations = json_dynamodb.loads(response['Items'])
