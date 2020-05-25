@@ -61,7 +61,6 @@ def lambda_handler(event, context):
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     },
                 }
-                items.append(locations)
             else:
                 locations = {
                     "Put":{
@@ -88,7 +87,8 @@ def lambda_handler(event, context):
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     },
                 }
-
+            items.append(locations)
+            
         logger.info(items)
         response = dynamodb.transact_write_items(
             TransactItems = items
