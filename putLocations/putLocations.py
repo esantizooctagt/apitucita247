@@ -32,7 +32,7 @@ def lambda_handler(event, context):
         
         # LOCATIONS
         items = []
-        for locs in data['Items']:
+        for locs in data['Locs']:
             locations = {}
             if locs['LocationId'] == '':
                 locId = str(uuid.uuid4()).replace("-","")
@@ -46,16 +46,16 @@ def lambda_handler(event, context):
                             "ADDRESS": {"S", str(locs['Address'])},
                             "GEOLOCATION": {"S", str(locs['Geolocation'])},
                             "PARENT_LOCATION": {"S", str(locs['ParentLocation'])},
-                            "TOTAL_TRANSITABLE_AREA": {"S", str(locs['TotalPiesTransArea'])},
-                            "LOCATION_DENSITY": {"S", str(locs['LocationDensity'])},
-                            "MAX_NUMBER_EMPLOYEES_LOC": {"S", str(locs['MaxNumberEmployeesLocation'])},
-                            "MAX_CUSTOMER_LOC": {"S", str(locs['MaxConcurrentCustomerLocation'])},
+                            "TOTAL_TRANSITABLE_AREA": {"N", str(locs['TotalPiesTransArea'])},
+                            "LOCATION_DENSITY": {"N", str(locs['LocationDensity'])},
+                            "MAX_NUMBER_EMPLOYEES_LOC": {"N", str(locs['MaxNumberEmployeesLocation'])},
+                            "MAX_CUSTOMER_LOC": {"N", str(locs['MaxConcurrentCustomerLocation'])},
                             "OPEN": {"S", str(locs['Open'])},
-                            "BUCKET_INTERVAL": {"S", str(locs['BucketInterval'])},
-                            "CUSTOMER_PER_BUCKET": {"S", str(locs['TotalCustPerBucketInter'])},
+                            "BUCKET_INTERVAL": {"N", str(locs['BucketInterval'])},
+                            "CUSTOMER_PER_BUCKET": {"N", str(locs['TotalCustPerBucketInter'])},
                             "OPERATIONHOURS": {"S", str(locs['OperationHours'])},
                             "DOORS": {"S", str(locs['Doors'])},
-                            "STATUS": {"S", str(locs['Status'])}
+                            "STATUS": {"N", str(locs['Status'])}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -69,7 +69,20 @@ def lambda_handler(event, context):
                         "Item": {
                             "PKID": {"S": 'BUS#'+businessId},
                             "SKID": {"S": 'LOC#'+locs['LocationId']},
-                            "NAME": {"S": str(locs['Name'])}
+                            "NAME": {"S": str(locs['Name'])},
+                            "ADDRESS": {"S", str(locs['Address'])},
+                            "GEOLOCATION": {"S", str(locs['Geolocation'])},
+                            "PARENT_LOCATION": {"S", str(locs['ParentLocation'])},
+                            "TOTAL_TRANSITABLE_AREA": {"N", str(locs['TotalPiesTransArea'])},
+                            "LOCATION_DENSITY": {"N", str(locs['LocationDensity'])},
+                            "MAX_NUMBER_EMPLOYEES_LOC": {"N", str(locs['MaxNumberEmployeesLocation'])},
+                            "MAX_CUSTOMER_LOC": {"N", str(locs['MaxConcurrentCustomerLocation'])},
+                            "OPEN": {"S", str(locs['Open'])},
+                            "BUCKET_INTERVAL": {"N", str(locs['BucketInterval'])},
+                            "CUSTOMER_PER_BUCKET": {"N", str(locs['TotalCustPerBucketInter'])},
+                            "OPERATIONHOURS": {"S", str(locs['OperationHours'])},
+                            "DOORS": {"S", str(locs['Doors'])},
+                            "STATUS": {"N", str(locs['Status'])}
                         },
                         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
