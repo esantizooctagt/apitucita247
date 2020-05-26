@@ -639,7 +639,27 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
   
-            
+  GetAppointmentsHostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAppointments
+      CodeUri: getAppointments/
+      Handler: getAppointments.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /appointments/{businessId}/{locationId}/{dateAppo}
+            Method: get
+            ApiId: !Ref HttpApi
+
 # Outputs:
 #   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
 #   # Find out more about other implicit resources you can reference within SAM

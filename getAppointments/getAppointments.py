@@ -26,14 +26,17 @@ def lambda_handler(event, context):
         
     try:
         businessId = event['pathParameters']['businessId']
+        locationId = event['pathParameters']['locationId']
+        dateAppo = event['pathParameters']['dateAppo']
 
         response = dynamodb.query(
             TableName="TuCita247",
+            IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :locations )',
+            KeyConditionExpression='GSI1PK = :gsi1pk AND begins_with( GSI1SK , :gsi1sk )',
             ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId},
-                ':locations': {'S': 'LOC#'}
+                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                ':gsi1sk': {'S': 'DT#' + dateAppo}
             }
         )
         record = []
@@ -41,19 +44,23 @@ def lambda_handler(event, context):
         for row in locations:
             recordset = {
                 'BusinessId': businessId,
-                'LocationId': row['SKID'].replace('LOC#',''),
-                'Name': row['NAME'],
-                'Doors': row['DOORS'],
+                'LocationId': locationId,
+                'AppointmentId': row['PKID'].replace('APPO#',''),
+                'FirstName': row['FIRST_NAME'],
+                'LastName': row['LAST_NAME'],
+                'Phone': row['PHONE'],
+                'OnBehalf': row['ON_BEHALF'],
+                'Type': row['TYPE'],
                 'Status': row['STATUS']
             }
             record.append(recordset)
 
         statusCode = 200
-        body = json.dumps({'Code': 200, 'Locs': record})
+        body = json.dumps({'Code': 200, 'Appos': record})
     
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Code': 500, 'Message': 'Error on update user'})
+            body = json.dumps({'Code': 500, 'Message': 'Error on load appointments'})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})
