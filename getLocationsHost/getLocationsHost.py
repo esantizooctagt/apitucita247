@@ -35,14 +35,7 @@ def lambda_handler(event, context):
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
                 ':locations': {'S': 'LOC#'}
-            },
-            AttributesToGet=[
-                'PKID',
-                'SKID',
-                'NAME',
-                'DOORS',
-                'STATUS'
-            ]
+            }
         )
         record = []
         locations = json_dynamodb.loads(response['Items'])
