@@ -37,20 +37,22 @@ def lambda_handler(event, context):
                 ':locations': {'S': 'LOC#'}
             },
             AttributesToGet=[
-                'LocationId',
-                'Name',
-                'Doors',
-                'Status'
+                'PKID',
+                'SKID',
+                'NAME',
+                'DOORS',
+                'STATUS'
             ]
         )
         record = []
         locations = json_dynamodb.loads(response['Items'])
         for row in locations:
             recordset = {
-                'LocationId': row['LocationId'],
-                'Name': row['Name'],
-                'Doors': row['Doors'],
-                'Status': row['Status']
+                'BusinessId': businessId,
+                'LocationId': row['SKID'].replace('LOC#',''),
+                'Name': row['NAME'],
+                'Doors': row['DOORS'],
+                'Status': row['STATUS']
             }
             record.append(recordset)
 
