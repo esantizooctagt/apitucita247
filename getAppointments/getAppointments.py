@@ -28,6 +28,7 @@ def lambda_handler(event, context):
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         dateAppo = event['pathParameters']['dateAppo']
+        status = event['pathParameters']['status']
 
         response = dynamodb.query(
             TableName="TuCita247",
@@ -36,7 +37,7 @@ def lambda_handler(event, context):
             KeyConditionExpression='GSI1PK = :gsi1pk AND begins_with( GSI1SK , :gsi1sk )',
             ExpressionAttributeValues={
                 ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                ':gsi1sk': {'S': 'DT#' + dateAppo}
+                ':gsi1sk': {'S': 'ST#'+ status +'#DT#' + dateAppo}
             }
         )
         record = []
@@ -46,11 +47,13 @@ def lambda_handler(event, context):
                 'BusinessId': businessId,
                 'LocationId': locationId,
                 'AppointmentId': row['PKID'].replace('APPO#',''),
+                'ClientId': row['GSI2PK'].replace('CUS#','')[0:2],
                 'FirstName': row['FIRST_NAME'],
                 'LastName': row['LAST_NAME'],
                 'Phone': row['PHONE'],
                 'OnBehalf': row['ON_BEHALF'],
                 'Type': row['TYPE'],
+                'DateAppo': row['DATE_APPO'],
                 'Status': row['STATUS']
             }
             record.append(recordset)
