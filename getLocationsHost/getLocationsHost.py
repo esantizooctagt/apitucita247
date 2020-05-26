@@ -25,7 +25,7 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
-        businessId = event['pathParameters']['id']
+        businessId = event['pathParameters']['businessId']
 
         #STATUS 3 PENDIENTE DE VERIFICACION DE CUENTA
         response = dynamodb.query(
