@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
         status = data['Status']
-        clientId = data['ClientId']
+        # clientId = data['ClientId']
         dateAppo = data['DateAppo']
 
         table = dynamodb.Table('TuCita247')
@@ -39,24 +39,29 @@ def lambda_handler(event, context):
                 'PKID': 'APPO#' + appointmentId,
                 'SKID': 'APPO#' + appointmentId
             },
-            UpdateExpression="set #s = :status, GSI1SK = :key01 GSI2PK = :key02",
+            UpdateExpression="set #s = :status, GSI1SK = :key01 GSI2SK = :key02",
             ExpressionAttributeNames=e,
             ExpressionAttributeValues={
                 ':status': status,
-                ':key01': 'ST#' + status + '#DT#' + dateAppo + '#APPO#' + appointmentId,
-                ':key02': 'CUS#' + clientId + '#' + status
+                ':key01': status + '#DT#' + dateAppo,
+                ':key02': status + '#DT#' + dateAppo
             }
             # ReturnValues="UPDATED_NEW"
         )
+        #PASA A PRE-CHECK IN Y ENVIA NOTIFICACION POR TWILIO A SMS y CORREO (TWILIO), ONESIGNAL (PUSH NOTIFICATION)
+        if status == 2:
+            # GET USER PREFERENCE NOTIFICATION
+            status = 1
+        
         statusCode = 200
-        body = json.dumps({'Message': 'Appointment updated successfully'})
+        body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
 
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Message': 'Error on update appointment'})
+            body = json.dumps({'Message': 'Error on update appointment', 'Code': 500})
     except Exception as e:
         statusCode = 500
-        body = json.dumps({'Message': 'Error on request try again ' + str(e)})
+        body = json.dumps({'Message': 'Error on request try again ' + str(e), 'Code': 500})
 
     response = {
         'statusCode' : statusCode,

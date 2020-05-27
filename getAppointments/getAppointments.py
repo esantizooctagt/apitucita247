@@ -28,16 +28,19 @@ def lambda_handler(event, context):
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         dateAppo = event['pathParameters']['dateAppo']
+        dateAppoFin = event['pathParameters']['dateAppoFin']
         status = event['pathParameters']['status']
+        statusFin = event['pathParameters']['statusFin']
 
         response = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :gsi1pk AND begins_with( GSI1SK , :gsi1sk )',
+            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK between ( :gsi1sk , :gsi2sk )',
             ExpressionAttributeValues={
                 ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                ':gsi1sk': {'S': 'ST#'+ status +'#DT#' + dateAppo}
+                ':gsi1sk': {'S': status +'#DT#' + dateAppo},
+                ':gsi2sk': {'S': statusFin +'#DT#' + dateAppo},
             }
         )
         record = []
