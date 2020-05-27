@@ -26,45 +26,31 @@ def lambda_handler(event, context):
         
     try:
         businessId = event['pathParameters']['businessId']
-        locationId = event['pathParameters']['locationId']
-        dateAppo = event['pathParameters']['dateAppo']
-        status = event['pathParameters']['status']
+        userId = event['pathParameters']['userId']
 
         response = dynamodb.query(
             TableName="TuCita247",
-            IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :gsi1pk AND begins_with( GSI1SK , :gsi1sk )',
+            KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :userId )',
             ExpressionAttributeValues={
-                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                ':gsi1sk': {'S': 'ST#'+ status +'#DT#' + dateAppo}
+                ':businessId': {'S': 'BUS#' + businessId },
+                ':userId': {'S': 'USER#'+ userId +'#LOC#'}
             }
         )
-        record = []
+        recordset = {}
         locations = json_dynamodb.loads(response['Items'])
         for row in locations:
             recordset = {
-                'BusinessId': businessId,
-                'LocationId': locationId,
-                'AppointmentId': row['PKID'].replace('APPO#',''),
-                'ClientId': row['GSI2PK'].replace('CUS#','')[0:2],
-                'FirstName': row['FIRST_NAME'],
-                'LastName': row['LAST_NAME'],
-                'Phone': row['PHONE'],
-                'OnBehalf': row['ON_BEHALF'],
-                'PeopleQty': row['PEOPLE_QTY'],
-                'Type': row['TYPE'],
-                'DateAppo': row['DATE_APPO'],
-                'Status': row['STATUS']
+                'LocationId': row['SKID'].replace('USER#' + userId + '#LOC#',''),
+                'Door': row['NAME']
             }
-            record.append(recordset)
 
         statusCode = 200
-        body = json.dumps({'Code': 200, 'Appos': record})
+        body = json.dumps({'Code': 200, 'Locs': recordset})
     
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Code': 500, 'Message': 'Error on load appointments'})
+            body = json.dumps({'Code': 500, 'Message': 'Error on load locations by user'})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})
