@@ -23,7 +23,7 @@ def lambda_handler(event, context):
         cors = os.environ['prodCors']
     else:
         cors = os.environ['devCors']
-        
+    
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
@@ -36,13 +36,14 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK between ( :gsi1sk , :gsi2sk )',
+            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
             ExpressionAttributeValues={
                 ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                ':gsi1sk': {'S': status +'#DT#' + dateAppo},
-                ':gsi2sk': {'S': statusFin +'#DT#' + dateAppo},
+                ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppo},
+                ':gsi1sk_fin': {'S': str(statusFin) +'#DT#' + dateAppoFin}
             }
         )
+        
         record = []
         locations = json_dynamodb.loads(response['Items'])
         for row in locations:
