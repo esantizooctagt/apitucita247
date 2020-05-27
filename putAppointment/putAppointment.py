@@ -29,7 +29,6 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
         status = data['Status']
-        # clientId = data['ClientId']
         dateAppo = data['DateAppo']
 
         table = dynamodb.Table('TuCita247')
@@ -39,12 +38,12 @@ def lambda_handler(event, context):
                 'PKID': 'APPO#' + appointmentId,
                 'SKID': 'APPO#' + appointmentId
             },
-            UpdateExpression="set #s = :status, GSI1SK = :key01 GSI2SK = :key02",
+            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key02",
             ExpressionAttributeNames=e,
             ExpressionAttributeValues={
-                ':status': status,
-                ':key01': status + '#DT#' + dateAppo,
-                ':key02': status + '#DT#' + dateAppo
+                ':status': str(status),
+                ':key01': str(status) + '#DT#' + str(dateAppo),
+                ':key02': str(status) + '#DT#' + str(dateAppo)
             }
             # ReturnValues="UPDATED_NEW"
         )
