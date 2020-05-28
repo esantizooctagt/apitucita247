@@ -7,8 +7,11 @@ import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
+from decimal import *
+
 import datetime
-from datetime import datetime
+import dateutil.tz
+from datetime import timezone
 
 import uuid
 import os
@@ -29,7 +32,8 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
-        data = json.loads(event['body'])
+        # data = json.loads(event['body'])
+        data = json.loads(json.dumps(event['body']))
         businessId = data['BusinessId']
         locationId = data['LocationId']
         door = data['Door']
@@ -46,11 +50,10 @@ def lambda_handler(event, context):
         opeHours = ''
         daysOff = []
         dateAppo = '' 
-        # '2020-05-25-10-00' # OBTENER LA FECHA Y HORA ACTUAL
 
-        today = datetime.now()
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
         dayName = today.today().strftime("%A")[0:3].upper()
-
         getCurrDate = dynamodb.query(
             TableName = "TuCita247",
             ReturnConsumedCapacity = 'TOTAL',
@@ -61,39 +64,25 @@ def lambda_handler(event, context):
             },
             Limit = 1
         )
-        logger.info("for process")
         for currDate in json_dynamodb.loads(getCurrDate['Items']):
             periods = []
             opeHours = json.loads(currDate['OPERATIONHOURS'])
-            bucketInterval = currDate['BUCKET_INTERVAL']
             daysOff = currDate['DAYS_OFF'].split(',')
+            dateAppo = opeHours[dayName] if dayName in opeHours else ''
 
-            dateAppo = opeHours[dayName] if dayName in opeHours[dayName] else ''
-            dayOffValid = daysOff.index(today.strftime("%Y-%m-%\d"))
-            periods = dateAppo.split(',')
+            dayOffValid = today.strftime("%Y-%m-%d") not in daysOff
+            periods = dateAppo
             
-            logger.info(today.strftime("%Y-%m-%\d"))
-            logger.info(daysOff)
-            logger.info(dateAppo)
-            logger.info(dayOffValid)
-
-            first = 0 
-            for i in range(periods[0].I, periods[0].F, bucketInterval):
-                if i == today.strftime("%H"):
-                    first = 1
-                    dateAppo = today.strftime("%Y-%m-%\d") + '-' + i.ljust(2,'0')
+            for item in periods:
+                ini = Decimal(item['I'])
+                fin = Decimal(item['F'])
+                currHour = Decimal(today.strftime("%H"))
+                if  currHour >= ini and currHour <= fin:
+                    dateAppo = today.strftime("%Y-%m-%d") + '-' + today.strftime("%H").ljust(2,'0')  + '-00'
                     break
-            
-            if first == 0:
-                for i in range(periods[1].I, periods[1].F, bucketInterval):
-                    if i == today.strftime("%H"):
-                        dateAppo = today.strftime("%Y-%m-%d") + '-' + i.ljust(2,'0')
-                        break
-
-            logger.info("previo a guardar")
-            logger.info(dateAppo)
-
-        if dayOffValid < 0:
+                    
+        # logger.info(dateAppo)
+        if dayOffValid == False:
             statusCode = 500
             body = json.dumps({'Message': 'Date is not valid', 'Code': 400})
         else:
@@ -111,63 +100,51 @@ def lambda_handler(event, context):
                 for phoneNumber in json_dynamodb.loads(getPhone['Items']):
                     existe = 1
                     customerId = phoneNumber['SKID'].replace('CUS#','')
-                    name = (phoneNumber['NAME'] if name == '' else name)
-                    email = (phoneNumber['EMAIL'] if email == '' else email)
-                    dob = (phoneNumber['DOB'] if dob == '' else dob)
-                    gender = (phoneNumber['GENDER'] if gender == '' else gender)
-                    preference = (phoneNumber['PREFERENCES'] if dob == '' else preference)
+                    name = (phoneNumber['NAME'] if name == "" else name)
+                    email = (phoneNumber['EMAIL'] if email == "" else email)
+                    dob = (phoneNumber['DOB'] if dob == "" else dob)
+                    gender = (phoneNumber['GENDER'] if gender == "" else gender)
+                    preference = (phoneNumber['PREFERENCES'] if preference == "" else preference)
+                    disability = (phoneNumber['DISABILITY'] if disability == "" else disability)
             
+            # logger.info('Name -' + name + '-')
+            # logger.info('Email -' + email + '-')
+            # logger.info('DOB -' + dob + '-')
+            # logger.info('Gender -' + gender + '-')
+            # logger.info('Preference -' + preference + '-')
+            # logger.info('Disability -' + disability + '-')
+            # logger.info('Companions -' + companions + '-')
+            # logger.info('Phone -' + phone + '-')
             recordset = {}
             items = []
             if existe == 0:
-                recordset = {
-                    "Put": {
-                        "TableName": "TuCita247",
-                        "Item": {
-                            "PKID": {"S": 'MOB#'+phone},
-                            "SKID": {"S": 'CUS#'+customerId},
-                            "STATUS": {"N": "1"},
-                            "NAME": {"S": name},
-                            "" if email == '' else "EMAIL": {"S": email},
-                            "" if dob == '' else "DOB": {"S": dob},
-                            "" if gender == '' else "GENDER": {"S": gender},
-                            "" if preference == '' else "PREFERENCES": {"N": preference},
-                            "GSI1PK": {"S": "CUS#TOT"},
-                            "GSI1SK": {"S": name+'#'+customerId}
-                        },
-                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                    }
-                }
+                strValues = ''
+                if email != '':
+                    strValues = '"EMAIL": {"S": "' + email + '"}, '
+                if dob != '':
+                    strValues = strValues + '"DOB": {"S": "' + dob + '"}, '
+                if gender != '':
+                    strValues = strValues + '"GENDER": {"S": "' + gender+ '"}, '
+                if preference != '':
+                    strValues = strValues + '"PREFERENCES": {"N": "' + str(preference) + '"}, '
+                    
+                recordset = json.loads(json.dumps('{"Put": {"TableName": "TuCita247","Item": {"PKID": {"S": "MOB#' + phone +'"}, "SKID": {"S": "CUS#' + customerId +'"}, "STATUS": {"N": "1"}, "NAME": {"S":"'+ name + '"}, ' + strValues + '"GSI1PK": {"S": "CUS#TOT"}, "GSI1SK": {"S":"' + name + '#' + customerId + '"}},"ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)","ReturnValuesOnConditionCheckFailure": "ALL_OLD" }}'))
+                # logger.info(recordset)
                 items.append(recordset)
             
             appoId = str(uuid.uuid4()).replace("-","")
             recordset = {}
-            recordset = {
-                "Put": {
-                    "TableName": "TuCita247",
-                    "Item": {
-                        "PKID": {"S": 'APPO#'+appoId},
-                        "SKID": {"S": 'APPO#'+appoId},
-                        "STATUS": {"N": "1"},
-                        "NAME": {"S": name},
-                        "GSI1PK": {"S": "BUS#"+businessId+'#LOC#'+locationId},
-                        "GSI1SK": {"S": '1#DT#'+dateAppo},
-                        "" if phone == '' else "PHONE": {"S": phone},
-                        "DATE_APPO": {"S": dateAppo},
-                        "GSI2PK": {"S": 'CUS#'+customerId},
-                        "GSI2SK": {"S": '1#DT#'+dateAppo},
-                        "" if companions == '' else "PEOPLE_QTY": {"N": companions},
-                        "" if disability == '' else "DISABILITY": {"S", disability},
-                        "TYPE": {"S": "2"}
-                    },
-                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                }
-            }
+            strValues = ''
+            if companions != '':
+                strValues = '"PEOPLE_QTY": {"N": "' + str(companions) + '"}, '
+            if disability != '':
+                strValues = strValues + '"DISABILITY": {"S": "' + disability+ '"}, '
+            
+            recordset = json.loads(json.dumps('{"Put": {"TableName": "TuCita247","Item": {"PKID": {"S": "APPO#'+appoId+'"}, "SKID": {"S": "APPO#"'+appoId+'"}, "STATUS": {"N": "1"}, "NAME": {"S":"'+ name + '"}, "GSI1PK": {"S": "BUS#' + businessId + '#LOC#' + locationId + '"}, "GSI1SK": {"S": "1#DT#' + dateAppo + '"}, "DATE_APPO": {"S":"' + dateAppo + '"}, "GSI2PK": {"S": "CUS#' + customerId + '"},"GSI2SK": {"S": "1#DT#' + dateAppo + '"},"PHONE": {"S": "' + phone +'"},' + strValues + '"TYPE": {"S": "2"}},"ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)","ReturnValuesOnConditionCheckFailure": "ALL_OLD"}}'))
+            # logger.info(recordset)
             items.append(recordset)
             
-            logger.info(items)
+            # logger.info(items)
             response = dynamodb.transact_write_items(
                 TransactItems = items
             )
@@ -183,9 +160,12 @@ def lambda_handler(event, context):
                 'DateFull': dateAppo
             }
 
-            logger.info(response)
             statusCode = 200
-            body = json.dumps({'Message': 'Role added successfully', 'Code': 200, 'Appointment': appoInfo})
+            body = json.dumps({'Message': 'Appointment added successfully', 'Code': 200, 'Appointment': appoInfo})
+        
+        if statusCode == '':
+            statusCode = 500
+            body = json.dumps({'Message': 'Error !!!', 'Code': 400})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})
