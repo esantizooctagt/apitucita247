@@ -38,6 +38,9 @@ def lambda_handler(event, context):
         preference = data['Preference']
         disability = data['Disability']
         companions = data['Companions']
+        customerId = str(uuid.uuid4()).replace("-","")
+        existe = 0
+        dateAppo = '2020-05-25-10-00' # OBTENER LA FECHA Y HORA ACTUAL
 
         if phone != '0000000000':
             # SEARCH FOR PHONE NUMBER
@@ -51,6 +54,7 @@ def lambda_handler(event, context):
                 Limit = 1
             )
             for phoneNumber in json_dynamodb.loads(getPhone['Items']):
+                existe = 1
                 customerId = phoneNumber['SKID'].replace('CUS#','')
                 name = (phoneNumber['NAME'] if name == '' else name)
                 email = (phoneNumber['EMAIL'] if email == '' else email)
@@ -58,116 +62,83 @@ def lambda_handler(event, context):
                 gender = (phoneNumber['GENDER'] if gender == '' else gender)
                 preference = (phoneNumber['PREFERENCES'] if dob == '' else preference)
         
-        recordList = {}
-        i=0
-        response = dynamodb.query(
-            TableName = "TuCita247",
-            ReturnConsumedCapacity = 'TOTAL',
-            KeyConditionExpression = 'PKID = :businessId AND begins_with( SKID , :roles )',
-            ExpressionAttributeValues = {
-                ':businessId': {'S': 'BUS#' + data['BusinessId']},
-                ':roles': {'S': 'ACCESS#' + roleId}
-            }
-        )
-
-        appAct = []
-        updApp = []
-        y=0
-        for apps in response['Items']:
-            row = json_dynamodb.loads(apps)
-            appId = row['SKID'].replace('ACCESS#'+roleId+'#','')
-            encontro = 0
-            for items in data['Access']:
-                if items['ApplicationId'] == appId:
-                    encontro = 1
-                    updApp.append(items['ApplicationId'])
-                    break
-            if encontro == 0:
-                appAct.append(row['SKID'].replace('ACCESS#'+roleId+'#',''))
-                y=y+1
-        
-        for items in data['Access']:
-            entro = 0
-            for upApp in updApp:
-                if upApp == items['ApplicationId']:
-                    entro = 1
-                    break
-            
-            if entro == 0:
-                recordset = {
-                                "Put": {
-                                    "TableName": "TuCita247",
-                                    "Item": {
-                                        "PKID": {"S": 'BUS#'+data['BusinessId']},
-                                        "SKID": {"S": 'ACCESS#'+roleId+'#'+items['ApplicationId']},
-                                        "LEVEL_ACCESS": {"N": str(items['Level_Access'])}
-                                    },
-                                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                                }
-                            }
-            else:
-                recordset = {
-                                "Put": {
-                                    "TableName": "TuCita247",
-                                    "Item": {
-                                        "PKID": {"S": 'BUS#'+data['BusinessId']},
-                                        "SKID": {"S": 'ACCESS#'+roleId+'#'+items['ApplicationId']},
-                                        "LEVEL_ACCESS": {"N": str(items['Level_Access'])}
-                                    },
-                                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                                }
-                            }
-            recordList[i] = recordset
-            i=i+1
-        
+        recordset = {}
         items = []
-        rows = {}
-        rows = {
-            "Update": {
-                "TableName": "TuCita247",
-                "Key": {
-                    "PKID": {"S": 'BUS#' + data['BusinessId'] },
-                    "SKID": {"S": 'ROL#' + roleId }
-                },
-                "UpdateExpression":"set #n = :name, #s = :status",
-                "ExpressionAttributeNames": { '#n': 'NAME', '#s': 'STATUS' },
-                "ExpressionAttributeValues": { 
-                    ":name": {"S": data['Name']},
-                    ":status": {"N": str(data['Status'])} 
-                },
-                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-            },
-        }
-        items.append(rows)
-        
-        for j in range(y):
-            deletes = {}
-            deletes = {
-                "Delete":{
-                    "TableName":"TuCita247",
-                    "Key": {
-                        "PKID": {"S": 'BUS#'+data['BusinessId']},
-                        "SKID": {"S": 'ACCESS#' + roleId + '#' + appAct[j]}
+        if existe == 0:
+            recordset = {
+                "Put": {
+                    "TableName": "TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'MOB#'+phone},
+                        "SKID": {"S": 'CUS#'+customerId},
+                        "STATUS": {"N": "1"},
+                        "NAME": {"S": name},
+                        "GSI1PK": {"S": "CUS#TOT"},
+                        "GSI1SK": {"S": name+'#'+customerId},
+                        "EMAIL": {"S": email},
+                        "DOB": {"S": dob},
+                        "GENDER": {"S": gender},
+                        "PREFERENCES": {"N": preference}
                     },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                },
+                }
             }
-            items.append(deletes)
-            logger.info(deletes)
-            
-        for x in range(i):
-            items.append(recordList[x])    
+            items.append(recordset)
+        
+        appoId = str(uuid.uuid4()).replace("-","")
+        recordset = {}
+        recordset = {
+            "Put": {
+                "TableName": "TuCita247",
+                "Item": {
+                    "PKID": {"S": 'APPO#'+appoId},
+                    "SKID": {"S": 'APPO#'+appoId},
+                    "STATUS": {"N": "1"},
+                    "NAME": {"S": name},
+                    "GSI1PK": {"S": "BUS#"+businessId+'#LOC#'+locationId},
+                    "GSI1SK": {"S": '1#DT#'+dateAppo},
+                    "PHONE": {"S": phone},
+                    "DATE_APPO": {"S": dateAppo},
+                    "GSI2PK": {"S": 'CUS#'+customerId},
+                    "GSI2SK": {"S": '1#DT#'+dateAppo},
+                    "PEOPLE_QTY": {"N": companions},
+                    "TYPE": {"S": "2"},
+                    "DISABILITY": {"S", disability}
+                },
+                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+            }
+        }
+        items.append(recordset)
         
         logger.info(items)
         response = dynamodb.transact_write_items(
             TransactItems = items
-            
         )
+
+        # appoInfo = {}
+        # getAppointmentInfo = dynamodb.query(
+        #     TableName = "TuCita247",
+        #     ReturnConsumedCapacity = 'TOTAL',
+        #     KeyConditionExpression = 'APPO#' + appoId,
+        #     Limit = 1
+        # )
+        # for row in json_dynamodb.loads(getAppointmentInfo):
+        appoInfo = {
+            'AppId': appoId,
+            'ClientId': customerId,
+            'Name': name,
+            'Phone': phone,
+            'OnBehalf': "0",
+            'PeoQty': companions,
+            'DateAppo': dateAppo[-5:],
+            'DateFull': dateAppo
+        }
+
         logger.info(response)
         statusCode = 200
-        body = json.dumps({'Message': 'Role added successfully'})
+        body = json.dumps({'Message': 'Role added successfully', 'Code': 200, 'Appointment': appoInfo})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})
