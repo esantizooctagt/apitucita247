@@ -87,7 +87,7 @@ def lambda_handler(event, context):
             if first == 0:
                 for i in range(periods[1].I, periods[1].F, bucketInterval):
                     if i == today.strftime("%H"):
-                        dateAppo = today.strftime("%Y-%m-%\d") + '-' + i.ljust(2,'0')
+                        dateAppo = today.strftime("%Y-%m-%d") + '-' + i.ljust(2,'0')
                         break
 
             logger.info("previo a guardar")
