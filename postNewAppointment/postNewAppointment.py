@@ -89,7 +89,7 @@ def lambda_handler(event, context):
                     if i == today.strftime("%H"):
                         dateAppo = today.strftime("%Y-%m-%\d") + '-' + i.ljust(2,'0')
                         break
-                    
+
             logger.info("previo a guardar")
             logger.info(dateAppo)
 
@@ -128,12 +128,12 @@ def lambda_handler(event, context):
                             "SKID": {"S": 'CUS#'+customerId},
                             "STATUS": {"N": "1"},
                             "NAME": {"S": name},
+                            "" if email == '' else "EMAIL": {"S": email},
+                            "" if dob == '' else "DOB": {"S": dob},
+                            "" if gender == '' else "GENDER": {"S": gender},
+                            "" if preference == '' else "PREFERENCES": {"N": preference},
                             "GSI1PK": {"S": "CUS#TOT"},
-                            "GSI1SK": {"S": name+'#'+customerId},
-                            "EMAIL": {"S": email},
-                            "DOB": {"S": dob},
-                            "GENDER": {"S": gender},
-                            "PREFERENCES": {"N": preference}
+                            "GSI1SK": {"S": name+'#'+customerId}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -153,13 +153,13 @@ def lambda_handler(event, context):
                         "NAME": {"S": name},
                         "GSI1PK": {"S": "BUS#"+businessId+'#LOC#'+locationId},
                         "GSI1SK": {"S": '1#DT#'+dateAppo},
-                        "PHONE": {"S": phone},
+                        "" if phone == '' else "PHONE": {"S": phone},
                         "DATE_APPO": {"S": dateAppo},
                         "GSI2PK": {"S": 'CUS#'+customerId},
                         "GSI2SK": {"S": '1#DT#'+dateAppo},
-                        "PEOPLE_QTY": {"N": companions},
-                        "TYPE": {"S": "2"},
-                        "DISABILITY": {"S", disability}
+                        "" if companions == '' else "PEOPLE_QTY": {"N": companions},
+                        "" if disability == '' else "DISABILITY": {"S", disability},
+                        "TYPE": {"S": "2"}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
