@@ -35,10 +35,9 @@ def lambda_handler(event, context):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :appointmentId AND SKID = :chat',
+            KeyConditionExpression='PKID = :appointmentId AND SKID = :appointmentId',
             ExpressionAttributeValues={
-                ':appointmentId': {'S': 'APPO#'+appointmentId},
-                ':chat': {'S': 'CHAT'}
+                ':appointmentId': {'S': 'APPO#'+appointmentId}
             }
         )
         getMessage = ''
@@ -65,11 +64,12 @@ def lambda_handler(event, context):
         response = table.update_item(
             Key={
                 'PKID': 'APPO#' + appointmentId,
-                'SKID': 'CHAT'
+                'SKID': 'APPO#' + appointmentId
             },
-            UpdateExpression="set MESSAGES = :chat",
+            UpdateExpression="set MESSAGES = :chat, UNREAD = :unread",
             ExpressionAttributeValues={
                 ':chat': conversation,
+                ':unread': "U" if userType == "1" else "H" 
             }
             # ReturnValues="UPDATED_NEW"
         )

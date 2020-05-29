@@ -88,6 +88,7 @@ def lambda_handler(event, context):
                 'Disability': row['DISABILITY'] if 'DISABILITY' in row else 0,
                 'Type': row['TYPE'] if 'TYPE' in row else 0,
                 'DateAppo': row['DATE_APPO'],
+                'Unread': row['UNREAD'] if 'UNREAD' in row else 0,
                 'Status': row['STATUS']
             }
             record.append(recordset)
@@ -142,6 +143,7 @@ def lambda_handler(event, context):
                 'Disability': row['DISABILITY'] if 'DISABILITY' in row else 0,
                 'Type': row['TYPE'] if 'TYPE' in row else 0,
                 'DateAppo': row['DATE_APPO'],
+                'Unread': row['UNREAD'] if 'UNREAD' in row else 0,
                 'Status': row['STATUS']
             }
             recordPre.append(recordset)
