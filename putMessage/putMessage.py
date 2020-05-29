@@ -27,7 +27,7 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
-        data = json.loads(event['body'])
+        data = json.loads(json.dumps(event['body']))
         appointmentId = event['pathParameters']['id']
         userType = event['pathParameters']['type']
         message = data['Message']
@@ -37,16 +37,16 @@ def lambda_handler(event, context):
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='PKID = :appointmentId AND SKID = :chat',
             ExpressionAttributeValues={
-                ':appointmentId': {'S': appointmentId},
+                ':appointmentId': {'S': 'APPO#'+appointmentId},
                 ':chat': {'S': 'CHAT'}
             }
         )
         getMessage = ''
         for row in json_dynamodb.loads(response['Items']):
             getMessage = row['MESSAGES']
-        
+
         conversation = []
-        if userType == 1:
+        if userType == "1":
             conver = {
                 "H":  message
             }
@@ -54,7 +54,7 @@ def lambda_handler(event, context):
             conver = {
                 "U":  message
             }
-
+            
         if getMessage != '':
             conversation = getMessage
             conversation.append(conver)
@@ -65,7 +65,7 @@ def lambda_handler(event, context):
         response = table.update_item(
             Key={
                 'PKID': 'APPO#' + appointmentId,
-                'SKID': 'CHAT' + appointmentId
+                'SKID': 'CHAT'
             },
             UpdateExpression="set MESSAGES = :chat",
             ExpressionAttributeValues={
