@@ -160,8 +160,8 @@ def lambda_handler(event, context):
                         "DOOR": {"S": door},
                         "ON_BEHALF": {"N": "0"},
                         "PEOPLE_QTY": {"N": str(companions) if str(companions) != '' else None},
-                        "DISABILITY": {"S": disability if disability != '' else None},
-                        "TYPE": {"S": "2"}
+                        "DISABILITY": {"N": disability if disability != '' else None},
+                        "TYPE": {"N": "2"}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -180,9 +180,9 @@ def lambda_handler(event, context):
                 'Name': name,
                 'Phone': phone,
                 'OnBehalf': 0,
-                'Companions': Decimal(companions),
+                'Companions': 0 if companions == '' else Decimal(companions),
                 'Door': door,
-                'Disability': disability,
+                'Disability': 0 if disability == '' else Decimal(disability),
                 'DateFull': dateAppo,
                 'DateAppo': dateAppo[-5:].replace('-',':')
             }

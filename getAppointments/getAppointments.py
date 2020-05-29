@@ -86,7 +86,7 @@ def lambda_handler(event, context):
                 'Companions': row['PEOPLE_QTY'] if 'PEOPLE_QTY' in row else 0,
                 'Door': row['DOOR'] if 'DOOR' in row else '',
                 'Disability': row['DISABILITY'] if 'DISABILITY' in row else 0,
-                'Type': row['TYPE'],
+                'Type': row['TYPE'] if 'TYPE' in row else 0,
                 'DateAppo': row['DATE_APPO'],
                 'Status': row['STATUS']
             }
@@ -127,6 +127,7 @@ def lambda_handler(event, context):
 
         recordPre = []
         preCheckIn = json_dynamodb.loads(responsePre['Items'])
+        recordset = {}
         for row in preCheckIn:
             recordset = {
                 'BusinessId': businessId,
@@ -139,11 +140,16 @@ def lambda_handler(event, context):
                 'Companions': row['PEOPLE_QTY'] if 'PEOPLE_QTY' in row else 0,
                 'Door': row['DOOR'] if 'DOOR' in row else '',
                 'Disability': row['DISABILITY'] if 'DISABILITY' in row else 0,
-                'Type': row['TYPE'],
+                'Type': row['TYPE'] if 'TYPE' in row else 0,
                 'DateAppo': row['DATE_APPO'],
                 'Status': row['STATUS']
             }
             recordPre.append(recordset)
+
+        lastItemPre = ''
+        if 'LastEvaluatedKey' in responsePre:
+            lastItemPre = json_dynamodb.loads(responsePre['LastEvaluatedKey'])
+            lastItemPre = lastItemPre['GSI1SK']
 
         resultSet = { 
             'Code': 200,
