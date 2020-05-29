@@ -105,7 +105,7 @@ def lambda_handler(event, context):
                 KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                    ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppo},
+                    ':gsi1sk_ini': {'S': str(statusFin) +'#DT#' + dateAppo},
                     ':gsi1sk_fin': {'S': str(statusFin) +'#DT#' + dateAppoFin}
                 },
                 Limit=15
@@ -119,7 +119,7 @@ def lambda_handler(event, context):
                 KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                    ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppo},
+                    ':gsi1sk_ini': {'S': str(statusFin) +'#DT#' + dateAppo},
                     ':gsi1sk_fin': {'S': str(statusFin) +'#DT#' + dateAppoFin}
                 },
                 Limit=15
