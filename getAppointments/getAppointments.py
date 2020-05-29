@@ -148,6 +148,7 @@ def lambda_handler(event, context):
         resultSet = { 
             'Code': 200,
             'lastItem': lastItem,
+            'lastItemPre': lastItemPre,
             'Appos-01': record,
             'Appos-02': recordPre
         }
