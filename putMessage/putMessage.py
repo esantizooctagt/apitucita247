@@ -27,7 +27,7 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
-        data = json.loads(json.dumps(event['body']))
+        data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
         userType = event['pathParameters']['type']
         message = data['Message']
