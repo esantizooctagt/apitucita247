@@ -157,6 +157,7 @@ def lambda_handler(event, context):
                         "GSI2PK": {"S": 'CUS#' + customerId},
                         "GSI2SK": {"S": '1#DT#' + dateAppo},
                         "PHONE": {"S": phone},
+                        "DOOR": {"S": door},
                         "ON_BEHALF": {"N": "0"},
                         "PEOPLE_QTY": {"N": str(companions) if str(companions) != '' else None},
                         "DISABILITY": {"S": disability if disability != '' else None},
@@ -173,16 +174,17 @@ def lambda_handler(event, context):
             response = dynamodb.transact_write_items(
                 TransactItems = items
             )
-
             appoInfo = {
                 'AppId': appoId,
                 'ClientId': customerId,
                 'Name': name,
                 'Phone': phone,
                 'OnBehalf': 0,
-                'PeoQty': Decimal(companions),
-                'DateAppo': dateAppo[-5:].replace('-',':'),
-                'DateFull': dateAppo
+                'Companions': Decimal(companions),
+                'Door': door,
+                'Disability': disability,
+                'DateFull': dateAppo,
+                'DateAppo': dateAppo[-5:].replace('-',':')
             }
 
             statusCode = 200

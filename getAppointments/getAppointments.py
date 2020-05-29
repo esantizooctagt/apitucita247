@@ -83,7 +83,9 @@ def lambda_handler(event, context):
                 'Name': row['NAME'],
                 'Phone': row['PHONE'],
                 'OnBehalf': row['ON_BEHALF'],
-                'PeopleQty': row['PEOPLE_QTY'] if 'PEOPLE_QTY' in row else 0,
+                'Companions': row['PEOPLE_QTY'] if 'PEOPLE_QTY' in row else 0,
+                'Door': row['DOOR'] if 'DOOR' in row else '',
+                'Disability': row['DISABILITY'] if 'DISABILITY' in row else 0,
                 'Type': row['TYPE'],
                 'DateAppo': row['DATE_APPO'],
                 'Status': row['STATUS']
@@ -134,7 +136,9 @@ def lambda_handler(event, context):
                 'Name': row['NAME'],
                 'Phone': row['PHONE'],
                 'OnBehalf': row['ON_BEHALF'],
-                'PeopleQty': row['PEOPLE_QTY'] if 'PEOPLE_QTY' in row else 0,
+                'Companions': row['PEOPLE_QTY'] if 'PEOPLE_QTY' in row else 0,
+                'Door': row['DOOR'] if 'DOOR' in row else '',
+                'Disability': row['DISABILITY'] if 'DISABILITY' in row else 0,
                 'Type': row['TYPE'],
                 'DateAppo': row['DATE_APPO'],
                 'Status': row['STATUS']
