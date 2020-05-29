@@ -180,9 +180,9 @@ def lambda_handler(event, context):
                 'Name': name,
                 'Phone': phone,
                 'OnBehalf': 0,
-                'Companions': 0 if companions == '' else Decimal(companions),
+                'Companions': 0 if companions == '' else int(companions),
                 'Door': door,
-                'Disability': 0 if disability == '' else Decimal(disability),
+                'Disability': 0 if disability == '' else int(disability),
                 'DateFull': dateAppo,
                 'DateAppo': dateAppo[-5:].replace('-',':')
             }
