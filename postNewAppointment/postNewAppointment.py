@@ -24,6 +24,17 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def cleanNullTerms(d):
+   clean = {}
+   for k, v in d.items():
+      if isinstance(v, dict):
+         nested = cleanNullTerms(v)
+         if len(nested.keys()) > 0:
+            clean[k] = nested
+      elif v is not None:
+         clean[k] = v
+   return clean
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -32,8 +43,7 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
-        # data = json.loads(event['body'])
-        data = json.loads(json.dumps(event['body']))
+        data = json.loads(event['body'])
         businessId = data['BusinessId']
         locationId = data['LocationId']
         door = data['Door']
@@ -53,7 +63,8 @@ def lambda_handler(event, context):
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
-        dayName = today.today().strftime("%A")[0:3].upper()
+        dayName = today.strftime("%A")[0:3].upper()
+
         getCurrDate = dynamodb.query(
             TableName = "TuCita247",
             ReturnConsumedCapacity = 'TOTAL',
@@ -72,7 +83,6 @@ def lambda_handler(event, context):
 
             dayOffValid = today.strftime("%Y-%m-%d") not in daysOff
             periods = dateAppo
-            
             for item in periods:
                 ini = Decimal(item['I'])
                 fin = Decimal(item['F'])
@@ -81,7 +91,6 @@ def lambda_handler(event, context):
                     dateAppo = today.strftime("%Y-%m-%d") + '-' + today.strftime("%H").ljust(2,'0')  + '-00'
                     break
                     
-        # logger.info(dateAppo)
         if dayOffValid == False:
             statusCode = 500
             body = json.dumps({'Message': 'Date is not valid', 'Code': 400})
@@ -107,44 +116,60 @@ def lambda_handler(event, context):
                     preference = (phoneNumber['PREFERENCES'] if preference == "" else preference)
                     disability = (phoneNumber['DISABILITY'] if disability == "" else disability)
             
-            # logger.info('Name -' + name + '-')
-            # logger.info('Email -' + email + '-')
-            # logger.info('DOB -' + dob + '-')
-            # logger.info('Gender -' + gender + '-')
-            # logger.info('Preference -' + preference + '-')
-            # logger.info('Disability -' + disability + '-')
-            # logger.info('Companions -' + companions + '-')
-            # logger.info('Phone -' + phone + '-')
             recordset = {}
             items = []
             if existe == 0:
-                strValues = ''
-                if email != '':
-                    strValues = '"EMAIL": {"S": "' + email + '"}, '
-                if dob != '':
-                    strValues = strValues + '"DOB": {"S": "' + dob + '"}, '
-                if gender != '':
-                    strValues = strValues + '"GENDER": {"S": "' + gender+ '"}, '
-                if preference != '':
-                    strValues = strValues + '"PREFERENCES": {"N": "' + str(preference) + '"}, '
-                    
-                recordset = json.loads(json.dumps('{"Put": {"TableName": "TuCita247","Item": {"PKID": {"S": "MOB#' + phone +'"}, "SKID": {"S": "CUS#' + customerId +'"}, "STATUS": {"N": "1"}, "NAME": {"S":"'+ name + '"}, ' + strValues + '"GSI1PK": {"S": "CUS#TOT"}, "GSI1SK": {"S":"' + name + '#' + customerId + '"}},"ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)","ReturnValuesOnConditionCheckFailure": "ALL_OLD" }}'))
-                # logger.info(recordset)
-                items.append(recordset)
+                recordset = {
+                    "Put": {
+                        "TableName": "TuCita247",
+                        "Item": {
+                            "PKID": {"S": 'MOB#' + phone}, 
+                            "SKID": {"S": 'CUS#' + customerId}, 
+                            "STATUS": {"N": "1"}, 
+                            "NAME": {"S": name}, 
+                            "EMAIL": {"S":  email if email != '' else None },
+                            "DOB": {"S": dob if dob != '' else None },
+                            "GENDER": {"S": gender if gender != '' else None},
+                            "PREFERENCES": {"N": str(preference) if str(preference) != '' else None},
+                            "GSI1PK": {"S": "CUS#TOT"}, 
+                            "GSI1SK": {"S": name + '#' + customerId}
+                        },
+                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                        }
+                    }
+                logger.info(cleanNullTerms(recordset))
+                items.append(cleanNullTerms(recordset))
             
             appoId = str(uuid.uuid4()).replace("-","")
             recordset = {}
-            strValues = ''
-            if companions != '':
-                strValues = '"PEOPLE_QTY": {"N": "' + str(companions) + '"}, '
-            if disability != '':
-                strValues = strValues + '"DISABILITY": {"S": "' + disability+ '"}, '
+            recordset = {
+                "Put": {
+                    "TableName": "TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'APPO#'+appoId}, 
+                        "SKID": {"S": 'APPO#'+appoId}, 
+                        "STATUS": {"N": "1"}, 
+                        "NAME": {"S": name}, 
+                        "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
+                        "GSI1SK": {"S": '1#DT#' + dateAppo}, 
+                        "DATE_APPO": {"S": dateAppo}, 
+                        "GSI2PK": {"S": 'CUS#' + customerId},
+                        "GSI2SK": {"S": '1#DT#' + dateAppo},
+                        "PHONE": {"S": phone},
+                        "ON_BEHALF": {"N": "0"},
+                        "PEOPLE_QTY": {"N": str(companions) if str(companions) != '' else None},
+                        "DISABILITY": {"S": disability if disability != '' else None},
+                        "TYPE": {"S": "2"}
+                    },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                    }
+                }
+            logger.info(cleanNullTerms(recordset))
+            items.append(cleanNullTerms(recordset))
             
-            recordset = json.loads(json.dumps('{"Put": {"TableName": "TuCita247","Item": {"PKID": {"S": "APPO#'+appoId+'"}, "SKID": {"S": "APPO#"'+appoId+'"}, "STATUS": {"N": "1"}, "NAME": {"S":"'+ name + '"}, "GSI1PK": {"S": "BUS#' + businessId + '#LOC#' + locationId + '"}, "GSI1SK": {"S": "1#DT#' + dateAppo + '"}, "DATE_APPO": {"S":"' + dateAppo + '"}, "GSI2PK": {"S": "CUS#' + customerId + '"},"GSI2SK": {"S": "1#DT#' + dateAppo + '"},"PHONE": {"S": "' + phone +'"},' + strValues + '"TYPE": {"S": "2"}},"ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)","ReturnValuesOnConditionCheckFailure": "ALL_OLD"}}'))
-            # logger.info(recordset)
-            items.append(recordset)
-            
-            # logger.info(items)
+            logger.info(items)
             response = dynamodb.transact_write_items(
                 TransactItems = items
             )
@@ -154,9 +179,9 @@ def lambda_handler(event, context):
                 'ClientId': customerId,
                 'Name': name,
                 'Phone': phone,
-                'OnBehalf': "0",
-                'PeoQty': companions,
-                'DateAppo': dateAppo[-5:],
+                'OnBehalf': 0,
+                'PeoQty': Decimal(companions),
+                'DateAppo': dateAppo[-5:].replace('-',':'),
                 'DateFull': dateAppo
             }
 
