@@ -42,7 +42,7 @@ def lambda_handler(event, context):
         )
         getMessage = ''
         for row in json_dynamodb.loads(response['Items']):
-            getMessage = row['MESSAGES']
+            getMessage = row['MESSAGES'] if 'MESSAGES' in row else []
 
         conversation = []
         if userType == "1":
