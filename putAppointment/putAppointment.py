@@ -35,6 +35,7 @@ def lambda_handler(event, context):
         status = data['Status']
         dateAppo = data['DateAppo']
         reasonId = data['Reason'] if 'Reason' in data else ''
+        qrCode = data['qrCode'] if 'qrCode' in data else ''
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -46,6 +47,10 @@ def lambda_handler(event, context):
             v = {':status': str(status), ':key01': str(status) + '#DT#' + str(dateAppo), ':reason': reasonId, ':dateope': dateOpe}
         else:
             v = {':status': str(status), ':key01': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
+        
+        c = ''
+        if str(status) == "2":
+            c = 'QRCODE = :qrCode'
 
         response = table.update_item(
             Key={
@@ -54,6 +59,7 @@ def lambda_handler(event, context):
             },
             UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key01" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", TIMECANCEL = :dateope" if str(status) == "5" else "") + (", TIMECHECKIN = :dateope" if str(status) == "3" else "") + (", REASONID = :reason" if reasonId != "" else ""),
             ExpressionAttributeNames=e,
+            ConditionExpression=c,
             ExpressionAttributeValues=v
             # ReturnValues="UPDATED_NEW"
         )
