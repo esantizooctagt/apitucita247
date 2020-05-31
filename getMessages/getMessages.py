@@ -15,6 +15,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamoUpd = boto3.resource('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -27,6 +28,7 @@ def lambda_handler(event, context):
     try:
         statusCode = ''
         appointmentId = event['pathParameters']['id']
+        whoRead = event['pathParameters']['type']
 
         response = dynamodb.query(
             TableName="TuCita247",
@@ -39,7 +41,21 @@ def lambda_handler(event, context):
         getMessage = ''
         for row in json_dynamodb.loads(response['Items']):
             getMessage = row['MESSAGES'] if 'MESSAGES' in row else []
+            unRead = row['UNREAD'] if 'UNREAD' in row else ''
 
+        if unRead == whoRead:
+            table = dynamoUpd.Table('TuCita247')
+            response = table.update_item(
+                Key={
+                    'PKID': 'APPO#' + appointmentId,
+                    'SKID': 'APPO#' + appointmentId
+                },
+                UpdateExpression="set UNREAD = :unread",
+                ExpressionAttributeValues={
+                    ':unread': "0" 
+                }
+                # ReturnValues="UPDATED_NEW"
+            )
 
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200, 'Messages': getMessage})

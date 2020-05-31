@@ -7,6 +7,10 @@ import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import os
 
 REGION = 'us-east-1'
@@ -27,10 +31,16 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
+        timeChat = ''
         data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
         userType = event['pathParameters']['type']
         message = data['Message']
+
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
+
+        timeChat = today.strftime("%d %B, %I:%M %p")
 
         response = dynamodb.query(
             TableName="TuCita247",
@@ -47,11 +57,13 @@ def lambda_handler(event, context):
         conversation = []
         if userType == "1":
             conver = {
-                "H":  message
+                "H":  message,
+                "T": timeChat
             }
         else:
             conver = {
-                "U":  message
+                "U":  message,
+                "T": timeChat
             }
             
         if getMessage != '':
