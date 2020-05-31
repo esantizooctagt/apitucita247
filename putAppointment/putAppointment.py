@@ -50,8 +50,8 @@ def lambda_handler(event, context):
         
         c = ''
         if str(status) == "3":
-            c = 'QRCODE = "' + qrCode + '"'
-
+            c = 'QRCODE = :qrCode'
+            v = {':status': str(status), ':key01': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe, ':qrCode': qrCode}
             response = table.update_item(
                 Key={
                     'PKID': 'APPO#' + appointmentId,
