@@ -4,6 +4,8 @@ import json
 
 import boto3
 import botocore.exceptions
+from botocore.exceptions import ClientError
+
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
@@ -87,6 +89,10 @@ def lambda_handler(event, context):
         if statusCode == '':
             statusCode = 500
             body = json.dumps({'Message': 'Error on update appointment', 'Code': 500})
+    except ClientError as e:  
+        if e.response['Error']['Code']=='ConditionalCheckFailedException':  
+            statusCode = 404
+            body = json.dumps({'Message': 'Invalida qr code', 'Code': 400})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e), 'Code': 500})
