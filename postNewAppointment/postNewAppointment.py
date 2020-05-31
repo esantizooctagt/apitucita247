@@ -7,6 +7,9 @@ import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
+import string
+import random
+
 from decimal import *
 
 import datetime
@@ -60,6 +63,9 @@ def lambda_handler(event, context):
         opeHours = ''
         daysOff = []
         dateAppo = '' 
+
+        letters = string.ascii_uppercase
+        qrCode = ''.join(random.choice(letters) for i in range(10))
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -161,6 +167,7 @@ def lambda_handler(event, context):
                         "ON_BEHALF": {"N": "0"},
                         "PEOPLE_QTY": {"N": str(companions) if str(companions) != '' else None},
                         "DISABILITY": {"N": disability if disability != '' else None},
+                        "QRCODE": {"S": qrCode if phone != '0000000000' else None},
                         "TYPE": {"N": "2"}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
