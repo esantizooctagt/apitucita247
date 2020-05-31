@@ -38,7 +38,7 @@ def lambda_handler(event, context):
             FilterExpression=f,
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#'+businessId},
-                '::reasons': {'S': 'REAS#'},
+                ':reasons': {'S': 'REAS#'},
                 ':stat' : {'N': '1'}
             }
         )
