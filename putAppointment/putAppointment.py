@@ -63,6 +63,7 @@ def lambda_handler(event, context):
             ExpressionAttributeValues=v
             # ReturnValues="UPDATED_NEW"
         )
+        logger.info(response)
         #PASA A PRE-CHECK IN Y ENVIA NOTIFICACION POR TWILIO A SMS y CORREO (TWILIO), ONESIGNAL (PUSH NOTIFICATION)
         if status == 2:
             # GET USER PREFERENCE NOTIFICATION
