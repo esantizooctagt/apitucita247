@@ -52,7 +52,7 @@ def lambda_handler(event, context):
                 'PKID': 'APPO#' + appointmentId,
                 'SKID': 'APPO#' + appointmentId
             },
-            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key01" + ", TIMECHEK = :dateope" if str(status) == "2" else "" + ", TIMECANCEL = :dateope" if str(status) == "5" else "" + ", TIMECHECKIN = :dateope" if str(status) == "3" else "" + ", ReasonId = :reason" if reasonId != "" else "",
+            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key01" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", TIMECANCEL = :dateope" if str(status) == "5" else "") + (", TIMECHECKIN = :dateope" if str(status) == "3" else "") + (", REASONID = :reason" if reasonId != "" else ""),
             ExpressionAttributeNames=e,
             ExpressionAttributeValues=v
             # ReturnValues="UPDATED_NEW"
