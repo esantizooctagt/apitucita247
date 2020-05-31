@@ -34,19 +34,18 @@ def lambda_handler(event, context):
 
         table = dynamodb.Table('TuCita247')
         e = {'#s': 'STATUS'}
+        if reasonId != '':
+            v = {':status': str(status), ':key01': str(status) + '#DT#' + str(dateAppo), ':reason': reasonId}
+        else:
+            v = {':status': str(status), ':key01': str(status) + '#DT#' + str(dateAppo)}
         response = table.update_item(
             Key={
                 'PKID': 'APPO#' + appointmentId,
                 'SKID': 'APPO#' + appointmentId
             },
-            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key02, ReasonId = :reason",
+            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key01" + ", ReasonId = :reason" if reasonId != "" else "",
             ExpressionAttributeNames=e,
-            ExpressionAttributeValues={
-                ':status': str(status),
-                ':key01': str(status) + '#DT#' + str(dateAppo),
-                ':key02': str(status) + '#DT#' + str(dateAppo),
-                ':reason': reasonId
-            }
+            ExpressionAttributeValues=v
             # ReturnValues="UPDATED_NEW"
         )
         #PASA A PRE-CHECK IN Y ENVIA NOTIFICACION POR TWILIO A SMS y CORREO (TWILIO), ONESIGNAL (PUSH NOTIFICATION)
