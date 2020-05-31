@@ -34,7 +34,7 @@ def lambda_handler(event, context):
         appointmentId = event['pathParameters']['id']
         status = data['Status']
         dateAppo = data['DateAppo']
-        reasonId = data['Reason']
+        reasonId = data['Reason'] if 'Reason' in data else ''
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
