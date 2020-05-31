@@ -29,6 +29,7 @@ def lambda_handler(event, context):
         statusCode = ''
         appointmentId = event['pathParameters']['id']
         whoRead = event['pathParameters']['type']
+        unRead = ''
 
         response = dynamodb.query(
             TableName="TuCita247",
