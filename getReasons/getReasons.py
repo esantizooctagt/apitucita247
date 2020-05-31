@@ -28,13 +28,18 @@ def lambda_handler(event, context):
         statusCode = ''
         businessId = event['pathParameters']['id']
 
+        e = {'#s': 'STATUS'}
+        f = '#s = :stat'
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :reasons )',
+            ExpressionAttributeNames=e,
+            FilterExpression=f,
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#'+businessId},
-                '::reasons': {'S': 'REAS#'}
+                '::reasons': {'S': 'REAS#'},
+                ':stat' : {'N': '1'}
             }
         )
         records = []
