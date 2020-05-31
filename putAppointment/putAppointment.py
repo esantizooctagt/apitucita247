@@ -49,20 +49,32 @@ def lambda_handler(event, context):
             v = {':status': str(status), ':key01': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
         
         c = ''
-        if str(status) == "2":
+        if str(status) == "3":
             c = 'QRCODE = :qrCode'
 
-        response = table.update_item(
-            Key={
-                'PKID': 'APPO#' + appointmentId,
-                'SKID': 'APPO#' + appointmentId
-            },
-            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key01" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", TIMECANCEL = :dateope" if str(status) == "5" else "") + (", TIMECHECKIN = :dateope" if str(status) == "3" else "") + (", REASONID = :reason" if reasonId != "" else ""),
-            ExpressionAttributeNames=e,
-            ConditionExpression=c,
-            ExpressionAttributeValues=v
-            # ReturnValues="UPDATED_NEW"
-        )
+            response = table.update_item(
+                Key={
+                    'PKID': 'APPO#' + appointmentId,
+                    'SKID': 'APPO#' + appointmentId
+                },
+                UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key01" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", TIMECANCEL = :dateope" if str(status) == "5" else "") + (", TIMECHECKIN = :dateope" if str(status) == "3" else "") + (", REASONID = :reason" if reasonId != "" else ""),
+                ExpressionAttributeNames=e,
+                ConditionExpression=c,
+                ExpressionAttributeValues=v
+                # ReturnValues="UPDATED_NEW"
+            )
+        else:
+            response = table.update_item(
+                Key={
+                    'PKID': 'APPO#' + appointmentId,
+                    'SKID': 'APPO#' + appointmentId
+                },
+                UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key01" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", TIMECANCEL = :dateope" if str(status) == "5" else "") + (", TIMECHECKIN = :dateope" if str(status) == "3" else "") + (", REASONID = :reason" if reasonId != "" else ""),
+                ExpressionAttributeNames=e,
+                ExpressionAttributeValues=v
+                # ReturnValues="UPDATED_NEW"
+            )
+
         logger.info(response)
         #PASA A PRE-CHECK IN Y ENVIA NOTIFICACION POR TWILIO A SMS y CORREO (TWILIO), ONESIGNAL (PUSH NOTIFICATION)
         if status == 2:
