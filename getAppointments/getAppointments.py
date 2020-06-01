@@ -33,6 +33,7 @@ def lambda_handler(event, context):
         status = event['pathParameters']['status']
         lastItem = event['pathParameters']['lastItem']
         typeAppo = event['pathParameters']['type']
+        appoId = event['pathParameters']['appoId']
 
         if lastItem == '_':
             lastItem = ''
@@ -68,7 +69,7 @@ def lambda_handler(event, context):
                     Limit = 2
                 )
         else:
-            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }}
+            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
             if typeAppo != '_':
                 n = {'#t': 'TYPE'}
                 f = '#t = :type'
