@@ -19,6 +19,7 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
     stage = event['headers']
+    
     if stage['origin'] != "http://localhost:4200":
         cors = os.environ['prodCors']
     else:
@@ -31,32 +32,39 @@ def lambda_handler(event, context):
         dateAppoFin = event['pathParameters']['dateAppoFin']
         status = event['pathParameters']['status']
         lastItem = event['pathParameters']['lastItem']
+        typeAppo = event['pathParameters']['type']
 
         if lastItem == '_':
             lastItem = ''
+            f = 'TYPE = :type' if typeAppo != '_' else ''
             response = dynamodb.query(
                 TableName="TuCita247",
                 IndexName="TuCita247_Index",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
+                FilterExpression=f,
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                    ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
+                    ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
+                    ':type': {'S': typeAppo}
                 }
             )
         else:
             lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': lastItem }}
+            f = 'TYPE = :type' if typeAppo != '_' else ''
             response = dynamodb.query(
                 TableName="TuCita247",
                 IndexName="TuCita247_Index",
                 ReturnConsumedCapacity='TOTAL',
                 ExclusiveStartKey= lastItem,
                 KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
+                FilterExpression=f,
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                    ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
+                    ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
+                    ':type': {'S': typeAppo}
                 }
             )
 
@@ -92,7 +100,6 @@ def lambda_handler(event, context):
             'lastItem': lastItem,
             'Appos': record
         }
-        
         statusCode = 200
         body = json.dumps(resultSet)
     
@@ -111,5 +118,4 @@ def lambda_handler(event, context):
         },
         'body' : body
     }
-    
     return response
