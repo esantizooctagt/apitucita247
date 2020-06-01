@@ -128,13 +128,16 @@ def lambda_handler(event, context):
             record.append(recordset)
         
         lastItem = ''
+        appoId = '_'
         if 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
+            appoId = lastItem['PKID'].replace('APPO#','')
             lastItem = lastItem['GSI1SK']
 
         resultSet = { 
             'Code': 200,
             'lastItem': lastItem,
+            'AppId': appoId,
             'Appos': record
         }
         statusCode = 200
