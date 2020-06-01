@@ -115,7 +115,7 @@ def lambda_handler(event, context):
                 items.append(recordset)
 
             recordset = {
-                "Update ": {
+                "Update": {
                     "TableName": "TuCita247",
                     "Key": {
                         "PKID": {"S": 'BUS#' + businessId}, 
