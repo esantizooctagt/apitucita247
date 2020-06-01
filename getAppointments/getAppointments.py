@@ -68,7 +68,7 @@ def lambda_handler(event, context):
                     Limit = 2
                 )
         else:
-            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': lastItem }}
+            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }}
             if typeAppo != '_':
                 n = {'#t': 'TYPE'}
                 f = '#t = :type'
