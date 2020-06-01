@@ -62,8 +62,8 @@ def lambda_handler(event, context):
                 UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key01" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", TIMECANCEL = :dateope" if str(status) == "5" else "") + (", TIMECHECKIN = :dateope" if str(status) == "3" else "") + (", REASONID = :reason" if reasonId != "" else ""),
                 ExpressionAttributeNames=e,
                 ConditionExpression=c,
-                ExpressionAttributeValues=v
-                # ReturnValues="UPDATED_NEW"
+                ExpressionAttributeValues=v,
+                ReturnValues="UPDATED_NEW"
             )
         else:
             response = table.update_item(
@@ -73,8 +73,8 @@ def lambda_handler(event, context):
                 },
                 UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key01" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", TIMECANCEL = :dateope" if str(status) == "5" else "") + (", TIMECHECKIN = :dateope" if str(status) == "3" else "") + (", REASONID = :reason" if reasonId != "" else ""),
                 ExpressionAttributeNames=e,
-                ExpressionAttributeValues=v
-                # ReturnValues="UPDATED_NEW"
+                ExpressionAttributeValues=v,
+                ReturnValues="UPDATED_NEW"
             )
 
         logger.info(response)
@@ -84,7 +84,7 @@ def lambda_handler(event, context):
             status = 1
         
         statusCode = 200
-        body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
+        body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200, 'Appo': json_dynamodb.loads(response['Items'])})
 
         if statusCode == '':
             statusCode = 500
