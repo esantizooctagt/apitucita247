@@ -5,6 +5,7 @@ import json
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
+
 from dynamodb_json import json_util as json_dynamodb
 
 import datetime
@@ -18,7 +19,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodbTran = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -41,45 +42,28 @@ def lambda_handler(event, context):
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
-
+        
         items = []
-        if qrCode != 'VALID':
-            recordset = {
-                "Put": {
-                    "TableName": "TuCita247",
-                    "Item": {
-                        "PKID": {"S": 'APPO#' + appointmentId}, 
-                        "SKID": {"S": 'APPO#' + appointmentId}, 
-                        "STATUS": {"N": "3"}, 
-                        "GSI1SK": {"S": str(status) + '#DT#' + str(dateAppo)}, 
-                        "GSI2SK": {"S": str(status) + '#DT#' + str(dateAppo)},
-                        "TIMECHECKIN": {"S": str(dateAppo) }
-                    },
-                    "ExpressionAttributeValues": { 
-                        ":qrCode": {"S": str(qrCode)}
-                    },
-                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND QRCODE = :qrCode",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                }
+        recordset = {
+            "Update": {
+                "TableName": "TuCita247",
+                "Key": {
+                    "PKID": {"S": 'APPO#' + appointmentId}, 
+                    "SKID": {"S": 'APPO#' + appointmentId}
+                },
+                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKIN = :dateOpe", 
+                "ExpressionAttributeValues": {
+                    ":status": {"N": "3"}, 
+                    ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
+                    ":dateOpe": {"S": str(dateAppo)},
+                    ":qrCode": {"S": qrCode}
+                },
+                "ExpressionAttributeNames": {'#s': 'STATUS'},
+                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND QRCODE = :qrCode",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
             }
-            items.append(recordset)
-        else:
-            recordset = {
-                "Put": {
-                    "TableName": "TuCita247",
-                    "Item": {
-                        "PKID": {"S": 'APPO#' + appointmentId}, 
-                        "SKID": {"S": 'APPO#' + appointmentId}, 
-                        "STATUS": {"N": "3"}, 
-                        "GSI1SK": {"S": str(status) + '#DT#' + str(dateAppo)}, 
-                        "GSI2SK": {"S": str(status) + '#DT#' + str(dateAppo)},
-                        "TIMECHECKIN": {"S": str(dateAppo) }
-                    },
-                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                }
-            }
-            items.append(recordset)
+        }
+        items.append(recordset)
 
         recordset = {
             "Update": {
@@ -97,20 +81,20 @@ def lambda_handler(event, context):
             }
         }
         items.append(recordset)
-        
-        statusCode = 0
-        body = ''
-        logger.info(items)
-        tranAppo = dynamodbTran.transact_write_items(
+
+        tranAppo = dynamodb.transact_write_items(
             TransactItems = items
         )
         logger.info(tranAppo)
         statusCode = 200
-        body = json.dumps({'Message': 'Appointment added successfully', 'Code': 200, 'Appo': json.dumps(tranAppo)})
+        body = json.dumps({'Message': 'Appointment added successfully', 'Code': 200})
 
-        if statusCode == 0:
+        if statusCode == '':
             statusCode = 500
             body = json.dumps({'Message': 'Error on update appointment', 'Code': 500})
+    except dynamodb.exceptions.TransactionCanceledException as e:
+        statusCode = 404
+        body = json.dumps({'Message': 'QR Code invalid', 'Code': 404})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e), 'Code': 500})

@@ -67,6 +67,9 @@ def lambda_handler(event, context):
         letters = string.ascii_uppercase
         qrCode = ''.join(random.choice(letters) for i in range(10))
 
+        if phone == '0000000000':
+            qrCode = 'VALID'
+
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dayName = today.strftime("%A")[0:3].upper()
@@ -169,7 +172,7 @@ def lambda_handler(event, context):
                         "ON_BEHALF": {"N": "0"},
                         "PEOPLE_QTY": {"N": str(companions) if str(companions) != '' else None},
                         "DISABILITY": {"N": disability if disability != '' else None},
-                        "QRCODE": {"S": qrCode if phone != '0000000000' else None},
+                        "QRCODE": {"S": qrCode},
                         "TYPE": {"N": "2"}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
