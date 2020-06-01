@@ -37,12 +37,14 @@ def lambda_handler(event, context):
         if lastItem == '_':
             lastItem = ''
             if typeAppo != '_':
-                f = 'TYPE = :type'
+                n = {'#t': 'TYPE'}
+                f = '#t = :type'
                 response = dynamodb.query(
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
+                    ExpressionAttributeNames=n,
                     FilterExpression=f,
                     ExpressionAttributeValues={
                         ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
@@ -68,7 +70,8 @@ def lambda_handler(event, context):
         else:
             lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': lastItem }}
             if typeAppo != '_':
-                f = 'TYPE = :type'
+                n = {'#t': 'TYPE'}
+                f = '#t = :type'
                 response = dynamodb.query(
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
@@ -76,6 +79,7 @@ def lambda_handler(event, context):
                     ExclusiveStartKey= lastItem,
                     KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
                     FilterExpression=f,
+                    ExpressionAttributeNames=n,
                     ExpressionAttributeValues={
                         ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                         ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
