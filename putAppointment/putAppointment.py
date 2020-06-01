@@ -129,7 +129,7 @@ def lambda_handler(event, context):
             items.append(recordset)
             
             logger.info(items)
-            response = dynamodb.transact_write_items(
+            response = dynamodbTran.transact_write_items(
                 TransactItems = items
             )
 
