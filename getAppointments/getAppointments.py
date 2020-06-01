@@ -50,7 +50,7 @@ def lambda_handler(event, context):
                         ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                         ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
                         ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
-                        ':type': {'S': typeAppo}
+                        ':type': {'N': str(typeAppo)}
                     },
                     Limit = 2
                 )
@@ -84,7 +84,7 @@ def lambda_handler(event, context):
                         ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                         ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
                         ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
-                        ':type': {'S': typeAppo}
+                        ':type': {'N': str(typeAppo)}
                     },
                     Limit = 2
                 )
@@ -105,6 +105,7 @@ def lambda_handler(event, context):
 
         record = []
         recordset = {}
+        logger.info(response)
         locations = json_dynamodb.loads(response['Items'])
         for row in locations:
             recordset = {
