@@ -27,24 +27,13 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        dateAppo = event['pathParameters']['dateAppo']
+        dateAppoIni = event['pathParameters']['dateAppoIni']
         dateAppoFin = event['pathParameters']['dateAppoFin']
         status = event['pathParameters']['status']
-        statusFin = event['pathParameters']['statusFin']
         lastItem = event['pathParameters']['lastItem']
-        lastItemPre = event['pathParameters']['lastItemPre']
 
         if lastItem == '_':
             lastItem = ''
-        else:
-            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': lastItem }}
-
-        if lastItemPre == '_':
-            lastItemPre = ''
-        else:
-            lastItemPre = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': lastItemPre }}
-
-        if lastItem == '':
             response = dynamodb.query(
                 TableName="TuCita247",
                 IndexName="TuCita247_Index",
@@ -52,12 +41,12 @@ def lambda_handler(event, context):
                 KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                    ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppo},
+                    ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
                     ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
-                },
-                Limit=15
+                }
             )
         else:
+            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': lastItem }}
             response = dynamodb.query(
                 TableName="TuCita247",
                 IndexName="TuCita247_Index",
@@ -66,13 +55,13 @@ def lambda_handler(event, context):
                 KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                    ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppo},
+                    ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
                     ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
-                },
-                Limit=15
+                }
             )
 
         record = []
+        recordset = {}
         locations = json_dynamodb.loads(response['Items'])
         for row in locations:
             recordset = {
@@ -97,68 +86,11 @@ def lambda_handler(event, context):
         if 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
             lastItem = lastItem['GSI1SK']
-            
-        if lastItemPre == '':
-            responsePre = dynamodb.query(
-                TableName="TuCita247",
-                IndexName="TuCita247_Index",
-                ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
-                ExpressionAttributeValues={
-                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                    ':gsi1sk_ini': {'S': str(statusFin) +'#DT#' + dateAppo},
-                    ':gsi1sk_fin': {'S': str(statusFin) +'#DT#' + dateAppoFin}
-                },
-                Limit=15
-            )
-        else:
-            responsePre = dynamodb.query(
-                TableName="TuCita247",
-                IndexName="TuCita247_Index",
-                ReturnConsumedCapacity='TOTAL',
-                ExclusiveStartKey= lastItemPre,
-                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
-                ExpressionAttributeValues={
-                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                    ':gsi1sk_ini': {'S': str(statusFin) +'#DT#' + dateAppo},
-                    ':gsi1sk_fin': {'S': str(statusFin) +'#DT#' + dateAppoFin}
-                },
-                Limit=15
-            )
-
-        recordPre = []
-        preCheckIn = json_dynamodb.loads(responsePre['Items'])
-        recordset = {}
-        for row in preCheckIn:
-            recordset = {
-                'BusinessId': businessId,
-                'LocationId': locationId,
-                'AppointmentId': row['PKID'].replace('APPO#',''),
-                'ClientId': row['GSI2PK'].replace('CUS#',''),
-                'Name': row['NAME'],
-                'Phone': row['PHONE'],
-                'OnBehalf': row['ON_BEHALF'],
-                'Companions': row['PEOPLE_QTY'] if 'PEOPLE_QTY' in row else 0,
-                'Door': row['DOOR'] if 'DOOR' in row else '',
-                'Disability': row['DISABILITY'] if 'DISABILITY' in row else 0,
-                'Type': row['TYPE'] if 'TYPE' in row else 0,
-                'DateAppo': row['DATE_APPO'],
-                'Unread': row['UNREAD'] if 'UNREAD' in row else 0,
-                'Status': row['STATUS']
-            }
-            recordPre.append(recordset)
-
-        lastItemPre = ''
-        if 'LastEvaluatedKey' in responsePre:
-            lastItemPre = json_dynamodb.loads(responsePre['LastEvaluatedKey'])
-            lastItemPre = lastItemPre['GSI1SK']
 
         resultSet = { 
             'Code': 200,
             'lastItem': lastItem,
-            'lastItemPre': lastItemPre,
-            'Appos-01': record,
-            'Appos-02': recordPre
+            'Appos': record
         }
         
         statusCode = 200
