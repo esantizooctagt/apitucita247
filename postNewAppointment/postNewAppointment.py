@@ -84,10 +84,12 @@ def lambda_handler(event, context):
         for currDate in json_dynamodb.loads(getCurrDate['Items']):
             periods = []
             opeHours = json.loads(currDate['OPERATIONHOURS'])
-            daysOff = currDate['DAYS_OFF'].split(',')
+            daysOff = currDate['DAYS_OFF'].split(',') if 'DAYS_OFF' in currDate else []
             dateAppo = opeHours[dayName] if dayName in opeHours else ''
-
-            dayOffValid = today.strftime("%Y-%m-%d") not in daysOff
+            dayOffValid = True
+            if daysOff != []:
+                dayOffValid = today.strftime("%Y-%m-%d") not in daysOff
+            
             periods = dateAppo
             for item in periods:
                 ini = Decimal(item['I'])

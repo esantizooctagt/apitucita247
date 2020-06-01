@@ -786,6 +786,27 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
 
+  GetBusinessOpeHoursFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetBusinessOpeHours
+      CodeUri: getBusinessOpeHours/
+      Handler: getBusinessOpeHours.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /business/opehours/{businessId}/{locationId}
+            Method: get
+            ApiId: !Ref HttpApi
+            
 # Outputs:
 #  outputs  
 #   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
