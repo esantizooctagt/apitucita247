@@ -51,23 +51,22 @@ def lambda_handler(event, context):
 
         record = []
         recordset = {}
-        logger.info(response)
         locations = json_dynamodb.loads(response['Items'])
         for row in locations:
             daysOff = row['DAYS_OFF'].split(',') if 'DAYS_OFF' in row else []
-            opeHours = row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else ''
+            opeHours = json.loads(row['OPERATIONHOURS']) if 'OPERATIONHOURS' in row else ''
             bucketInterval = row['BUCKET_INTERVAL'] if 'BUCKET_INTERVAL' in row else ''
         
         if daysOff != []:
             dayOffValid = today.strftime("%Y-%m-%d") not in daysOff
         
         record = []
-        currHour = Decimal(today.strftime("%H"))
+        currHour = today.strftime("%H")
         if dayOffValid:
-            dateAppo = opeHours[dayName] if dayName in opeHours else ''
+            dateAppo = opeHours[dayName] if dayName in opeHours else []
             for item in dateAppo:
-                ini = Decimal(item['I'])
-                fin = Decimal(item['F'])
+                ini = item['I']
+                fin = item['F']
                 recordset = {
                     'HoraIni': ini,
                     'HoraFin': fin
@@ -76,7 +75,7 @@ def lambda_handler(event, context):
 
         resultSet = { 
             'Code': 200,
-            'BucketInterval': bucketInterval,
+            'BucketInterval': str(bucketInterval),
             'CurrHour': currHour,
             'Hours': record
         }
