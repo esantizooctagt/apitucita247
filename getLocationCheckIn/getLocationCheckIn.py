@@ -40,8 +40,6 @@ def lambda_handler(event, context):
                 IndexName="TuCita247_Index",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='GSI1PK = :gsi1pk AND begins_with ( GSI1SK , :gsi1sk_ini )',
-                ExpressionAttributeNames=n,
-                FilterExpression=f,
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni}
@@ -56,8 +54,6 @@ def lambda_handler(event, context):
                 ReturnConsumedCapacity='TOTAL',
                 ExclusiveStartKey= lastItem,
                 KeyConditionExpression='GSI1PK = :gsi1pk AND begins_with ( GSI1SK , :gsi1sk_ini )',
-                FilterExpression=f,
-                ExpressionAttributeNames=n,
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni}
