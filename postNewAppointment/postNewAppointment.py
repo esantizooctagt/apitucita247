@@ -81,8 +81,7 @@ def lambda_handler(event, context):
             ExpressionAttributeValues = {
                 ':businessId': {'S': 'BUS#' + businessId},
                 ':locationId': {'S': 'LOC#' + locationId}
-            },
-            Limit = 1
+            }
         )
         for currDate in json_dynamodb.loads(getCurrDate['Items']):
             periods = []
@@ -114,8 +113,7 @@ def lambda_handler(event, context):
                     KeyConditionExpression = 'PKID = :phone',
                     ExpressionAttributeValues = {
                         ':phone': {'S': 'MOB#' + phone}
-                    },
-                    Limit = 1
+                    }
                 )
                 for phoneNumber in json_dynamodb.loads(getPhone['Items']):
                     existe = 1

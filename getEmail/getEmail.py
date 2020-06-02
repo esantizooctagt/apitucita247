@@ -31,8 +31,7 @@ def lambda_handler(event, context):
             KeyConditionExpression='PKID = :email',
             ExpressionAttributeValues={
                 ':email': {'S': 'EMAIL#' + Email}
-            },
-            Limit=1
+            }
         )
         if response == None:
             statusCode = 404

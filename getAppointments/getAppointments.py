@@ -53,7 +53,7 @@ def lambda_handler(event, context):
                         ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
                         ':type': {'N': str(typeAppo)}
                     },
-                    Limit = 2
+                    Limit = 30
                 )
             else:
                 response = dynamodb.query(
@@ -66,7 +66,7 @@ def lambda_handler(event, context):
                         ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
                         ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
                     },
-                    Limit = 2
+                    Limit = 30
                 )
         else:
             lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
@@ -87,7 +87,7 @@ def lambda_handler(event, context):
                         ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
                         ':type': {'N': str(typeAppo)}
                     },
-                    Limit = 2
+                    Limit = 30
                 )
             else:
                 response = dynamodb.query(
@@ -101,7 +101,7 @@ def lambda_handler(event, context):
                         ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
                         ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
                     },
-                    Limit = 2
+                    Limit = 30
                 )
 
         record = []

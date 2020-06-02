@@ -37,8 +37,7 @@ def lambda_handler(event, context):
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
                 ':metadata': {'S': 'METADATA'}
-            },
-            Limit=1
+            }
         )
         itemsbusiness = json_dynamodb.loads(response['Items'])
        

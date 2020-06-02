@@ -35,8 +35,7 @@ def lambda_handler(event, context):
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
                 ':userId': {'S': 'USER#' + userId}
-            },
-            Limit=1
+            }
         )
         logger.info(response)
         for row in response['Items']:

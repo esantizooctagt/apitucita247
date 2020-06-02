@@ -44,7 +44,7 @@ def lambda_handler(event, context):
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni}
                 },
-                Limit = 2
+                Limit = 30
             )
         else:
             lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
@@ -58,7 +58,7 @@ def lambda_handler(event, context):
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni}
                 },
-                Limit = 2
+                Limit = 30
             )
 
         record = []
