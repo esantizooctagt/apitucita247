@@ -39,8 +39,8 @@ def lambda_handler(event, context):
             a = {':businessId': {'S': 'BUS#' + businessId},':userId': {'S': 'USER#'},':stat' : {'N': '2'}}
             f = '#s < :stat'
         else:
-            e = {'#s': 'STATUS','#n': 'NAME'}
-            a = {':businessId': {'S': 'BUS#' + businessId},':userId': {'S': 'USER#'},':search': {'S': search},':stat' : {'N': '2'}}
+            e = {'#s': 'STATUS','#n': 'FIRST_NAME'}
+            a = {':businessId': {'S': 'BUS#' + businessId},':userId': {'S': 'USER#'},':search': {'S': search}, ':stat' : {'N': '2'}}
             f = '#s < :stat AND contains ( #n , :search )'
             
         if lastItem == '_':
@@ -95,7 +95,7 @@ def lambda_handler(event, context):
             body = json.dumps(resultSet)
         else:
             statusCode = 404
-            body = json.dumps({'Message':'No valid taxes on your request'})
+            body = json.dumps({'Message':'No valid users on your request'})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' +str(e)})
