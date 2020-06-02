@@ -75,7 +75,7 @@ def lambda_handler(event, context):
             }
             record.append(recordset)
         
-        lastItem = '_'
+        lastItem = ''
         appoId = '_'
         if 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
