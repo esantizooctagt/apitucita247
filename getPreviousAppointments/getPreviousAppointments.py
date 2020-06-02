@@ -69,13 +69,14 @@ def lambda_handler(event, context):
             }
             record.append(recordset)
         
-        lastItem = ''
         appoId = ''
+        lastItem = ''
         while 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
-            appoId = lastItem['PKID'].replace('APPO#','')
-            lastItem = lastItem['GSI1SK']
-            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
+            if lastItem:
+                appoId = lastItem['PKID'].replace('APPO#','')
+                lastItem = lastItem['GSI1SK']
+                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
 
             response = dynamodb.query(
                 TableName="TuCita247",
