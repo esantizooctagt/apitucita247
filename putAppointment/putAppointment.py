@@ -44,9 +44,9 @@ def lambda_handler(event, context):
         table = dynamodb.Table('TuCita247')
         e = {'#s': 'STATUS'}
         if reasonId != '':
-            v = {':status': str(status), ':key01': str(status) + '#DT#' + str(dateAppo), ':reason': reasonId, ':dateope': dateOpe}
+            v = {':status': {"N": str(status)}, ':key01': str(status) + '#DT#' + str(dateAppo), ':reason': reasonId, ':dateope': dateOpe}
         else:
-            v = {':status': str(status), ':key01': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
+            v = {':status': {"N": str(status)}, ':key01': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
         
         response = table.update_item(
             Key={

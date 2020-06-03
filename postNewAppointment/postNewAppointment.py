@@ -7,8 +7,8 @@ import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
-import string
-import random
+# import string
+# import random
 
 from decimal import *
 
@@ -64,11 +64,12 @@ def lambda_handler(event, context):
         daysOff = []
         dateAppo = '' 
 
-        letters = string.ascii_uppercase
-        qrCode = ''.join(random.choice(letters) for i in range(10))
+        # letters = string.ascii_uppercase
+        # qrCode = ''.join(random.choice(letters) for i in range(10))
+        # qrCode = random(10,99)
 
-        if phone == '0000000000':
-            qrCode = 'VALID'
+        # if phone == '0000000000':
+        qrCode = 'VALID'
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
