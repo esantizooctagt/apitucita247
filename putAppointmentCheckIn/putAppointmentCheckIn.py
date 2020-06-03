@@ -51,12 +51,13 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'APPO#' + appointmentId}, 
                     "SKID": {"S": 'APPO#' + appointmentId}
                 },
-                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKIN = :dateOpe", 
+                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKIN = :dateOpe, GSI3PK = :none, GSI3SK = :none", 
                 "ExpressionAttributeValues": {
                     ":status": {"N": "3"}, 
                     ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
                     ":dateOpe": {"S": str(dateAppo)},
-                    ":qrCode": {"S": qrCode}
+                    ":qrCode": {"S": qrCode},
+                    ":none": {"NULL": True}
                 },
                 "ExpressionAttributeNames": {'#s': 'STATUS'},
                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND QRCODE = :qrCode",
