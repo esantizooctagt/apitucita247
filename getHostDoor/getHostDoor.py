@@ -47,38 +47,38 @@ def lambda_handler(event, context):
         )
         recordset = {}
         locationId = ''
-        door = ''
-        locations = json_dynamodb.loads(response['Items'])
-        for row in locations:
-            locationId = row['LOCATIONID'],
+        door = '' 
+        for row in json_dynamodb.loads(response['Items']):
+            locationId = row['LOCATIONID']
             door = row['DOOR']
         
-        locs = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND SKID = :locationId )',
-            ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId },
-                ':locationId': {'S': 'LOC#'+ locationId },
-                ':actualDate': {'S': dateOpe }
-            },
-            FilterExpression='begins_with ( OPEN_DATE , :actualDate )'
-        )
-        for item in json_dynamodb.loads(locs['Items']):
-            recordset = {
-                'LocationId': locationId,
-                'Door': door,
-                'Open': item['OPEN']
-            }
-        if recordset != {}:
-            recordset = {
-                'LocationId': locationId,
-                'Door': door,
-                'Open': 2
-            }
-
-        statusCode = 200
-        body = json.dumps({'Code': 200, 'Locs': recordset})
+        if locationId != '':
+            locs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + businessId },
+                    ':locationId': {'S': 'LOC#'+ locationId },
+                    ':actualDate': {'S': dateOpe }
+                },
+                FilterExpression='begins_with ( OPEN_DATE , :actualDate )'
+            )
+            for item in json_dynamodb.loads(locs['Items']):
+                recordset = {
+                    'LocationId': locationId,
+                    'Door': door,
+                    'Open': 1
+                }
+            if locs['Count'] <= 0:
+                recordset = {
+                    'LocationId': locationId,
+                    'Door': door,
+                    'Open': 2
+                }
+    
+            statusCode = 200
+            body = json.dumps({'Code': 200, 'Locs': recordset})
     
         if statusCode == '':
             statusCode = 500

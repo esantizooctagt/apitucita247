@@ -45,8 +45,8 @@ def lambda_handler(event, context):
                 'PKID': 'BUS#' + businessId,
                 'SKID': 'LOC#' + locationId
             },
-            UpdateExpression="SET OPEN_DATE = :actualDate, PEOPLE_CHECK_IN = :qty, OPEN = :open, CLOSED_DATE = :closed",
-            ExpressionAttributeValues= {':actualDate': dateOpe, ':qty': 0, ':open': 1, ':closed': ''},
+            UpdateExpression="SET OPEN_DATE = :actualDate, PEOPLE_CHECK_IN = :qty", #, OPEN = :open, CLOSED_DATE = :closed
+            ExpressionAttributeValues= {':actualDate': dateOpe, ':qty': 0 }, #, ':open': 1, ':closed': ''
             ReturnValues="NONE"
         )
 

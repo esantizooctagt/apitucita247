@@ -36,6 +36,7 @@ def lambda_handler(event, context):
             locations = {}
             if locs['LocationId'] == '':
                 locId = str(uuid.uuid4()).replace("-","")
+                #"OPEN": {"S": str(locs['Open'])},
                 locations = {
                     "Put":{
                         "TableName":"TuCita247",
@@ -50,7 +51,6 @@ def lambda_handler(event, context):
                             "LOCATION_DENSITY": {"N": str(locs['LocationDensity'])},
                             "MAX_NUMBER_EMPLOYEES_LOC": {"N": str(locs['MaxNumberEmployeesLocation'])},
                             "MAX_CUSTOMER_LOC": {"N": str(locs['MaxConcurrentCustomerLocation'])},
-                            "OPEN": {"S": str(locs['Open'])},
                             "BUCKET_INTERVAL": {"N": str(locs['BucketInterval'])},
                             "CUSTOMER_PER_BUCKET": {"N": str(locs['TotalCustPerBucketInter'])},
                             "OPERATIONHOURS": {"S": str(locs['OperationHours'])},
@@ -62,6 +62,7 @@ def lambda_handler(event, context):
                     },
                 }
             else:
+                # "OPEN": {"S": str(locs['Open'])},
                 locations = {
                     "Put":{
                         "TableName":"TuCita247",
@@ -76,7 +77,6 @@ def lambda_handler(event, context):
                             "LOCATION_DENSITY": {"N": str(locs['LocationDensity'])},
                             "MAX_NUMBER_EMPLOYEES_LOC": {"N": str(locs['MaxNumberEmployeesLocation'])},
                             "MAX_CUSTOMER_LOC": {"N": str(locs['MaxConcurrentCustomerLocation'])},
-                            "OPEN": {"S": str(locs['Open'])},
                             "BUCKET_INTERVAL": {"N": str(locs['BucketInterval'])},
                             "CUSTOMER_PER_BUCKET": {"N": str(locs['TotalCustPerBucketInter'])},
                             "OPERATIONHOURS": {"S": str(locs['OperationHours'])},
