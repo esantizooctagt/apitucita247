@@ -66,10 +66,12 @@ def lambda_handler(event, context):
                 if item['OPEN_DATE'][0:10] < dateOpe and item['OPEN'] == 1:
                     open = 1
                     closed = 1
-                if item['OPEN_DATE'][0:10] == dateOpe:
+                if item['OPEN_DATE'][0:10] == dateOpe or item['OPEN_DATE'] == '':
                     open = item['OPEN']
                     closed = 0
-
+                if not 'OPEN' in item:
+                    open = 0
+                    closed = 0
                 recordset = {
                     'LocationId': locationId,
                     'Door': door,
