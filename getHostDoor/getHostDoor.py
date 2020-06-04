@@ -74,7 +74,7 @@ def lambda_handler(event, context):
                 recordset = {
                     'LocationId': locationId,
                     'Door': door,
-                    'Open': 2
+                    'Open': 0
                 }
     
             statusCode = 200

@@ -31,7 +31,6 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
-        data = json.loads(event['body'])
         locationId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
         
