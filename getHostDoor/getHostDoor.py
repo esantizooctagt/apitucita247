@@ -63,13 +63,14 @@ def lambda_handler(event, context):
                 }
             )
             for item in json_dynamodb.loads(locs['Items']):
-                if item['OPEN_DATE'][0:10] < dateOpe and item['OPEN'] == 1:
-                    open = 1
-                    closed = 1
-                if item['OPEN_DATE'][0:10] == dateOpe or item['OPEN_DATE'] == '':
-                    open = item['OPEN']
-                    closed = 0
-                if not 'OPEN' in item:
+                if 'OPEN_DATE' in item and 'OPEN' in item:
+                    if item['OPEN_DATE'][0:10] < dateOpe and item['OPEN'] == 1:
+                        open = 1
+                        closed = 1
+                    if item['OPEN_DATE'][0:10] == dateOpe or item['OPEN_DATE'] == '':
+                        open = item['OPEN']
+                        closed = 0
+                else:
                     open = 0
                     closed = 0
                 recordset = {

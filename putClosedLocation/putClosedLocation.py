@@ -52,12 +52,12 @@ def lambda_handler(event, context):
         )
 
         statusCode = 200
-        body = json.dumps({'Message': 'Location opened successfully', 'Code': 200, 'Business': json_dynamodb.loads(response['Attributes'])})
+        body = json.dumps({'Message': 'Location closed successfully', 'Code': 200, 'Business': json_dynamodb.loads(response['Attributes'])})
 
         logger.info(response)
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Message': 'Error on opened location', 'Code': 500})
+            body = json.dumps({'Message': 'Error on closed location', 'Code': 500})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e), 'Code': 500})
