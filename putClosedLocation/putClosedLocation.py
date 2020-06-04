@@ -48,7 +48,7 @@ def lambda_handler(event, context):
             ExpressionAttributeValues= {':qty': 0, ':closed': '', ':initVal': 1, ':open': 0},
             ExpressionAttributeNames={'#o': 'OPEN'},
             ConditionExpression='#o = :initVal',
-            ReturnValues="NONE"
+            ReturnValues="UPDATED_NEW"
         )
 
         statusCode = 200
