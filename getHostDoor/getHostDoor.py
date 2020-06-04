@@ -68,13 +68,15 @@ def lambda_handler(event, context):
                 recordset = {
                     'LocationId': locationId,
                     'Door': door,
-                    'Open': 1
+                    'Open': 1,
+                    'ManualCheckOut': item['MANUAL_CHECK_OUT']
                 }
             if locs['Count'] <= 0:
                 recordset = {
                     'LocationId': locationId,
                     'Door': door,
-                    'Open': 0
+                    'Open': 0,
+                    'ManualCheckOut': 0
                 }
     
             statusCode = 200
