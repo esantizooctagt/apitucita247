@@ -45,13 +45,14 @@ def lambda_handler(event, context):
                 'PKID': 'BUS#' + businessId,
                 'SKID': 'LOC#' + locationId
             },
-            UpdateExpression="SET OPEN_DATE = :actualDate, PEOPLE_CHECK_IN = :qty", #, OPEN = :open, CLOSED_DATE = :closed
-            ExpressionAttributeValues= {':actualDate': dateOpe, ':qty': 0 }, #, ':open': 1, ':closed': ''
-            ReturnValues="NONE"
+            UpdateExpression="SET OPEN_DATE = :actualDate, PEOPLE_CHECK_IN = :qty, OPEN = :open", #, CLOSED_DATE = :closed
+            ExpressionAttributeValues= {':actualDate': dateOpe, ':qty': 0, ':open': 1, ':initVal': 0}, #, ':open': 1, ':closed': '',
+            ConditionExpression='attribute_not_exists(OPEN) OR OPEN = :initVal',
+            ReturnValues="UPDATED_NEW"
         )
 
         statusCode = 200
-        body = json.dumps({'Message': 'Location opened successfully', 'Code': 200})
+        body = json.dumps({'Message': 'Location opened successfully', 'Code': 200, 'Business': json_dynamodb.loads(response)})
 
         logger.info(response)
         if statusCode == '':

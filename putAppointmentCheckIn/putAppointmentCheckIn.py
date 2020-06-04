@@ -20,6 +20,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodbTable = boto3.resource('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -51,13 +52,12 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'APPO#' + appointmentId}, 
                     "SKID": {"S": 'APPO#' + appointmentId}
                 },
-                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKIN = :dateOpe, GSI3PK = :none, GSI3SK = :none", 
+                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKIN = :dateOpe", 
                 "ExpressionAttributeValues": {
                     ":status": {"N": "3"}, 
                     ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
                     ":dateOpe": {"S": str(dateAppo)},
-                    ":qrCode": {"S": qrCode},
-                    ":none": {"NULL": True}
+                    ":qrCode": {"S": qrCode}
                 },
                 "ExpressionAttributeNames": {'#s': 'STATUS'},
                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND QRCODE = :qrCode",
@@ -65,6 +65,19 @@ def lambda_handler(event, context):
             }
         }
         items.append(recordset)
+        
+        # recordset = {
+        #     "Update": {
+        #         "TableName": "TuCita247",
+        #         "Key": {
+        #             "PKID": {"S": 'APPO#' + appointmentId}, 
+        #             "SKID": {"S": 'APPO#' + appointmentId}
+        #         },
+        #         "UpdateExpression": "REMOVE GSI3PK, GSI3SK", 
+        #         "ReturnValuesOnConditionCheckFailure": "NONE" 
+        #     }
+        # }
+        # items.append(recordset)
 
         recordset = {
             "Update": {
@@ -86,16 +99,27 @@ def lambda_handler(event, context):
         tranAppo = dynamodb.transact_write_items(
             TransactItems = items
         )
+
+        table = dynamodbTable.Table('TuCita247')
+        response = table.update_item(
+            Key={
+                'PKID': 'APPO#' + appointmentId,
+                'SKID': 'APPO#' + appointmentId
+            },
+            UpdateExpression="REMOVE GSI3PK, GSI3SK",
+            ReturnValues="NONE"
+        )
+        
         logger.info(tranAppo)
         statusCode = 200
-        body = json.dumps({'Message': 'Appointment added successfully', 'Code': 200})
+        body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
 
         if statusCode == '':
             statusCode = 500
             body = json.dumps({'Message': 'Error on update appointment', 'Code': 500})
     except dynamodb.exceptions.TransactionCanceledException as e:
         statusCode = 404
-        body = json.dumps({'Message': 'QR Code invalid', 'Code': 404})
+        body = json.dumps({'Message': 'QR Code invalid ' + str(e), 'Code': 404})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e), 'Code': 500})
