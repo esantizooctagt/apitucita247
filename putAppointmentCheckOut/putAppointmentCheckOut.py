@@ -33,6 +33,7 @@ def lambda_handler(event, context):
         statusCode = ''
         appointmentId = ''
         dateAppo = ''
+        qty = 0
         data = json.loads(event['body'])
         status = data['Status']
         qrCode = data['qrCode']
@@ -56,6 +57,7 @@ def lambda_handler(event, context):
         for row in json_dynamodb.loads(response['Items']):
             appointmentId = row['PKID']
             dateAppo = row['DATE_APPO']
+            qty = row['PEOPLE_QTY']
 
         if appointmentId != '':
             items = []
@@ -89,7 +91,7 @@ def lambda_handler(event, context):
                     },
                     "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
                     "ExpressionAttributeValues": { 
-                        ":increment": {"N": "1"}
+                        ":increment": {"N": str(qty)}
                     },
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
@@ -106,7 +108,7 @@ def lambda_handler(event, context):
             body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
         else:
             statusCode = 404
-            body = json.dumps({'Message': 'QR Code invalid ' + str(e), 'Code': 404})
+            body = json.dumps({'Message': 'QR Code invalid', 'Code': 404})
 
         if statusCode == '':
             statusCode = 500
