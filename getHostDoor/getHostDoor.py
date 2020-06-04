@@ -73,11 +73,13 @@ def lambda_handler(event, context):
                 else:
                     open = 0
                     closed = 0
+                
                 recordset = {
                     'LocationId': locationId,
                     'Door': door,
                     'Open': open,
                     'Closed': closed,
+                    'MaxCustomers': item['MAX_CUSTOMER_LOC'],
                     'ManualCheckOut': item['MANUAL_CHECK_OUT']
                 }
     
