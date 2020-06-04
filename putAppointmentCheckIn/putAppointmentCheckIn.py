@@ -36,6 +36,7 @@ def lambda_handler(event, context):
         appointmentId = event['pathParameters']['id']
         status = data['Status']
         dateAppo = data['DateAppo']
+        qty = data['Companions']
         qrCode = data['qrCode'] if 'qrCode' in data else ''
         businessId = data['BusinessId'] if 'BusinessId' in data else ''
         locationId = data['LocationId'] if 'LocationId' in data else ''
@@ -88,7 +89,7 @@ def lambda_handler(event, context):
                 },
                 "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
                 "ExpressionAttributeValues": { 
-                    ":increment": {"N": "1"}
+                    ":increment": {"N": str(qty)}
                 },
                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
