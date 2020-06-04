@@ -48,7 +48,6 @@ def lambda_handler(event, context):
             IndexName="TuCita247_Appos",
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='GSI3PK = :key01 AND GSI3SK = :key02',
-            ExpressionAttributeNames=e,
             ExpressionAttributeValues={
                 ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#'+dateOpe},
                 ':key02': {'S': 'QR#'+qrCode}

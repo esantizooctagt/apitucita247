@@ -20,7 +20,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
-dynamodbTable = boto3.resource('dynamodb', region_name='us-east-1')
+# dynamodbTable = boto3.resource('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -100,15 +100,15 @@ def lambda_handler(event, context):
             TransactItems = items
         )
 
-        table = dynamodbTable.Table('TuCita247')
-        response = table.update_item(
-            Key={
-                'PKID': 'APPO#' + appointmentId,
-                'SKID': 'APPO#' + appointmentId
-            },
-            UpdateExpression="REMOVE GSI3PK, GSI3SK",
-            ReturnValues="NONE"
-        )
+        # table = dynamodbTable.Table('TuCita247')
+        # response = table.update_item(
+        #     Key={
+        #         'PKID': 'APPO#' + appointmentId,
+        #         'SKID': 'APPO#' + appointmentId
+        #     },
+        #     UpdateExpression="REMOVE GSI3PK, GSI3SK",
+        #     ReturnValues="NONE"
+        # )
         
         logger.info(tranAppo)
         statusCode = 200
