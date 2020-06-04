@@ -28,44 +28,24 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        dateAppoIni = event['pathParameters']['dateAppo']
-        lastItem = event['pathParameters']['lastItem']
-        appoId = event['pathParameters']['appoId']
+        dateAppo = event['pathParameters']['dateAppo']
 
         status = 3
-        if lastItem == '_':
-            lastItem = ''
-            response = dynamodb.query(
-                TableName="TuCita247",
-                IndexName="TuCita247_Index",
-                ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='GSI1PK = :gsi1pk AND begins_with ( GSI1SK , :gsi1sk_ini )',
-                ExpressionAttributeValues={
-                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                    ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni}
-                },
-                Limit = 30
-            )
-        else:
-            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
-            response = dynamodb.query(
-                TableName="TuCita247",
-                IndexName="TuCita247_Index",
-                ReturnConsumedCapacity='TOTAL',
-                ExclusiveStartKey= lastItem,
-                KeyConditionExpression='GSI1PK = :gsi1pk AND begins_with ( GSI1SK , :gsi1sk_ini )',
-                ExpressionAttributeValues={
-                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                    ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni}
-                },
-                Limit = 30
-            )
+        response = dynamodb.query(
+            TableName="TuCita247",
+            IndexName="TuCita247_TypeAppos",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='GSI4PK = :gsi4pk AND begins_with ( GSI4SK , :gsi4sk )',
+            ExpressionAttributeValues={
+                ':gsi4pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                ':gsi4sk': {'S': str(status) +'#DT#' + dateAppo}
+            }
+        )
 
         record = []
         recordset = {}
         logger.info(response)
-        locations = json_dynamodb.loads(response['Items'])
-        for row in locations:
+        for row in json_dynamodb.loads(response['Items']):
             recordset = {
                 'AppointmentId': row['PKID'].replace('APPO#',''),
                 'Name': row['NAME'],
@@ -74,18 +54,36 @@ def lambda_handler(event, context):
                 'Status': row['STATUS']
             }
             record.append(recordset)
-        
+
+        appoId = ''
         lastItem = ''
-        appoId = '_'
-        if 'LastEvaluatedKey' in response:
+        while 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
-            appoId = lastItem['PKID'].replace('APPO#','')
-            lastItem = lastItem['GSI1SK']
+            response = dynamodb.query(
+                TableName="TuCita247",
+                IndexName="TuCita247_TypeAppos",
+                ReturnConsumedCapacity='TOTAL',
+                ExclusiveStartKey= lastItem,
+                KeyConditionExpression='GSI4PK = :gsi4pk AND begins_with ( GSI4SK , :gsi4sk )',
+                ExpressionAttributeValues={
+                    ':gsi4pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                    ':gsi4sk': {'S': str(status) +'#DT#' + dateAppo}
+                },
+            )
+
+            recordset = {}
+            for row in json_dynamodb.loads(response['Items']):
+                recordset = {
+                'AppointmentId': row['PKID'].replace('APPO#',''),
+                'Name': row['NAME'],
+                'Phone': row['PHONE'],
+                'Door': row['DOOR'] if 'DOOR' in row else '',
+                'Status': row['STATUS']
+            }
+            record.append(recordset)
 
         resultSet = { 
             'Code': 200,
-            'lastItem': lastItem,
-            'AppId': appoId,
             'Appos': record
         }
         statusCode = 200

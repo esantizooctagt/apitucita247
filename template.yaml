@@ -849,12 +849,12 @@ Resources:
             Method: put
             ApiId: !Ref HttpApi
         
-  GetLocationCheckInFunction:
+  GetWalkInsCheckOutFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: GetLocationCheckIn
-      CodeUri: getLocationCheckIn/
-      Handler: getLocationCheckIn.lambda_handler
+      FunctionName: GetWalkInsCheckOut
+      CodeUri: getWalkInsCheckOut/
+      Handler: getWalkInsCheckOut.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
@@ -866,7 +866,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/checkin/{businessId}/{locationId}/{dateAppo}/{lastItem}/{appoId}
+            Path: /location/walkins/{businessId}/{locationId}/{dateAppo}
             Method: get
             ApiId: !Ref HttpApi
 

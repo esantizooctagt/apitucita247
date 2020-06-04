@@ -37,14 +37,14 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK < :gsi1sk',
+            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK <= :gsi1sk',
             ExpressionAttributeNames=n,
             FilterExpression=f,
             ExpressionAttributeValues={
                 ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                 ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
                 ':type': {'N': str(1)}
-            },
+            }
         )   
 
         record = []
@@ -76,14 +76,14 @@ def lambda_handler(event, context):
             if lastItem:
                 appoId = lastItem['PKID'].replace('APPO#','')
                 lastItem = lastItem['GSI1SK']
-                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
+                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
 
             response = dynamodb.query(
                 TableName="TuCita247",
                 IndexName="TuCita247_Index",
                 ReturnConsumedCapacity='TOTAL',
                 ExclusiveStartKey= lastItem,
-                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
+                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK <= :gsi1sk',
                 FilterExpression=f,
                 ExpressionAttributeNames=n,
                 ExpressionAttributeValues={
