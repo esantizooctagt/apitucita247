@@ -47,7 +47,7 @@ def lambda_handler(event, context):
             UpdateExpression="SET OPEN_DATE = :actualDate, PEOPLE_CHECK_IN = :qty, #o = :open", #, CLOSED_DATE = :closed
             ExpressionAttributeValues= {':actualDate': dateOpe, ':qty': 0, ':open': 1, ':initVal': 0}, #, ':open': 1, ':closed': '',
             ExpressionAttributeNames={'#o': 'OPEN'},
-            ConditionExpression='attribute_not_exists(OPEN) OR OPEN = :initVal',
+            ConditionExpression='attribute_not_exists(#o) OR #o = :initVal',
             ReturnValues="UPDATED_NEW"
         )
 

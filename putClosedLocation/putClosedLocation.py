@@ -47,7 +47,7 @@ def lambda_handler(event, context):
             UpdateExpression="SET PEOPLE_CHECK_IN = :qty, OPEN_DATE = :closed, #o = :open", 
             ExpressionAttributeValues= {':qty': 0, ':closed': '', ':initVal': 1, ':open': 0},
             ExpressionAttributeNames={'#o': 'OPEN'},
-            ConditionExpression='OPEN = :initVal',
+            ConditionExpression='#o = :initVal',
             ReturnValues="NONE"
         )
 
