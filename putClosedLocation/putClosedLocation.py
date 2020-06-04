@@ -52,7 +52,7 @@ def lambda_handler(event, context):
         )
 
         statusCode = 200
-        body = json.dumps({'Message': 'Location opened successfully', 'Code': 200, 'Business': json_dynamodb.loads(response)})
+        body = json.dumps({'Message': 'Location opened successfully', 'Code': 200, 'Business': json_dynamodb.loads(response['Attributes'])})
 
         logger.info(response)
         if statusCode == '':
