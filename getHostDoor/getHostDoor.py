@@ -59,24 +59,23 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId },
-                    ':locationId': {'S': 'LOC#'+ locationId },
-                    ':actualDate': {'S': dateOpe }
-                },
-                FilterExpression='begins_with ( OPEN_DATE , :actualDate )'
+                    ':locationId': {'S': 'LOC#'+ locationId }
+                }
             )
             for item in json_dynamodb.loads(locs['Items']):
+                if item['OPEN_DATE'][0:10] < dateOpe and item['OPEN'] == 1:
+                    open = 1
+                    closed = 1
+                if item['OPEN_DATE'][0:10] == dateOpe:
+                    open = item['OPEN']
+                    closed = 0
+
                 recordset = {
                     'LocationId': locationId,
                     'Door': door,
-                    'Open': 1,
+                    'Open': open,
+                    'Closed': closed,
                     'ManualCheckOut': item['MANUAL_CHECK_OUT']
-                }
-            if locs['Count'] <= 0:
-                recordset = {
-                    'LocationId': locationId,
-                    'Door': door,
-                    'Open': 0,
-                    'ManualCheckOut': 0
                 }
     
             statusCode = 200
