@@ -996,6 +996,26 @@ Resources:
             Method: put
             ApiId: !Ref HttpApi
 
+  PutAppointmentManualCOFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutAppointmentManualCO
+      CodeUri: putAppointmentManualCO/
+      Handler: putAppointmentManualCO.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /appointment/checkout/manual/{businessId}/{locationId}
+            Method: put
+            ApiId: !Ref HttpApi
+
 # Outputs:
 #  outputs  
 #   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

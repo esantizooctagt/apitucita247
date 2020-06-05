@@ -63,7 +63,6 @@ def lambda_handler(event, context):
         opeHours = ''
         daysOff = []
         dateAppo = '' 
-        hourAppo = ''
 
         # letters = string.ascii_uppercase
         # qrCode = ''.join(random.choice(letters) for i in range(10))
@@ -101,7 +100,6 @@ def lambda_handler(event, context):
                 currHour = Decimal(today.strftime("%H"))
                 if  currHour >= ini and currHour <= fin:
                     dateAppo = today.strftime("%Y-%m-%d") + '-' + today.strftime("%H").ljust(2,'0')  + '-00'
-                    hourAppo = str(+today.strftime("%H")-12).ljust(2,'0') + ' PM' if +today.strftime("%H") > 12 else today.strftime("%H").ljust(2,'0') + ' AM'
                     break
                     
         if dayOffValid == False:
@@ -197,7 +195,7 @@ def lambda_handler(event, context):
                 'Door': door,
                 'Disability': 0 if disability == '' else int(disability),
                 'DateFull': dateAppo,
-                'DateAppo': hourAppo
+                'DateAppo': str(int(today.strftime("%H"))-12).ljust(2,'0') + ':00 PM' if int(today.strftime("%H")) > 12 else today.strftime("%H").ljust(2,'0') + ':00 AM'
             }
 
             statusCode = 200
