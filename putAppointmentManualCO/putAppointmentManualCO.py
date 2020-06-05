@@ -39,7 +39,7 @@ def lambda_handler(event, context):
                 'SKID': 'LOC#' + locationId
             },
             UpdateExpression="SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
-            ExpressionAttributeValues={ ':increment': str(1) },
+            ExpressionAttributeValues={':increment': 1},
             ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)",
             ReturnValues="NONE"
         )
