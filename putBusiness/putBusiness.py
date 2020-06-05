@@ -17,6 +17,17 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def cleanNullTerms(d):
+   clean = {}
+   for k, v in d.items():
+      if isinstance(v, dict):
+         nested = cleanNullTerms(v)
+         if len(nested.keys()) > 0:
+            clean[k] = nested
+      elif v is not None:
+         clean[k] = v
+   return clean
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -28,6 +39,7 @@ def lambda_handler(event, context):
         statusCode = ''
         data = json.loads(event['body'])
         businessId = event['pathParameters']['id']
+        parentBusiness = data['ParentBusiness']
         # BUSINESS CATEGORIES
         response = dynamodb.query(
             TableName = "TuCita247",
@@ -92,7 +104,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA' }
                 },
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, OPERATIONHOURS = :operationHours, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip",
+                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, OPERATIONHOURS = :operationHours, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else ""),
                 "ExpressionAttributeNames": { '#n': 'NAME' },
                 "ExpressionAttributeValues": { 
                     ":longDescrip": {"S": data['LongDescription']},
@@ -109,12 +121,14 @@ def lambda_handler(event, context):
                     ":phone": {"S": data['Phone']},
                     ":twitter": {"S": data['Twitter']},
                     ":website": {"S": data['Website']},
+                    ":key1": {"S": "PARENT#BUS" if parentBusiness == 1 else None},
+                    ":skey1": {"S": data['Name'] + "#" + businessId if parentBusiness == 1 else None},
                     ":zipcode": {"S": data['ZipCode']}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },
         }
-        items.append(rows)
+        items.append(cleanNullTerms(rows))
 
         logger.info(items)
         response = dynamodb.transact_write_items(
