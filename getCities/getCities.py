@@ -28,18 +28,19 @@ def lambda_handler(event, context):
 
     records =[]
     try:
+        country = event['pathParameters']['country']
+
         response = dynamodb.query(
             TableName="TuCita247",
-            IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :business',
+            KeyConditionExpression='PKID = :country',
             ExpressionAttributeValues={
-                ':business': {'S': 'PARENT#BUS'}
+                ':country': {'S': 'COUNTRY#' + country}
             }
         )
         for row in json_dynamodb.loads(response['Items']):
             recordset = {
-                'BusinessId': row['PKID'].replace('BUS#',''),
+                'CityId': row['SKID'].replace('CITY#',''),
                 'Name': row['NAME']
             }
             records.append(recordset)
@@ -50,17 +51,16 @@ def lambda_handler(event, context):
 
             response = dynamodb.query(
                 TableName="TuCita247",
-                IndexName="TuCita247_Index",
                 ExclusiveStartKey= lastItem,
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='GSI1PK = :business',
+                KeyConditionExpression='PKID = :country',
                 ExpressionAttributeValues={
-                    ':business': {'S': 'PARENT#BUS'}
+                    ':country': {'S': 'COUNTRY#' + country}
                 }
             )
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
-                    'BusinessId': row['PKID'].replace('BUS#',''),
+                    'CityId': row['SKID'].replace('CITY#',''),
                     'Name': row['NAME']
                 }
                 records.append(recordset)
