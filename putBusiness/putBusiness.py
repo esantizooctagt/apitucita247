@@ -92,9 +92,11 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA' }
                 },
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, OPERATIONHOURS = :operationHours, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode",
+                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, OPERATIONHOURS = :operationHours, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip",
                 "ExpressionAttributeNames": { '#n': 'NAME' },
                 "ExpressionAttributeValues": { 
+                    ":longDescrip": {"S": data['LongDescription']},
+                    ":shortDescrip": {"S": data['ShortDescription']},
                     ":address": {"S": data['Address']},
                     ":city": {"S": data['City']},
                     ":country": {"S": data['Country']},

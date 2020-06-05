@@ -68,6 +68,8 @@ def lambda_handler(event, context):
                 'Name': row['NAME'],
                 'Country': row['COUNTRY'],
                 'Address': row['ADDRESS'],
+                'LongDescription': row['LONGDESCRIPTION'],
+                'ShortDescription': row['SHORTDESCRIPTION'],
                 'City': row['CITY'],
                 'ZipCode': row['ZIPCODE'],
                 'Geolocation': row['GEOLOCATION'],
