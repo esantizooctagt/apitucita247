@@ -53,7 +53,7 @@ def lambda_handler(event, context):
                 'Door': row['DOOR'] if 'DOOR' in row else '',
                 'Status': row['STATUS'],
                 'NoPeople': row['PEOPLE_QTY'],
-                'CheckOut': 0
+                'CheckOut': False
             }
             record.append(recordset)
 
@@ -82,7 +82,7 @@ def lambda_handler(event, context):
                 'Door': row['DOOR'] if 'DOOR' in row else '',
                 'Status': row['STATUS'],
                 'NoPeople': row['PEOPLE_QTY'],
-                'CheckOut': 0
+                'CheckOut': False
             }
             record.append(recordset)
 
