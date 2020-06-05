@@ -36,7 +36,7 @@ def lambda_handler(event, context):
             KeyConditionExpression='PKID = :country AND begins_with ( SKID , :city )',
             ExpressionAttributeValues={
                 ':country': {'S': 'COUNTRY#' + country},
-                ':city': {"S" 'CITY#'}
+                ':city': {"S": 'CITY#'}
             }
         )
         for row in json_dynamodb.loads(response['Items']):
@@ -57,7 +57,7 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :country AND begins_with ( SKID , :city )',
                 ExpressionAttributeValues={
                     ':country': {'S': 'COUNTRY#' + country},
-                    ':city': {"S" 'CITY#'}
+                    ':city': {"S": 'CITY#'}
                 }
             )
             for row in json_dynamodb.loads(response['Items']):
