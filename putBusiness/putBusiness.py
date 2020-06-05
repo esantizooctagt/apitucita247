@@ -121,7 +121,7 @@ def lambda_handler(event, context):
                     ":phone": {"S": data['Phone']},
                     ":twitter": {"S": data['Twitter']},
                     ":website": {"S": data['Website']},
-                    ":parentBus": {"N": data['ParentBusiness']},
+                    ":parentBus": {"N": str(data['ParentBusiness'])},
                     ":key1": {"S": "PARENT#BUS" if parentBusiness == 1 else None},
                     ":skey1": {"S": data['Name'] + "#" + businessId if parentBusiness == 1 else None},
                     ":zipcode": {"S": data['ZipCode']}
