@@ -50,7 +50,7 @@ def lambda_handler(event, context):
                 'Name': row['NAME'],
                 'Address': row['ADDRESS'],
                 'City': row['CITY'],
-                'Sector': row['SECTOR'] if 'SECTOR' in row else '',
+                'Sector': row['SECTOR'] if 'SECTOR' in row else '0',
                 'Geolocation': row['GEOLOCATION'],
                 'ParentLocation': row['PARENT_LOCATION'],
                 'TotalPiesTransArea': row['TOTAL_TRANSITABLE_AREA'],
