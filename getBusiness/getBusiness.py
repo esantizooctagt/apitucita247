@@ -70,6 +70,7 @@ def lambda_handler(event, context):
                 'Address': row['ADDRESS'],
                 'LongDescription': row['LONGDESCRIPTION'],
                 'ShortDescription': row['SHORTDESCRIPTION'],
+                'Imagen': row['IMGBUSINESS'],
                 'City': row['CITY'],
                 'ZipCode': row['ZIPCODE'],
                 'Geolocation': row['GEOLOCATION'],
