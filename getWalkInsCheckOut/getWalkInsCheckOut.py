@@ -52,6 +52,7 @@ def lambda_handler(event, context):
                 'Phone': row['PHONE'],
                 'Door': row['DOOR'] if 'DOOR' in row else '',
                 'Status': row['STATUS'],
+                'DateAppo': row['DATE_APPO'],
                 'NoPeople': row['PEOPLE_QTY'],
                 'CheckOut': False
             }
@@ -81,6 +82,7 @@ def lambda_handler(event, context):
                 'Phone': row['PHONE'],
                 'Door': row['DOOR'] if 'DOOR' in row else '',
                 'Status': row['STATUS'],
+                'DateAppo': row['DATE_APPO'],
                 'NoPeople': row['PEOPLE_QTY'],
                 'CheckOut': False
             }

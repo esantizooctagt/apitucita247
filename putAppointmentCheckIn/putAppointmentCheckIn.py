@@ -23,6 +23,17 @@ dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 # dynamodbTable = boto3.resource('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def cleanNullTerms(d):
+   clean = {}
+   for k, v in d.items():
+      if isinstance(v, dict):
+         nested = cleanNullTerms(v)
+         if len(nested.keys()) > 0:
+            clean[k] = nested
+      elif v is not None:
+         clean[k] = v
+   return clean
+   
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -32,6 +43,7 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
+        typeAppo = ''
         data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
         status = data['Status']
@@ -44,7 +56,19 @@ def lambda_handler(event, context):
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
-        
+
+        response = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :pkid AND SKID = :skid',
+            ExpressionAttributeValues={
+                ':pkid': {'S': 'APPO#' + appointmentId},
+                ':skid': {'S': 'APPO#' + appointmentId}
+            }
+        )
+        for row in json_dynamodb.loads(response['Items']):
+            typeAppo = row['TYPE']
+
         items = []
         recordset = {
             "Update": {
@@ -53,19 +77,21 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'APPO#' + appointmentId}, 
                     "SKID": {"S": 'APPO#' + appointmentId}
                 },
-                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKIN = :dateOpe", 
+                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKIN = :dateOpe" + ("" if typeAppo != 2 else ", GSI4PK = :key4, GSI4SK = :skey4"), 
                 "ExpressionAttributeValues": {
                     ":status": {"N": "3"}, 
                     ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
                     ":dateOpe": {"S": str(dateAppo)},
-                    ":qrCode": {"S": qrCode}
+                    ":qrCode": {"S": qrCode},
+                    ":key4": {"S": None if typeAppo != 2 else "BUS#" + businessId + "#LOC#" + locationId},
+                    ":skey4": {"S": None if typeAppo != 2 else str(status) + "#DT#" + str(dateAppo) + "#" + appointmentId}
                 },
                 "ExpressionAttributeNames": {'#s': 'STATUS'},
                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND QRCODE = :qrCode",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
             }
         }
-        items.append(recordset)
+        items.append(cleanNullTerms(recordset))
         
         # recordset = {
         #     "Update": {
