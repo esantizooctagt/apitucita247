@@ -72,7 +72,7 @@ def lambda_handler(event, context):
                 records.append(recordset)
 
         resultSet = { 
-            'users': records
+            'locs': records
         }
         statusCode = 200
         body = json.dumps(resultSet)
