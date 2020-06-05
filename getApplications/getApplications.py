@@ -35,7 +35,7 @@ def lambda_handler(event, context):
         
         e = {'#s': 'STATUS'}
         f = '#s = :stat'
-        if roleId == '0':
+        if roleId == '0' or roleId == '1':
             response = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -47,36 +47,13 @@ def lambda_handler(event, context):
                     ':stat' : {'N': '1'}
                 }
             )
-            for row in response['Items']:
-                apps = json_dynamodb.loads(row)
+            for row in json_dynamodb.loads(response['Items']):
                 recordset = {
-                    'ApplicationId': apps['SKID'],
-                    'Name': apps['NAME'],
-                    'Active': 0,
-                    'Icon': apps['ICON'],
-                    'Route': apps['ROUTE']
-                }
-                records.append(recordset)
-        elif roleId == '1':
-            response = dynamodb.query(
-                TableName="TuCita247",
-                ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :apps',
-                ExpressionAttributeNames=e,
-                FilterExpression=f,
-                ExpressionAttributeValues={
-                    ':apps': {'S': 'APPS'},
-                    ':stat' : {'N': '1'}
-                }
-            )
-            for row in response['Items']:
-                apps = json_dynamodb.loads(row)
-                recordset = {
-                    'ApplicationId': apps['SKID'],
-                    'Name': apps['NAME'],
-                    'Active': 1,
-                    'Icon': apps['ICON'],
-                    'Route': apps['ROUTE']
+                    'ApplicationId': row['SKID'],
+                    'Name': row['NAME'],
+                    'Active': 0 if roleId == '0' else 1,
+                    'Icon': row['ICON'],
+                    'Route': row['ROUTE']
                 }
                 records.append(recordset)
         else:

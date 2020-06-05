@@ -1099,6 +1099,48 @@ Resources:
             Path: /locations/sectors/{country}/{city}
             Method: get
             ApiId: !Ref HttpApi
+
+  GetUsersLocFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetUsersLoc
+      CodeUri: getUsersLoc/
+      Handler: getUsersLoc.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /users/location/{businessId}
+            Method: get
+            ApiId: !Ref HttpApi
+        
+  GetLocationsCodeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetLocationsCode
+      CodeUri: getLocationsCode/
+      Handler: getLocationsCode.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /locations/Codes/{businessId}
+            Method: get
+            ApiId: !Ref HttpApi
 # Outputs:
 #  outputs  
 #   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
