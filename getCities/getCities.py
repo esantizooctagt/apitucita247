@@ -33,9 +33,10 @@ def lambda_handler(event, context):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :country',
+            KeyConditionExpression='PKID = :country AND begins_with ( SKID , :city )',
             ExpressionAttributeValues={
-                ':country': {'S': 'COUNTRY#' + country}
+                ':country': {'S': 'COUNTRY#' + country},
+                ':city': {"S" 'CITY#'}
             }
         )
         for row in json_dynamodb.loads(response['Items']):
@@ -53,9 +54,10 @@ def lambda_handler(event, context):
                 TableName="TuCita247",
                 ExclusiveStartKey= lastItem,
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :country',
+                KeyConditionExpression='PKID = :country AND begins_with ( SKID , :city )',
                 ExpressionAttributeValues={
-                    ':country': {'S': 'COUNTRY#' + country}
+                    ':country': {'S': 'COUNTRY#' + country},
+                    ':city': {"S" 'CITY#'}
                 }
             )
             for row in json_dynamodb.loads(response['Items']):
