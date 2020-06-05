@@ -42,7 +42,7 @@ def lambda_handler(event, context):
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
-        dateOpe = today.strftime("%Y-%m-%d")
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
         
         for appo in data['Appos']:
             items = []
@@ -50,8 +50,8 @@ def lambda_handler(event, context):
                 "Update": {
                     "TableName": "TuCita247",
                     "Key": {
-                        "PKID": {"S": appo['AppointmentId']}, 
-                        "SKID": {"S": appo['AppointmentId']}
+                        "PKID": {"S": 'APPO#' + appo['AppointmentId']}, 
+                        "SKID": {"S": 'APPO#' + appo['AppointmentId']}
                     },
                     "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKOUT = :dateOpe", 
                     "ExpressionAttributeValues": {
