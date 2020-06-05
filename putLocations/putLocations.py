@@ -36,7 +36,6 @@ def lambda_handler(event, context):
             locations = {}
             if locs['LocationId'] == '':
                 locId = str(uuid.uuid4()).replace("-","")
-                #"OPEN": {"S": str(locs['Open'])},
                 locations = {
                     "Put":{
                         "TableName":"TuCita247",
@@ -66,7 +65,6 @@ def lambda_handler(event, context):
                     },
                 }
             else:
-                # "OPEN": {"S": str(locs['Open'])},
                 locations = {
                     "Put":{
                         "TableName":"TuCita247",

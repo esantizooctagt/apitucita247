@@ -57,7 +57,6 @@ def lambda_handler(event, context):
                 'LocationDensity': row['LOCATION_DENSITY'],
                 'MaxNumberEmployeesLocation': row['MAX_NUMBER_EMPLOYEES_LOC'],
                 'MaxConcurrentCustomerLocation': row['MAX_CUSTOMER_LOC'],
-                'Open': row['OPEN'],
                 'BucketInterval': row['BUCKET_INTERVAL'],
                 'TotalCustPerBucketInter': row['CUSTOMER_PER_BUCKET'],
                 'OperationHours': row['OPERATIONHOURS'],
