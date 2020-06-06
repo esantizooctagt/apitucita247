@@ -48,8 +48,8 @@ def lambda_handler(event, context):
                 IdPoll = item['GSI1SK'].replace('POLL#','')
                 Name = item['NAME']
                 LocationId = item['LOCATIONID']
-                DatePoll: item['DATE_POLL']
-                Status: int(item['STATUS'])
+                DatePoll = item['DATE_POLL']
+                Status = int(item['STATUS'])
             else:
                 lines = {
                     'QuestionId': item['GSI1SK'].replace('ITEM#',''),
