@@ -32,20 +32,20 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :pollId',
+            KeyConditionExpression='GSI1PK = :polls',
             ExpressionAttributeValues={
                 ':polls': {'S': 'POLL#' + pollId}
             }
         )
         lines ={}
-        PollId = ''
+        IdPoll = ''
         Name = ''
         LocationId = ''
         DatePoll = ''
         Status = 0
         for item in json_dynamodb.loads(details['Items']):
             if item['GSI1SK'][0:4] == 'POLL':
-                PollId = item['GSI1SK'].replace('POLL#','')
+                IdPoll = item['GSI1SK'].replace('POLL#','')
                 Name = item['NAME']
                 LocationId = item['LOCATIONID']
                 DatePoll: item['DATE_POLL']
@@ -59,7 +59,7 @@ def lambda_handler(event, context):
                 items.append(lines)
 
         recordset = {
-            'PollId': PollId,
+            'PollId': IdPoll,
             'Name': Name,
             'LocationId': LocationId,
             'DatePoll': DatePoll,
