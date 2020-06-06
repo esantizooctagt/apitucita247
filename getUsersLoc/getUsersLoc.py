@@ -27,7 +27,7 @@ def lambda_handler(event, context):
     records =[]
     try:
         businessId = event['pathParameters']['businessId']
-        items = event['pathParameters']['items']
+        items = int(event['pathParameters']['items'])
         lastItem = event['pathParameters']['lastItem']
         salir = 0
 

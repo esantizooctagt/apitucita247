@@ -9,7 +9,6 @@ from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
 import os
-
 REGION = 'us-east-1'
 
 logger = logging.getLogger()
