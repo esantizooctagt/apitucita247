@@ -81,44 +81,62 @@ def lambda_handler(event, context):
                     "Put": {
                         "TableName": "TuCita247",
                         "Item": {
-                            "PKID": {"S": 'POLL#' + pollId + '#ITEM#' + line},
-                            "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + line},
+                            "PKID": {"S": 'POLL#' + pollId + '#ITEM#' + str(line)},
+                            "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + str(line)},
                             "GSI1PK": {"S": 'POLL#' + pollId},
-                            "GSI1SK": {"S": 'ITEM#' + line},
+                            "GSI1SK": {"S": 'ITEM#' + str(line)},
                             "DESCRIPTION": {"S": quest['Description']},
                             "HAPPY": {"N": str(0)},
                             "NEUTRAL": {"N": str(0)},
-                            "ANGRY": {"N": str(0)}
+                            "ANGRY": {"N": str(0)},
+                            "STATUS": {"N": str(1)}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     }
                 }
             else:
-                recordset = {
-                    "Put": {
-                        "TableName": "TuCita247",
-                        "Item": {
-                            "PKID": {"S": 'POLL#' + pollId + '#ITEM#' + line},
-                            "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + line},
-                            "GSI1PK": {"S": 'POLL#' + pollId},
-                            "GSI1SK": {"S": 'ITEM#' + line},
-                            "DESCRIPTION": {"S": quest['Description']}
-                        },
-                        "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                if int(quest['Status']) == 1:
+                    recordset = {
+                        "Put": {
+                            "TableName": "TuCita247",
+                            "Item": {
+                                "PKID": {"S": 'POLL#' + pollId + '#ITEM#' + str(line)},
+                                "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + str(line)},
+                                "GSI1PK": {"S": 'POLL#' + pollId},
+                                "GSI1SK": {"S": 'ITEM#' + str(line)},
+                                "DESCRIPTION": {"S": quest['Description']},
+                                "STATUS": {"N": str(quest['Status'])}
+                            },
+                            "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                        }
                     }
-                }
+                else:
+                    recordset = {
+                        "Delete": {
+                            "TableName": "TuCita247",
+                            "Key": {
+                                "PKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']},
+                                "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']}
+                            },
+                            "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                        }
+                    }
             items.append(recordset)
+            line = line + 1
             
         logger.info(items)
         response = dynamodb.transact_write_items(
             TransactItems = items
         )
-        
+        statusCode = 200
+        body = json.dumps({'Message': 'Poll added successfully'})
+
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Message': 'Error on added user'})
+            body = json.dumps({'Message': 'Error on added poll'})
     except dynamodb.exceptions.TransactionCanceledException as e:
             statusCode = 404
             body = json.dumps({"Code":400,"error": False, 
