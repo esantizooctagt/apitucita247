@@ -47,7 +47,7 @@ def lambda_handler(event, context):
                         "NAME": {"S": data['Name']},
                         "LOCATIONID": {"S": data['LocationId']},
                         "DATE_POLL": {"S": data['DatePoll']},
-                        "STATUS": {"N": data['Status']}
+                        "STATUS": {"N": str(data['Status'])}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -67,7 +67,7 @@ def lambda_handler(event, context):
                         "NAME": {"S": data['NAME']},
                         "LOCATIONID": {"S": data['LocationId']},
                         "DATE_POLL": {"S": data['DatePoll']},
-                        "STATUS": {"N": data['Status']}
+                        "STATUS": {"N": str(data['Status'])}
                     },
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
