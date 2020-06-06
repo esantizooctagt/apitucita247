@@ -30,20 +30,19 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         businessId = event['pathParameters']['businessId']
 
-        for row in data['Users']:
-            table = dynamodb.Table('TuCita247')
-            response = table.update_item(
-                Key={
-                    'PKID': 'BUS#' + businessId,
-                    'SKID': 'USER#' + row['UserId']
-                },
-                UpdateExpression="set LOCATIONID = :locationId, DOOR = :door",
-                ExpressionAttributeValues={
-                    ':locationId': data['LocationId'], 
-                    ':door': data['Door']
-                },
-                ReturnValues="UPDATED_NEW"
-            )
+        table = dynamodb.Table('TuCita247')
+        response = table.update_item(
+            Key={
+                'PKID': 'BUS#' + businessId,
+                'SKID': 'USER#' + data['UserId']
+            },
+            UpdateExpression="set LOCATIONID = :locationId, DOOR = :door",
+            ExpressionAttributeValues={
+                ':locationId': data['LocationId'], 
+                ':door': data['Door']
+            },
+            ReturnValues="UPDATED_NEW"
+        )
 
         statusCode = 200
         body = json.dumps({'Message': 'Users updated successfully', 'Code': 200})
