@@ -1117,7 +1117,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /users/location/{businessId}
+            Path: /users/location/{businessId}/{items}/{lastItem}
             Method: get
             ApiId: !Ref HttpApi
         
