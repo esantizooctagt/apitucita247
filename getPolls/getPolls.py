@@ -29,11 +29,15 @@ def lambda_handler(event, context):
         businessId = event['pathParameters']['businessId']
         items = int(event['pathParameters']['items'])
         lastItem = event['pathParameters']['lastItem']
+        search = event['pathParameters']['search']
         salir = 0
 
         e = {'#s': 'STATUS'}
         a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':polls': {'S':'POLL#'}}
         f = '#s < :stat'
+        if search != '_':
+            f = '#s < :stat and begins_with (NAME , :search)'
+            a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':polls': {'S':'POLL#'}, ':search': {'S': search}}
 
         if lastItem == '_':
             lastItem = ''

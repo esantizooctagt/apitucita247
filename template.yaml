@@ -1201,7 +1201,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /polls/{businessId}/{items}/{lastItem}
+            Path: /polls/{businessId}/{items}/{search}/{lastItem}
             Method: get
             ApiId: !Ref HttpApi
 # Outputs:
