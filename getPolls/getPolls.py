@@ -73,7 +73,7 @@ def lambda_handler(event, context):
             recordset ={}
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
-                    'PollId': row['POLL'].replace('POLL#',''),
+                    'PollId': row['SKID'].replace('POLL#',''),
                     'Name': row['NAME'],
                     'LocationId': row['LOCATIONID'],
                     'DatePoll': row['DATE_POLL'],
