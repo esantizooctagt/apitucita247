@@ -42,8 +42,8 @@ def lambda_handler(event, context):
                 salir = 1
             else:
                 lastItem = {'PKID': {'S': 'BUS#' + businessId },'SKID': {'S': 'USER#' + lastItem }}
-                
-        if salir == 1:
+
+        if salir == 0:
             if lastItem == '':
                 response = dynamodb.query(
                     TableName="TuCita247",
