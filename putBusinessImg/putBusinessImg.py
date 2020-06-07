@@ -84,7 +84,7 @@ def lambda_handler(event, context):
         else: 
             if File != '':
                 logger.info('SUCCESS: Add image into the bucket')
-                if put_object('tucita247', businessId+'/img/avatars/'+businessId+'.'+ext, base64.b64decode(File), 'image/'+tipo):
+                if put_object('tucita247', businessId+'/img/mobile/'+businessId+'.'+ext, base64.b64decode(File), 'image/'+tipo):
                     logger.info('Image Added')
                 else:
                     statusCode = 500
