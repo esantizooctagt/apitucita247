@@ -58,6 +58,7 @@ def lambda_handler(event, context):
             appointmentId = row['PKID']
             dateAppo = row['DATE_APPO']
             qty = row['PEOPLE_QTY']
+            customerId = row['GSI2PK'].replace('CUS#','')
 
         if appointmentId != '':
             items = []
@@ -102,7 +103,27 @@ def lambda_handler(event, context):
             tranAppo = dynamodb.transact_write_items(
                 TransactItems = items
             )
+
+            #SEND NOTIFICATION CON LINK DE ENCUESTA
+            response = dynamodb.query(
+                TableName="TuCita247",
+                IndexName="TuCita247_CustAppos",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='GSI2PK = :key AND GSI2SK <= :datePoll',
+                ScanIndexForward=False,
+                ExpressionAttributeValues={
+                    ':key': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                    ':datePoll': {'S': '1#DT#' + dateOpe}
+                }
+            )
+
+            for poll in json_dynamodb.loads(response['Items']):
+                pollId = poll['SKID'].replace('POLL#','')
             
+            #PENDIENTE ENVIAR EL LINK
+            link = 'https://console.tucita247.com/poll-response/' + pollId + '/' + customerId
+            logger.info(link)
+
             logger.info(tranAppo)
             statusCode = 200
             body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
