@@ -30,6 +30,7 @@ def lambda_handler(event, context):
 
     try:
         businessId = event['pathParameters']['businessId']
+        country = event['pathParameters']['country']
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -44,6 +45,22 @@ def lambda_handler(event, context):
         recordset = {}
         records = []
         for row in locations:
+            sectors = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :city',
+                ExpressionAttributeValues={
+                    ':city': {'S': 'COUNTRY#' + country + '#CITY#' + row['CITY']}
+                }
+            )
+            items = []
+            for det in json_dynamodb.loads(sectors['Items']):
+                rows = {
+                    'SectorId': det['SKID'].replace('SECTOR#',''),
+                    'Name': det['NAME']
+                }
+                items.append(rows)
+
             recordset = {
                 'BusinessId': row['PKID'].replace('BUS#',''),
                 'LocationId': row['SKID'].replace('LOC#',''),
@@ -61,7 +78,8 @@ def lambda_handler(event, context):
                 'TotalCustPerBucketInter': row['CUSTOMER_PER_BUCKET'],
                 'OperationHours': row['OPERATIONHOURS'],
                 'Doors': row['DOORS'],
-                'Status': row['STATUS']
+                'Status': row['STATUS'],
+                'Sectors': items
             }
             records.append(recordset)
         
