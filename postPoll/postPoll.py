@@ -55,20 +55,22 @@ def lambda_handler(event, context):
             }
         else:
             recordset = {
-                "Put": {
+                "Update": {
                     "TableName": "TuCita247",
-                    "Item": {
+                    "Key": {
                         "PKID": {"S": 'BUS#'+data['BusinessId']},
-                        "SKID": {"S": 'POLL#' + pollId},
-                        "GSI1PK": {"S": 'POLL#' + pollId},
-                        "GSI1SK": {"S": 'POLL#' + pollId},
-                        "GSI2PK": {"S": 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
-                        "GSI2SK": {"S": 'DT#' + data['DatePoll']},
-                        "NAME": {"S": data['Name']},
-                        "LOCATIONID": {"S": data['LocationId']},
-                        "DATE_POLL": {"S": data['DatePoll']},
-                        "STATUS": {"N": str(data['Status'])}
+                        "SKID": {"S": 'POLL#' + pollId}
                     },
+                    "UpdateExpression": "SET NAME = :name, GSI2PK = :key2, GSI2SK = :key3, LOCATIONID = :locationId, DATE_POLL = :datePoll, #s :status",
+                    "ExpressionAttributeValues": {
+                        ':name': {'S': data['Name']},
+                        ':key2': {'S': 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
+                        ':key3': {'S': 'DT#' + data['DatePoll']},
+                        ':locationId': {'S': data['LocationId']},
+                        ':datePoll': {'S': data['DatePoll']},
+                        ':status': {'N': str(data['Status'])}
+                    },
+                    "ExpressionAttributeNames": {'#s': 'STATUS'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                 },
@@ -98,16 +100,18 @@ def lambda_handler(event, context):
             else:
                 if int(quest['Status']) == 1:
                     recordset = {
-                        "Put": {
+                        "Update": {
                             "TableName": "TuCita247",
-                            "Item": {
+                            "Key": {
                                 "PKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']},
-                                "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']},
-                                "GSI1PK": {"S": 'POLL#' + pollId},
-                                "GSI1SK": {"S": 'ITEM#' + quest['QuestionId']},
-                                "DESCRIPTION": {"S": quest['Description']},
-                                "STATUS": {"N": str(quest['Status'])}
+                                "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']}
                             },
+                            "UpdateExpression": "SET DESCRIPTION :description, #s :status",
+                            "ExpressionAttributeValues": {
+                                ':description': {'S': quest['Description']},
+                                ':status': {'N': str(quest['Status'])}
+                            },
+                            "ExpressionAttributeNames": {'#s': 'STATUS'},
                             "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                         }
