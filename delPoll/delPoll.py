@@ -30,16 +30,20 @@ def lambda_handler(event, context):
         statusCode = ''
         pollId = event['pathParameters']['pollId']
         businessId = event['pathParameters']['businessId']
- 
+        datePoll = event['pathParameters']['datePoll']
+        
         table = dynamodb.Table('TuCita247')
         response = table.update_item(
             Key={
                 'PKID': 'BUS#' + businessId,
                 'SKID': 'POLL#' + pollId
             },
-            UpdateExpression="SET #s = :status",
+            UpdateExpression="SET #s = :status, GSI2SK = :key2",
             ExpressionAttributeNames={'#s': 'STATUS'},
-            ExpressionAttributeValues={':status': str(2)},
+            ExpressionAttributeValues={
+                ':status': str(2),
+                ':key2': str(2) + '#DT#' + datePoll
+            },
             ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)",
             ReturnValues="NONE"
         )

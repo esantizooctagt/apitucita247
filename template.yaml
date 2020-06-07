@@ -1243,7 +1243,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /poll/{pollId}/{businessId}
+            Path: /poll/{pollId}/{businessId}/{datePoll}
             Method: delete
             ApiId: !Ref HttpApi
 # Outputs:
