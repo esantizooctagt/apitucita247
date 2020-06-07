@@ -54,7 +54,10 @@ def lambda_handler(event, context):
                 lines = {
                     'QuestionId': item['GSI1SK'].replace('ITEM#',''),
                     'Description': item['DESCRIPTION'],
-                    'Status': item['STATUS']
+                    'Status': item['STATUS'],
+                    'Happy': item['HAPPY'],
+                    'Neutral': item['NEUTRAL'],
+                    'Angry': item['ANGRY']
                 }
                 items.append(lines)
 
