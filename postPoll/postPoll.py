@@ -50,18 +50,19 @@ def lambda_handler(event, context):
                         "STATUS": {"N": str(data['Status'])}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                    "ReturnValuesOnConditionCheckFailure": "NONE"
                 },
             }
         else:
+            pollId = data['PollId']
             recordset = {
                 "Update": {
                     "TableName": "TuCita247",
                     "Key": {
-                        "PKID": {"S": 'BUS#'+data['BusinessId']},
+                        "PKID": {"S": 'BUS#' + data['BusinessId']},
                         "SKID": {"S": 'POLL#' + pollId}
                     },
-                    "UpdateExpression": "SET NAME = :name, GSI2PK = :key2, GSI2SK = :key3, LOCATIONID = :locationId, DATE_POLL = :datePoll, #s :status",
+                    "UpdateExpression": "SET #n = :name, GSI2PK = :key2, GSI2SK = :key3, LOCATIONID = :locationId, DATE_POLL = :datePoll, #s = :status",
                     "ExpressionAttributeValues": {
                         ':name': {'S': data['Name']},
                         ':key2': {'S': 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
@@ -70,9 +71,9 @@ def lambda_handler(event, context):
                         ':datePoll': {'S': data['DatePoll']},
                         ':status': {'N': str(data['Status'])}
                     },
-                    "ExpressionAttributeNames": {'#s': 'STATUS'},
+                    "ExpressionAttributeNames": {'#s': 'STATUS','#n': 'NAME'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                    "ReturnValuesOnConditionCheckFailure": "NONE"
                 },
             }
         items.append(recordset)
@@ -106,7 +107,7 @@ def lambda_handler(event, context):
                                 "PKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']},
                                 "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']}
                             },
-                            "UpdateExpression": "SET DESCRIPTION :description, #s :status",
+                            "UpdateExpression": "SET DESCRIPTION = :description, #s = :status",
                             "ExpressionAttributeValues": {
                                 ':description': {'S': quest['Description']},
                                 ':status': {'N': str(quest['Status'])}
@@ -127,6 +128,8 @@ def lambda_handler(event, context):
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                         }
                     }
+                line = int(quest['QuestionId'])
+                
             items.append(recordset)
             line = line + 1
             
