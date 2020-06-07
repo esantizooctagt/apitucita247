@@ -1220,8 +1220,8 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Auth:
-              Authorizer: CognitoAuth
+            # Auth:
+            #   Authorizer: CognitoAuth
             Path: /poll/{pollId}
             Method: get
             ApiId: !Ref HttpApi
@@ -1262,8 +1262,8 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Auth:
-              Authorizer: CognitoAuth
+            # Auth:
+            #   Authorizer: CognitoAuth
             Path: /poll/user
             Method: post
             ApiId: !Ref HttpApi
