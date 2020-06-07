@@ -64,7 +64,7 @@ def lambda_handler(event, context):
                         "GSI1SK": {"S": 'POLL#' + pollId},
                         "GSI2PK": {"S": 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
                         "GSI2SK": {"S": 'DT#' + data['DatePoll']},
-                        "NAME": {"S": data['NAME']},
+                        "NAME": {"S": data['Name']},
                         "LOCATIONID": {"S": data['LocationId']},
                         "DATE_POLL": {"S": data['DatePoll']},
                         "STATUS": {"N": str(data['Status'])}
@@ -101,10 +101,10 @@ def lambda_handler(event, context):
                         "Put": {
                             "TableName": "TuCita247",
                             "Item": {
-                                "PKID": {"S": 'POLL#' + pollId + '#ITEM#' + str(line)},
-                                "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + str(line)},
+                                "PKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']},
+                                "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']},
                                 "GSI1PK": {"S": 'POLL#' + pollId},
-                                "GSI1SK": {"S": 'ITEM#' + str(line)},
+                                "GSI1SK": {"S": 'ITEM#' + quest['QuestionId']},
                                 "DESCRIPTION": {"S": quest['Description']},
                                 "STATUS": {"N": str(quest['Status'])}
                             },
