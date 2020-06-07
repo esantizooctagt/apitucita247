@@ -32,11 +32,11 @@ def lambda_handler(event, context):
         search = event['pathParameters']['search']
         salir = 0
 
-        e = {'#s': 'STATUS'}
+        e = {'#s': 'STATUS', '#n': 'NAME'}
         a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':polls': {'S':'POLL#'}}
         f = '#s < :stat'
         if search != '_':
-            f = '#s < :stat and begins_with (NAME , :search)'
+            f = '#s < :stat and begins_with (#n , :search)'
             a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':polls': {'S':'POLL#'}, ':search': {'S': search}}
 
         if lastItem == '_':
