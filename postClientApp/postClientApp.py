@@ -90,8 +90,8 @@ def lambda_handler(event, context):
                         "Item": {
                             "PKID": {"S": 'MOB#' + phone },
                             "SKID": {"S": 'CUS#' + clientId },
-                            "GSI1PK": {"S": 'CUS#TOT'},
-                            "GSI1SK": {"S": data['Name'] + '#' + phone},
+                            "GSI1PK": {"S": 'CUS#' + clientId},
+                            "GSI1SK": {"S": 'CUS#' + clientId},
                             "NAME": {"S": data['Name']},
                             "EMAIL": {"S": data['Email']},
                             "DOB": {"S": data['DOB']},
@@ -134,66 +134,6 @@ def lambda_handler(event, context):
         logger.info("data")
         statusCode = 200
         body = json.dumps({'Message': 'User added successfully', 'Code': 200, 'ActivateCode': code, 'ClientId': clientId})
-        # try:
-        #     key = secreKey.encode()
-        #     ct_b64 = data['Password'] 
-        #     passDecrypt = decrypt(ct_b64, key)
-        #     logger.info(passDecrypt)
-        #     client = boto3.client('cognito-idp')
-        #     response = client.sign_up(
-        #                 ClientId='52k0o8239mueu31uu5fihccbbf',
-        #                 SecretHash=get_secret_hash(email),
-        #                 Username=email,
-        #                 Password=passDecrypt.decode('utf-8'),
-        #                 UserAttributes=[
-        #                     {
-        #                         'Name': 'email',
-        #                         'Value': email
-        #                     },
-        #                     {
-        #                         'Name': 'custom:userId',
-        #                         'Value': userId
-        #                     },
-        #                     {
-        #                         'Name': 'custom:wpUserId',
-        #                         'Value': ''
-        #                     },
-        #                     {   
-        #                         'Name': 'custom:isAdmin',
-        #                         'Value': '0'
-        #                     }
-        #                 ]
-        #             )
-
-            # statusCode = 200
-            # body = json.dumps({'Message': 'User added successfully'})
-
-        # except client.exceptions.UsernameExistsException as e:
-        #     statusCode = 404
-        #     body = json.dumps({"Code":400, "error": False, 
-        #             "success": True, 
-        #             "message": "This email already exists", 
-        #             "data": None})
-        # except client.exceptions.InvalidPasswordException as e:
-        #     statusCode = 404
-        #     body = json.dumps({"Code":400,"error": False, 
-        #             "success": True, 
-        #             "message": "Password should have Caps,\
-        #                         Special chars, Numbers", 
-        #             "data": None})
-        # except client.exceptions.UserLambdaValidationException as e:
-        #     statusCode = 404
-        #     body = json.dumps({"Code":400,"error": False, 
-        #             "success": True, 
-        #             "message": "Email already exists " + str(e), 
-        #             "data": None})
-        
-        # except Exception as e:
-        #     statusCode = 404
-        #     body = json.dumps({"Code":400,"error": False, 
-        #             "success": True, 
-        #             "message": str(e), 
-        #             "data": None})
 
         if statusCode == '':
             statusCode = 500

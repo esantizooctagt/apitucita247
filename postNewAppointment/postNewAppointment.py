@@ -141,8 +141,8 @@ def lambda_handler(event, context):
                             "DOB": {"S": dob if dob != '' else None },
                             "GENDER": {"S": gender if gender != '' else None},
                             "PREFERENCES": {"N": str(preference) if str(preference) != '' else None},
-                            "GSI1PK": {"S": "CUS#TOT"}, 
-                            "GSI1SK": {"S": name + '#' + customerId}
+                            "GSI1PK": {"S": "CUS#" + customerId}, 
+                            "GSI1SK": {"S": "CUS#" + customerId}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
