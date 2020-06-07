@@ -120,7 +120,6 @@ def lambda_handler(event, context):
                                 "PKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']},
                                 "SKID": {"S": 'POLL#' + pollId + '#ITEM#' + quest['QuestionId']}
                             },
-                            "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                         }
                     }
