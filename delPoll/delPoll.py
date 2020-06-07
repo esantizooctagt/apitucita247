@@ -37,9 +37,9 @@ def lambda_handler(event, context):
                 'PKID': 'BUS#' + businessId,
                 'SKID': 'POLL#' + pollId
             },
-            UpdateExpression="SET #s :status",
+            UpdateExpression="SET #s = :status",
             ExpressionAttributeNames={'#s': 'STATUS'},
-            ExpressionAttributeValues={':status': 2},
+            ExpressionAttributeValues={':status': str(2)},
             ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)",
             ReturnValues="NONE"
         )
