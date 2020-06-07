@@ -28,47 +28,47 @@ def lambda_handler(event, context):
         pollId = event['pathParameters']['pollId']
 
         items=[]
+        lines={}
         details = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :polls',
+            KeyConditionExpression='GSI1PK = :polls AND begins_with (GSI1SK , :item)',
             ExpressionAttributeValues={
-                ':polls': {'S': 'POLL#' + pollId}
+                ':polls': {'S': 'POLL#' + pollId},
+                ':item': {'S': 'ITEM#'}
             }
         )
-        lines ={}
-        IdPoll = ''
-        Name = ''
-        LocationId = ''
-        DatePoll = ''
-        Status = 0
         for item in json_dynamodb.loads(details['Items']):
-            if item['GSI1SK'][0:4] == 'POLL':
-                IdPoll = item['GSI1SK'].replace('POLL#','')
-                Name = item['NAME']
-                LocationId = item['LOCATIONID']
-                DatePoll = item['DATE_POLL']
-                Status = int(item['STATUS'])
-            else:
-                lines = {
-                    'QuestionId': item['GSI1SK'].replace('ITEM#',''),
-                    'Description': item['DESCRIPTION'],
-                    'Status': item['STATUS'],
-                    'Happy': item['HAPPY'],
-                    'Neutral': item['NEUTRAL'],
-                    'Angry': item['ANGRY']
-                }
-                items.append(lines)
+            lines = {
+                'QuestionId': item['GSI1SK'].replace('ITEM#',''),
+                'Description': item['DESCRIPTION'],
+                'Status': item['STATUS'],
+                'Happy': item['HAPPY'],
+                'Neutral': item['NEUTRAL'],
+                'Angry': item['ANGRY']
+            }
+            items.append(lines)
 
-        recordset = {
-            'PollId': IdPoll,
-            'Name': Name,
-            'LocationId': LocationId,
-            'DatePoll': DatePoll,
-            'Status': Status,
-            'Questions': items
-        }
+        master = dynamodb.query(
+            TableName="TuCita247",
+            IndexName="TuCita247_Index",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='GSI1PK = :polls AND GSI1SK = :polls',
+            ExpressionAttributeValues={
+                ':polls': {'S': 'POLL#' + pollId}
+            },
+            Limit =1
+        )
+        for item in json_dynamodb.loads(master['Items']):
+            recordset = {
+                'PollId': item['GSI1SK'].replace('POLL#',''),
+                'Name': item['NAME'],
+                'LocationId': item['LOCATIONID'],
+                'DatePoll': item['DATE_POLL'],
+                'Status': int(item['STATUS']),
+                'Questions': items
+            }
     
         statusCode = 200
         body = json.dumps(recordset)
