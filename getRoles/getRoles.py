@@ -60,7 +60,7 @@ def lambda_handler(event, context):
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId},
                         ':role': {'S': 'ROL#'},
-                        ':stat' : {'N': '1'}
+                        ':stat' : {'N': '2'}
                     },
                     Limit=items
                 )
@@ -75,7 +75,7 @@ def lambda_handler(event, context):
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId},
                         ':role': {'S': 'ROL#'},
-                        ':stat' : {'N': '1'}
+                        ':stat' : {'N': '2'}
                     },
                     Limit=items
                 )
