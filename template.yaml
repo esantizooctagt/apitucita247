@@ -324,26 +324,26 @@ Resources:
             Method: delete
             ApiId: !Ref HttpApi
 
-  NewBusinessUserFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: PostUser
-      CodeUri: postUser/
-      Handler: postUser.lambda_handler
-      Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
-      Layers: 
-        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
-        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
-        - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
-      Events:
-        RootGet:
-          Type: HttpApi
-          Properties:
-            Auth:
-              Authorizer: CognitoAuth
-            Path: /user
-            Method: post
-            ApiId: !Ref HttpApi
+  # NewBusinessUserFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: PostUser
+  #     CodeUri: postUser/
+  #     Handler: postUser.lambda_handler
+  #     Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+  #     Layers: 
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
+  #     Events:
+  #       RootGet:
+  #         Type: HttpApi
+  #         Properties:
+  #           Auth:
+  #             Authorizer: CognitoAuth
+  #           Path: /user
+  #           Method: post
+  #           ApiId: !Ref HttpApi
 
   UpdateBusinessUserFunction:
     Type: AWS::Serverless::Function
