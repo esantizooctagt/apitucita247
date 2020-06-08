@@ -45,7 +45,7 @@ def lambda_handler(event, context):
                 'Email': record['GSI1PK'].replace('EMAIL#',''),
                 'First_Name': record['FIRST_NAME'],
                 'Last_Name': record['LAST_NAME'],
-                'Avatar': '' if "AVATAR" not in record else record['AVATAR'],
+                'Avatar': record['AVATAR'] if "AVATAR" in record else '',
                 'Phone': record['PHONE'],
                 'Is_Admin': record['IS_ADMIN'],
                 'Business_Id': record['PKID'].replace('BUS#',''),

@@ -88,7 +88,7 @@ def lambda_handler(event, context):
                     logger.info('Image Added')
                 else:
                     statusCode = 500
-                    body = json.dumps({'Message': 'Error on edit the avatar'})
+                    body = json.dumps({'Message': 'Error on edit the image'})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again'})

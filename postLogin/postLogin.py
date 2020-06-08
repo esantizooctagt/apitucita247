@@ -158,7 +158,7 @@ def lambda_handler(event, context):
                     'Email': user['GSI1PK'].replace('EMAIL#',''),
                     'Is_Admin': int(user['IS_ADMIN']),
                     'Business_Id': user['PKID'].replace('BUS#',''),
-                    'Avatar': user['AVATAR'],
+                    'Avatar': user['AVATAR'] if 'AVATAR' in user else '',
                     'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
                     'Language': user['LANGUAGE']
                 }
