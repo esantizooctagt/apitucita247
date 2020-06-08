@@ -101,8 +101,7 @@ def lambda_handler(event, context):
                         "TableName": "TuCita247",
                         "Item": {
                             "PKID": {"S": 'EMAIL#'+email},
-                            "SKID": {"S": 'EMAIL#'+email},
-                            "MFACT_AUTH": {"N": "0"}
+                            "SKID": {"S": 'EMAIL#'+email}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -115,32 +114,32 @@ def lambda_handler(event, context):
             key = secreKey.encode()
             ct_b64 = data['Password'] 
             passDecrypt = decrypt(ct_b64, key)
-            logger.info(passDecrypt)
+
             client = boto3.client('cognito-idp')
             response = client.sign_up(
-                        ClientId='52k0o8239mueu31uu5fihccbbf',
-                        SecretHash=get_secret_hash(email),
-                        Username=email,
-                        Password=passDecrypt.decode('utf-8'),
-                        UserAttributes=[
-                            {
-                                'Name': 'email',
-                                'Value': email
-                            },
-                            {
-                                'Name': 'custom:userId',
-                                'Value': userId
-                            },
-                            {
-                                'Name': 'custom:wpUserId',
-                                'Value': ''
-                            },
-                            {   
-                                'Name': 'custom:isAdmin',
-                                'Value': '0'
-                            }
-                        ]
-                    )
+                ClientId='52k0o8239mueu31uu5fihccbbf',
+                SecretHash=get_secret_hash(email),
+                Username=email,
+                Password=passDecrypt.decode('utf-8'),
+                UserAttributes=[
+                    {
+                        'Name': 'email',
+                        'Value': email
+                    },
+                    {
+                        'Name': 'custom:userId',
+                        'Value': userId
+                    },
+                    {
+                        'Name': 'custom:wpUserId',
+                        'Value': ''
+                    },
+                    {   
+                        'Name': 'custom:isAdmin',
+                        'Value': '0'
+                    }
+                ]
+            )
 
             statusCode = 200
             body = json.dumps({'Message': 'User added successfully'})
