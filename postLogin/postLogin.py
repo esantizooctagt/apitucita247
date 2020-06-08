@@ -113,129 +113,58 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         email = data['Email']
         
-        fact, error = getMfacAuth(email)
-        if fact == '0':
-            key = secreKey.encode()
-            ct_b64 = data['Password'] 
-            passDecrypt = decrypt(ct_b64, key)
+        key = secreKey.encode()
+        ct_b64 = data['Password'] 
+        passDecrypt = decrypt(ct_b64, key)
 
-            client = boto3.client('cognito-idp')
-            resp, msg = initiate_auth(client, email, passDecrypt.decode('utf-8'))
-            if msg != '':
-                error = {
-                            'statusCode' : 404,
-                            'headers' : {
-                                "content-type" : "application/json",
-                                "Access-Control-Allow-Origin" : cors
-                            },
-                            'body' : json.dumps({'Message': msg, "Code": 404, "error": True, "success": False, "data": None})
-                        }
-                return error
-
-            if resp.get("AuthenticationResult"):
-                try:
-                    response = client.global_sign_out(
-                                    AccessToken=resp["AuthenticationResult"]["AccessToken"]
-                                )
-                except Exception as e:
-                    logger.info(error = e.__str__())
-                # return {'message': "success", 
-                #         "error": False, 
-                #         "success": True, 
-                #         "data": {
-                #         "id_token": resp["AuthenticationResult"]["IdToken"],
-                #         "refresh_token": resp["AuthenticationResult"]["RefreshToken"],
-                #         "access_token": resp["AuthenticationResult"]["AccessToken"],
-                #         "expires_in": resp["AuthenticationResult"]["ExpiresIn"]
-                #         "token_type": resp["AuthenticationResult"]["TokenType"]
-                #         }}
-            
-                user, error = getUser(email)
-                if error != '':
-                    statusCode = 404
-                    body = json.dumps({'Message':'Auth failed','Code':400})
-                if user != None:
-                    recordset = {
-                        'User_Id': user['USERID'],
-                        'Email': user['GSI1PK'].replace('EMAIL#',''),
-                        'Is_Admin': int(user['IS_ADMIN']),
-                        'Business_Id': user['PKID'].replace('BUS#',''),
-                        'Avatar': user['AVATAR'],
-                        'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
-                        'Language': user['LANGUAGE']
+        client = boto3.client('cognito-idp')
+        resp, msg = initiate_auth(client, email, passDecrypt.decode('utf-8'))
+        if msg != '':
+            error = {
+                        'statusCode' : 404,
+                        'headers' : {
+                            "content-type" : "application/json",
+                            "Access-Control-Allow-Origin" : cors
+                        },
+                        'body' : json.dumps({'Message': msg, "Code": 404, "error": True, "success": False, "data": None})
                     }
-                    result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
-                    statusCode = 200
-                    body = json.dumps(result)
-                        
-        if fact == '1' and data['MFact_Auth'] == '':
-            statusCode = 200
-            body = json.dumps({'Message': 'Missing Google Authenticator','Code':300})
-            
-        if fact == '1' and data['MFact_Auth'] != '':
-            region = 'America/Guatemala'                
-            country_date = dateutil.tz.gettz(region)
-            country_now = datetime.datetime.now(tz=country_date).timestamp()
+            return error
 
-            hotp = pyotp.TOTP(AUTH_KEY)
-            valFA = hotp.at(country_now)
-            
-            if valFA != data['MFact_Auth']:
+        if resp.get("AuthenticationResult"):
+            try:
+                response = client.global_sign_out(
+                                AccessToken=resp["AuthenticationResult"]["AccessToken"]
+                            )
+            except Exception as e:
+                logger.info(error = e.__str__())
+            # return {'message': "success", 
+            #         "error": False, 
+            #         "success": True, 
+            #         "data": {
+            #         "id_token": resp["AuthenticationResult"]["IdToken"],
+            #         "refresh_token": resp["AuthenticationResult"]["RefreshToken"],
+            #         "access_token": resp["AuthenticationResult"]["AccessToken"],
+            #         "expires_in": resp["AuthenticationResult"]["ExpiresIn"]
+            #         "token_type": resp["AuthenticationResult"]["TokenType"]
+            #         }}
+        
+            user, error = getUser(email)
+            if error != '':
+                statusCode = 404
+                body = json.dumps({'Message':'Auth failed','Code':400})
+            if user != None:
+                recordset = {
+                    'User_Id': user['USERID'],
+                    'Email': user['GSI1PK'].replace('EMAIL#',''),
+                    'Is_Admin': int(user['IS_ADMIN']),
+                    'Business_Id': user['PKID'].replace('BUS#',''),
+                    'Avatar': user['AVATAR'],
+                    'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
+                    'Language': user['LANGUAGE']
+                }
+                result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
                 statusCode = 200
-                body = json.dumps({'Message': 'Invalid Google Authenticator','Code': 200})
-            else:
-                key = secreKey.encode()
-                ct_b64 = data['Password'] 
-                passDecrypt = decrypt(ct_b64, key)
-                
-                client = boto3.client('cognito-idp')
-                resp, msg = initiate_auth(client, email, passDecrypt.decode('utf-8'))
-                if msg != None:
-                    error = {
-                            'statusCode' : 404,
-                            'headers' : {
-                                "content-type" : "application/json",
-                                "Access-Control-Allow-Origin" : cors
-                            },
-                            'body' : json.dumps({'Message': msg, "Code": 404, "error": True, "success": False, "data": None})
-                        }
-                    return error
-                if resp.get("AuthenticationResult"):
-                    try:
-                        response = client.global_sign_out(
-                                        AccessToken=resp["AuthenticationResult"]["AccessToken"]
-                                    )
-                    except Exception as e:
-                        logger.info(error = e.__str__())
-                    # return {'message': "success", 
-                    #         "error": False, 
-                    #         "success": True, 
-                    #         "data": {
-                    #         "id_token": resp["AuthenticationResult"]["IdToken"],
-                    #         "refresh_token": resp["AuthenticationResult"]["RefreshToken"],
-                    #         "access_token": resp["AuthenticationResult"]["AccessToken"],
-                    #         "expires_in": resp["AuthenticationResult"]["ExpiresIn"]
-                    #         "token_type": resp["AuthenticationResult"]["TokenType"]
-                    #         }}
-                
-                
-                    user, error = getUser(email)
-                    if error != '':
-                        statusCode = 404
-                        body = json.dumps({'Message':'Auth failed','Code':400})
-                    if user != None:
-                        recordset = {
-                            'User_Id': user['USERID'],
-                            'Email': user['GSI1PK'].replace('EMAIL#',''),
-                            'Is_Admin': int(user['IS_ADMIN']),
-                            'Business_Id': user['PKID'].replace('BUS#',''),
-                            'Avatar': user['AVATAR'],
-                            'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
-                            'Language': user['LANGUAGE']
-                        }
-                        result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
-                        statusCode = 200
-                        body = json.dumps(result)
+                body = json.dumps(result)
 
         if error != '':
             statusCode = 404
@@ -254,30 +183,6 @@ def lambda_handler(event, context):
         'body' : body
     }
     return response
-
-def getMfacAuth(email):
-    res = ''
-    error = ''
-    try:
-        response = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :email',
-            ExpressionAttributeValues={
-                ':email': {'S': 'EMAIL#' + email}
-            },
-            Limit=1
-        )
-
-        if response['Count'] == 0:
-            error = json.dumps({'Message':'Auth failed','Code':400})
-        if response['Count'] > 0:
-            item = response['Items']
-            res = item[0]['MFACT_AUTH']['S']
-
-    except Exception as e:
-        error = json.dumps(str(e))
-    return res, error
 
 def getUser(email):
     res = ''

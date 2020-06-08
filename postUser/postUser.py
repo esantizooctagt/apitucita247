@@ -86,7 +86,6 @@ def lambda_handler(event, context):
                             "FIRST_NAME": {"S": data['First_Name']},
                             "LAST_NAME": {"S": data['Last_Name']},
                             "PHONE": {"S": data['Phone'].replace('(','').replace(')','').replace('-','').replace(' ','')},
-                            "MFACT_AUTH": {"N": "0"},
                             "IS_ADMIN": {"N": "0"},
                             "ROLEID": {"S": data['RoleId']},
                             "USERID": {"S": userId },

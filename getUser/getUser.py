@@ -51,7 +51,6 @@ def lambda_handler(event, context):
                 'Business_Id': record['PKID'].replace('BUS#',''),
                 'Status': record['STATUS'],
                 'Role_Id': '' if record['IS_ADMIN'] == 1 else record['ROLEID'],
-                'MFact_Auth': record['MFACT_AUTH'],
                 'Language': '' if "LANGUAGE" not in record else record['LANGUAGE']
             }
         statusCode = 200
