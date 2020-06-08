@@ -67,10 +67,24 @@ def lambda_handler(event, context):
     try:
         statusCode = ''
         data = json.loads(event['body'])
-        email = data['Email']
-        businessId = data['BusinessId']
+        userId = data['UserId']
         ct_b64 = data['Password']
+        
         code = event['pathParameters']['code']
+        
+        email = ''
+        businessId = ''
+
+        table = dynamodb.Table('TuCita247_CustAppos')
+        response = table.get_item(
+            Key={
+                    'GSI1PK': 'USER#' + userId
+                }
+        )
+        for datos in json_dynamodb.loads(response['Items']):
+            email = datos['GSI1PK'].replace('EMAIL#','')
+            businessId = datos['PKID']
+
         if code != '0':
             key = secreKey.encode()
             passDecrypt = decrypt(ct_b64, key)
@@ -95,29 +109,21 @@ def lambda_handler(event, context):
                                 )
 
                     #STATUS 3 PENDIENTE DE VERIFICACION DE CUENTA
-                    table = dynamodb.Table('TuCita247_Index')
-                    response = table.get_item(
+                    table = dynamodb.Table('TuCita247')
+                    response02 = table.update_item(
                         Key={
-                                'GSI1PK': 'EMAIL#' + email
-                            }
+                            'PKID': businessId,
+                            'SKID': 'USER#' + userId
+                        },
+                        UpdateExpression="set #s = :status",
+                        ExpressionAttributeNames={
+                            '#s': 'STATUS'
+                        },
+                        ExpressionAttributeValues={
+                            ':status': 1
+                        }
+                        # ReturnValues="UPDATED_NEW"
                     )
-                    for row in response['Items']:
-                        record = json_dynamodb.loads(row)
-                        table = dynamodb.Table('TuCita247')
-                        response02 = table.update_item(
-                            Key={
-                                'PKID': 'BUS#' + businessId,
-                                'SKID': record['SKID']
-                            },
-                            UpdateExpression="set #s = :status",
-                            ExpressionAttributeNames={
-                                '#s': 'STATUS'
-                            },
-                            ExpressionAttributeValues={
-                                ':status': 1
-                            }
-                            # ReturnValues="UPDATED_NEW"
-                        )
                     
                     statusCode = 200
                     body = json.dumps({'Code': 200, 'Message': 'Account activated successfully'})

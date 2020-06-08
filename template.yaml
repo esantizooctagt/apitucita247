@@ -403,8 +403,6 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Auth:
-              Authorizer: CognitoAuth
             Path: /user/verification/{code}
             Method: put
             ApiId: !Ref HttpApi
@@ -1220,8 +1218,6 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            # Auth:
-            #   Authorizer: CognitoAuth
             Path: /poll/{pollId}
             Method: get
             ApiId: !Ref HttpApi
@@ -1262,11 +1258,17 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            # Auth:
-            #   Authorizer: CognitoAuth
             Path: /poll/user
             Method: post
             ApiId: !Ref HttpApi
+
+  CustomMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CustomMessage
+      CodeUri: customMessage/
+      Handler: customMessage.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
 
 # Outputs:
 #  outputs  

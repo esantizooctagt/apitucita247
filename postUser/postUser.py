@@ -81,6 +81,8 @@ def lambda_handler(event, context):
                             "SKID": {"S": 'USER#' + userId },
                             "GSI1PK": {"S": 'EMAIL#' + email},
                             "GSI1SK": {"S": 'USER#' + userId},
+                            "GSI2PK": {"S": 'USER#' + userId},
+                            "GSI2SK": {"S": 'USER#' + userId},
                             "FIRST_NAME": {"S": data['First_Name']},
                             "LAST_NAME": {"S": data['Last_Name']},
                             "PHONE": {"S": data['Phone'].replace('(','').replace(')','').replace('-','').replace(' ','')},
@@ -88,10 +90,9 @@ def lambda_handler(event, context):
                             "IS_ADMIN": {"N": "0"},
                             "ROLEID": {"S": data['RoleId']},
                             "USERID": {"S": userId },
-                            "STATUS": {"N": "1"}
+                            "STATUS": {"N": "3"}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                        # "ExpressionAttributeNames": {'#s': 'STATUS'},
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     },
                 },
