@@ -68,6 +68,7 @@ def lambda_handler(event, context):
         statusCode = ''
         data = json.loads(event['body'])
         userId = data['UserId']
+        userName = data['UserName']
         ct_b64 = data['Password']
         
         code = event['pathParameters']['code']
@@ -95,15 +96,15 @@ def lambda_handler(event, context):
                     client = boto3.client('cognito-idp')
                     response = client.confirm_sign_up(
                                     ClientId='52k0o8239mueu31uu5fihccbbf',
-                                    SecretHash=get_secret_hash(email),
-                                    Username= email,
+                                    SecretHash=get_secret_hash(userName),
+                                    Username= userName,
                                     ConfirmationCode=code,
                                     ForceAliasCreation=False
                                 )
                     
                     resp = client.admin_set_user_password(
                                     UserPoolId='us-east-1_gXhBD4bsG',
-                                    Username=email,
+                                    Username=userName,
                                     Password=password,
                                     Permanent=True
                                 )
@@ -147,8 +148,8 @@ def lambda_handler(event, context):
                 client = boto3.client('cognito-idp')
                 response = client.resend_confirmation_code(
                     ClientId='52k0o8239mueu31uu5fihccbbf',
-                    SecretHash=get_secret_hash(email),
-                    Username=email
+                    SecretHash=get_secret_hash(userName),
+                    Username=userName
                 )
                 statusCode = 200
                 body = json.dumps({'Code': 200, 'Message': 'Account activated successfully'})
