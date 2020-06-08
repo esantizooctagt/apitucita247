@@ -160,7 +160,7 @@ def lambda_handler(event, context):
                     'Business_Id': user['PKID'].replace('BUS#',''),
                     'Avatar': user['AVATAR'] if 'AVATAR' in user else '',
                     'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
-                    'Language': user['LANGUAGE']
+                    'Language': user['LANGUAGE'] if 'LANGUAGE' in user else ''
                 }
                 result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
                 statusCode = 200
