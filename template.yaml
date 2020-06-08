@@ -238,7 +238,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /roles/{businessId}
+            Path: /roles/{businessId}/{items}/{search}/{lastItem}
             Method: get
             ApiId: !Ref HttpApi
       
