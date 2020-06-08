@@ -78,7 +78,7 @@ def lambda_handler(event, context):
         table = dynamodb.Table('TuCita247_CustAppos')
         response = table.get_item(
             Key={
-                    'GSI1PK': 'USER#' + userId
+                    'GSI2PK': 'USER#' + userId
                 }
         )
         for datos in json_dynamodb.loads(response['Items']):
@@ -115,12 +115,12 @@ def lambda_handler(event, context):
                             'PKID': businessId,
                             'SKID': 'USER#' + userId
                         },
-                        UpdateExpression="set #s = :status",
+                        UpdateExpression="SET #s = :status",
                         ExpressionAttributeNames={
                             '#s': 'STATUS'
                         },
                         ExpressionAttributeValues={
-                            ':status': 1
+                            ':status': str(1)
                         }
                         # ReturnValues="UPDATED_NEW"
                     )
