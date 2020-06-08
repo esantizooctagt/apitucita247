@@ -73,8 +73,8 @@ def lambda_handler(event, context):
                     'First_Name': row['FIRST_NAME'],
                     'Last_Name': row['LAST_NAME'],
                     'Email': row['GSI1PK'].replace('EMAIL#',''),
-                    'LocationId': row['LOCATIONID'],
-                    'Door': row['DOOR'],
+                    'LocationId': row['LOCATIONID'] if 'LOCATIONID' in row else '',
+                    'Door': row['DOOR'] if 'DOOR' in row else '',
                 }
                 records.append(recordset)
 
