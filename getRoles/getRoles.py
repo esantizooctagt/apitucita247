@@ -26,23 +26,61 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
+
         businessId = event['pathParameters']['businessId']
+        items = int(event['pathParameters']['items'])
+        lastItem = event['pathParameters']['lastItem']
+        search = event['pathParameters']['search']
+        salir = 0
+
         e = {'#s': 'STATUS'}
-        f = '#s = :stat'
-        response = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :role )',
-            ExpressionAttributeNames=e,
-            FilterExpression=f,
-            ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId},
-                ':role': {'S': 'ROL#'},
-                ':stat' : {'N': '1'}
-            }
-        )
-        items = json_dynamodb.loads(response['Items'])
-        for row in items:
+        a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':roles': {'S':'ROL#'}}
+        f = '#s < :stat'
+        if search != '_':
+            e = {'#s': 'STATUS', '#n': 'NAME'}
+            f = '#s < :stat and begins_with (#n , :search)'
+            a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':roles': {'S':'ROL#'}, ':search': {'S': search}}
+
+        if lastItem == '_':
+            lastItem = ''
+        else:
+            if lastItem == '':
+                salir = 1
+            else:
+                lastItem = {'PKID': {'S': 'BUS#' + businessId },'SKID': {'S': 'ROL#' + lastItem }}
+
+        if salir == 0:
+            if lastItem == '':
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :role )',
+                    ExpressionAttributeNames=e,
+                    FilterExpression=f,
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':role': {'S': 'ROL#'},
+                        ':stat' : {'N': '1'}
+                    },
+                    Limit=items
+                )
+            else:
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    ExclusiveStartKey= lastItem,
+                    KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :role )',
+                    ExpressionAttributeNames=e,
+                    FilterExpression=f,
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':role': {'S': 'ROL#'},
+                        ':stat' : {'N': '1'}
+                    },
+                    Limit=items
+                )
+        recordset = {}
+        for row in json_dynamodb.loads(response['Items']):
             recordset = {
                 'Role_Id': row['SKID'].replace('ROL#',''),
                 'Business_Id': row['PKID'].replace('BUS#',''),
@@ -50,6 +88,15 @@ def lambda_handler(event, context):
             }
             records.append(recordset)
         
+        if 'LastEvaluatedKey' in response:
+            lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
+            lastItem = lastItem['SKID'].replace('POLL#','')
+
+        resultSet = { 
+            'lastItem': lastItem,
+            'roles': records
+        }
+
         statusCode = 200
         body = json.dumps(records)
     except: #Exception as e:
