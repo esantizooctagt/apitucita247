@@ -4,6 +4,8 @@ import json
 
 import boto3
 import botocore.exceptions
+from boto3.dynamodb.conditions import Key, Attr
+from dynamodb_json import json_util as json_dynamodb
 
 import hmac
 import hashlib
@@ -21,6 +23,9 @@ secreKey = 'K968G66S4dC1Y5tNA5zKGT5KIjeMcpc8'
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+dynamodbTable = boto3.client('dynamodb', region_name='us-east-1')
+logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def get_secret_hash(username):
     msg = username + '52k0o8239mueu31uu5fihccbbf'
@@ -61,19 +66,32 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
+        userName = ''
         data = json.loads(event['body'])
-        username = event['pathParameters']['userId']
+        userId = event['pathParameters']['userId']
         code = event['pathParameters']['code']
         
         key = secreKey.encode()
         ct_b64 = data['Password'] 
         passDecrypt = decrypt(ct_b64, key)
+
+        response = dynamodbTable.query(
+            TableName="TuCita247",
+            IndexName="TuCita247_CustAppos",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='GSI2PK = :key AND GSI2SK = :key',
+            ExpressionAttributeValues={
+                ':key': {'S': 'USER#' + userId}
+            }
+        )
+        for datos in json_dynamodb.loads(response['Items']):
+            userName = datos['GSI1PK'].replace('EMAIL#','')
         
         client = boto3.client('cognito-idp')
         client.confirm_forgot_password(
             ClientId='52k0o8239mueu31uu5fihccbbf',
-            SecretHash=get_secret_hash(username),
-            Username=username,
+            SecretHash=get_secret_hash(userName),
+            Username=userName,
             ConfirmationCode=code,
             Password=passDecrypt.decode('utf-8'),
            )
