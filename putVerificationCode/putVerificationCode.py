@@ -25,11 +25,12 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodbTable = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def get_secret_hash(username):
     msg = username + '52k0o8239mueu31uu5fihccbbf'
-    dig = hmac.new(str('1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt').encode('utf-8'), 
+    dig = hmac.new(str('1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt').encode('utf-8'),
         msg = str(msg).encode('utf-8'), digestmod=hashlib.sha256).digest()
     d2 = base64.b64encode(dig).decode()
     return d2
@@ -68,19 +69,20 @@ def lambda_handler(event, context):
         statusCode = ''
         data = json.loads(event['body'])
         userId = data['UserId']
-        userName = data['UserName']
         ct_b64 = data['Password']
         
         code = event['pathParameters']['code']
         
         email = ''
         businessId = ''
-
-        table = dynamodb.Table('TuCita247_CustAppos')
-        response = table.get_item(
-            Key={
-                    'GSI2PK': 'USER#' + userId
-                }
+        response = dynamodbTable.query(
+            TableName="TuCita247",
+            IndexName="TuCita247_CustAppos",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='GSI2PK = :key AND GSI2SK = :key',
+            ExpressionAttributeValues={
+                ':key': {'S': 'USER#' + userId}
+            }
         )
         for datos in json_dynamodb.loads(response['Items']):
             email = datos['GSI1PK'].replace('EMAIL#','')
@@ -96,19 +98,18 @@ def lambda_handler(event, context):
                     client = boto3.client('cognito-idp')
                     response = client.confirm_sign_up(
                                     ClientId='52k0o8239mueu31uu5fihccbbf',
-                                    SecretHash=get_secret_hash(userName),
-                                    Username= userName,
+                                    SecretHash=get_secret_hash(email),
+                                    Username= email,
                                     ConfirmationCode=code,
                                     ForceAliasCreation=False
                                 )
                     
                     resp = client.admin_set_user_password(
                                     UserPoolId='us-east-1_gXhBD4bsG',
-                                    Username=userName,
+                                    Username=email,
                                     Password=password,
                                     Permanent=True
                                 )
-
                     #STATUS 3 PENDIENTE DE VERIFICACION DE CUENTA
                     table = dynamodb.Table('TuCita247')
                     response02 = table.update_item(
@@ -148,8 +149,8 @@ def lambda_handler(event, context):
                 client = boto3.client('cognito-idp')
                 response = client.resend_confirmation_code(
                     ClientId='52k0o8239mueu31uu5fihccbbf',
-                    SecretHash=get_secret_hash(userName),
-                    Username=userName
+                    SecretHash=get_secret_hash(email),
+                    Username=email
                 )
                 statusCode = 200
                 body = json.dumps({'Code': 200, 'Message': 'Account activated successfully'})
@@ -168,7 +169,7 @@ def lambda_handler(event, context):
             body = json.dumps({'Code': 500, 'Message': 'Error on update user'})
     except Exception as e:
         statusCode = 500
-        body = json.dumps({'Message': 'Error on request try again'})
+        body = json.dumps({'Message': 'Error on request try again ' + str(e)})
 
     response = {
         'statusCode' : statusCode,
