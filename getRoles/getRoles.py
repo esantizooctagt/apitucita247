@@ -98,7 +98,7 @@ def lambda_handler(event, context):
         }
 
         statusCode = 200
-        body = json.dumps(records)
+        body = json.dumps(resultSet)
     except: #Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again'})
