@@ -46,8 +46,8 @@ Resources:
   HttpApi:
     ApiId: HttpApi
     Type: AWS::Serverless::HttpApi
+    Name: TuCita247
     Properties:
-      ApiName: TuCita247
       Domain:
         DomainName: api.tucita247.com
         CertificateArn: arn:aws:acm:us-east-1:821843840552:certificate/91a63656-8adc-479c-96a4-1345641cf20b
@@ -1217,10 +1217,10 @@ Resources:
   HttpApiMobile:
     ApiId: HttpApiMobile
     Type: AWS::Serverless::HttpApi
-    Properties:
-      ApiName: TuCita247App
+    Name: TuCita247App
+    Properties:  
       Domain:
-        DomainName: api.tucita247.com
+        DomainName: apimob.tucita247.com
         CertificateArn: arn:aws:acm:us-east-1:821843840552:certificate/91a63656-8adc-479c-96a4-1345641cf20b
         EndpointConfiguration: REGIONAL
         Route53:
