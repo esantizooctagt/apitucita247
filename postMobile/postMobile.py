@@ -33,8 +33,7 @@ def lambda_handler(event, context):
     verifCode = 0
     verifCode = random.randint(100000, 999999)
     to_number = event['pathParameters']['number']
-    to_number = '+19392670007'
-    to_number = '59237138'
+    temp_number = '+19392670007'
     from_number = fromNumber
     bodyStr = 'Your TuCita247 verification code is: ' + str(verifCode)
     
@@ -45,7 +44,7 @@ def lambda_handler(event, context):
         
         message = client.messages.create(
             from_= from_number,
-            to = to_number,
+            to = temp_number,
             body = bodyStr
         )
 

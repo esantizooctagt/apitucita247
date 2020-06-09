@@ -66,11 +66,29 @@ Resources:
           - POST
         AllowOrigins:
           - http://localhost:4200
-          - http://localhost:8100
           - https://console.tucita247.com
         AllowHeaders:
           - content-type
           - authorization
+        MaxAge: "10"
+        AllowCredentials: True
+  
+  Resources:
+    HttpApiMobile:
+      Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - PUT
+          - PATCH
+          - DELETE
+          - POST
+        AllowOrigins:
+          - http://localhost:8100
+          - https://console.tucita247.com
+        AllowHeaders:
+          - content-type
         MaxAge: "10"
         AllowCredentials: True
   
@@ -1296,11 +1314,10 @@ Resources:
       Layers:
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:twilio:4
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
       VpcConfig: !Ref AWS::NoValue
       Environment:
         Variables:
-            devCors: "http://localhost:8100"
-            prodCors: "https://console.tucita247.com"
             twilioAccountSID: "AC01b465597255d541bcf1c91379284b7a"
             twilioAccountToken: "63ac05514d3d614f76f0a2efab2a51a7"
             fromNumber: "+12038720681"
@@ -1310,7 +1327,26 @@ Resources:
           Properties:
             Path: /mobile/{number}
             Method: post
-            ApiId: !Ref HttpApi
+            ApiId: !Ref HttpApiMobile
+  
+    GetAdsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAds
+      CodeUri: getAds/
+      Handler: getAds.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers:
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/ads
+            Method: get
+            ApiId: !Ref HttpApiMobile
 
   # CustomMessageFunction:
   #   Type: AWS::Serverless::Function
