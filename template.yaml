@@ -45,9 +45,17 @@ Globals:
 Resources:
   HttpApi:
     ApiId: HttpApi
-    Name: TuCita247
     Type: AWS::Serverless::HttpApi
     Properties:
+      ApiName: TuCita247
+      Domain:
+        DomainName: api.tucita247.com
+        CertificateArn: arn:aws:acm:us-east-1:821843840552:certificate/91a63656-8adc-479c-96a4-1345641cf20b
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId: Z05029142564P6F9HXWMB
+        BasePath:
+          - /
       Auth:
         # DefaultAuthorizer: CognitoAuth
         Authorizers:
@@ -1208,9 +1216,17 @@ Resources:
   # 
   HttpApiMobile:
     ApiId: HttpApiMobile
-    Name: TuCita247App
     Type: AWS::Serverless::HttpApi
     Properties:
+      ApiName: TuCita247App
+      Domain:
+        DomainName: api.tucita247.com
+        CertificateArn: arn:aws:acm:us-east-1:821843840552:certificate/91a63656-8adc-479c-96a4-1345641cf20b
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId: Z05029142564P6F9HXWMB
+        BasePath:
+          - /
       CorsConfiguration:
         AllowMethods:
           - GET
@@ -1224,6 +1240,41 @@ Resources:
           - content-type
         MaxAge: "10"
         AllowCredentials: False
+
+  PostMobileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostMobile
+      CodeUri: postMobile/
+      Handler: postMobile.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers:
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:twilio:4
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            twilioAccountSID: "AC01b465597255d541bcf1c91379284b7a"
+            twilioAccountToken: "63ac05514d3d614f76f0a2efab2a51a7"
+            fromNumber: "+12038720681"
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/{number}
+            Method: post
+            ApiId: !Ref HttpApiMobile
+
+Outputs:
+  HttpApiUrl:
+    Description: URL of your API endpoint
+    Value:
+      Fn::Sub: 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}/'
+  HttpApiId:
+    Description: Api id of HttpApi
+    Value:
+      Ref: HttpApi
 
 # CustomMessageFunction:
 #   Type: AWS::Serverless::Function
