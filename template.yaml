@@ -44,6 +44,8 @@ Globals:
 
 Resources:
   HttpApi:
+    ApiId: HttpApi
+    Name: TuCita247
     Type: AWS::Serverless::HttpApi
     Properties:
       Auth:
@@ -1205,6 +1207,8 @@ Resources:
   # MOBILE APPS
   # 
   HttpApiMobile:
+    ApiId: HttpApiMobile
+    Name: TuCita247App
     Type: AWS::Serverless::HttpApi
     Properties:
       CorsConfiguration:
@@ -1219,8 +1223,8 @@ Resources:
         AllowHeaders:
           - content-type
         MaxAge: "10"
-        AllowCredentials: True
-        
+        AllowCredentials: False
+
 # CustomMessageFunction:
 #   Type: AWS::Serverless::Function
 #   Properties:
