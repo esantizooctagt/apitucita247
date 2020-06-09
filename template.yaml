@@ -1202,23 +1202,25 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
 
-Resources:
+# 
+# MOBILE APPLICATIONS 
+# 
   HttpApiMobile:
     Type: AWS::Serverless::HttpApi
-  Properties:
-    CorsConfiguration:
-      AllowMethods:
-        - GET
-        - PUT
-        - PATCH
-        - DELETE
-        - POST
-      AllowOrigins:
-        - '*'
-      AllowHeaders:
-        - content-type
-      MaxAge: "10"
-      AllowCredentials: True
+    Properties:
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - PUT
+          - PATCH
+          - DELETE
+          - POST
+        AllowOrigins:
+          - '*'
+        AllowHeaders:
+          - content-type
+        MaxAge: "10"
+        AllowCredentials: True
 
   PostMobileFunction:
     Type: AWS::Serverless::Function
