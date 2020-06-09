@@ -1214,7 +1214,7 @@ Resources:
         - DELETE
         - POST
       AllowOrigins:
-        - *
+        - '*'
       AllowHeaders:
         - content-type
       MaxAge: "10"
