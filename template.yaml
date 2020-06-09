@@ -1329,7 +1329,7 @@ Resources:
             Method: post
             ApiId: !Ref HttpApiMobile
   
-    GetAdsFunction:
+  GetAdsFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: GetAds
