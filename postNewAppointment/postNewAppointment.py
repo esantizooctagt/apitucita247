@@ -139,6 +139,7 @@ def lambda_handler(event, context):
                             "NAME": {"S": name}, 
                             "EMAIL": {"S":  email if email != '' else None },
                             "DOB": {"S": dob if dob != '' else None },
+                            "DISABILITY": {"N": disability if disability != '' else None},
                             "GENDER": {"S": gender if gender != '' else None},
                             "PREFERENCES": {"N": str(preference) if str(preference) != '' else None},
                             "GSI1PK": {"S": "CUS#" + customerId}, 
