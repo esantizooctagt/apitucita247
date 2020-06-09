@@ -22,7 +22,7 @@ Globals:
         # - !Ref VpcSubnetIds
 
 Resources: 
-  HttpApi:
+  HttpApiMobile:
     Type: AWS::Serverless::HttpApi
     Properties:
       CorsConfiguration:

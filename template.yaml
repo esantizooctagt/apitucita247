@@ -1201,7 +1201,26 @@ Resources:
             Path: /location/checkinall/{businessId}
             Method: get
             ApiId: !Ref HttpApi
-
+  # 
+  # MOBILE APPS
+  # 
+  HttpApiMobile:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - PUT
+          - PATCH
+          - DELETE
+          - POST
+        AllowOrigins:
+          - '*'
+        AllowHeaders:
+          - content-type
+        MaxAge: "10"
+        AllowCredentials: True
+        
 # CustomMessageFunction:
 #   Type: AWS::Serverless::Function
 #   Properties:
