@@ -87,9 +87,7 @@ Resources:
         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
         - arn:aws:lambda:us-east-1:821843840552:layer:pyopt:1
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
-      # VpcConfig:
-      #   SecurityGroupIds: !Ref SecurityGroupIds
-      #   SubnetIds: !Ref VpcSubnetIds
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -110,6 +108,7 @@ Resources:
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -130,6 +129,7 @@ Resources:
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
         - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -336,6 +336,7 @@ Resources:
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
         - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -400,6 +401,7 @@ Resources:
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
         - arn:aws:lambda:us-east-1:821843840552:layer:Cryptodome:1
         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -1299,7 +1301,7 @@ Resources:
             devCors: "http://localhost:8100"
             prodCors: "https://console.tucita247.com"
             twilioAccountSID: "AC01b465597255d541bcf1c91379284b7a"
-            twilioAccountToken: "5d6567bb505596e6e18b4c91700209bf"
+            twilioAccountToken: "63ac05514d3d614f76f0a2efab2a51a7"
             fromNumber: "+12038720681"
       Events:
         RootGet:
