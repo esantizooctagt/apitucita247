@@ -54,8 +54,6 @@ Resources:
         EndpointConfiguration: REGIONAL
         Route53:
           HostedZoneId: Z05029142564P6F9HXWMB
-        BasePath:
-          - /
       Auth:
         # DefaultAuthorizer: CognitoAuth
         Authorizers:
@@ -1225,8 +1223,6 @@ Resources:
         EndpointConfiguration: REGIONAL
         Route53:
           HostedZoneId: Z05029142564P6F9HXWMB
-        BasePath:
-          - /
       CorsConfiguration:
         AllowMethods:
           - GET
@@ -1266,15 +1262,15 @@ Resources:
             Method: post
             ApiId: !Ref HttpApiMobile
 
-Outputs:
-  HttpApiUrl:
-    Description: URL of your API endpoint
-    Value:
-      Fn::Sub: 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}/'
-  HttpApiId:
-    Description: Api id of HttpApi
-    Value:
-      Ref: HttpApi
+# Outputs:
+#   HttpApiUrl:
+#     Description: URL of your API endpoint
+#     Value:
+#       Fn::Sub: 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}/'
+#   HttpApiId:
+#     Description: Api id of HttpApi
+#     Value:
+#       Ref: HttpApi
 
 # CustomMessageFunction:
 #   Type: AWS::Serverless::Function
