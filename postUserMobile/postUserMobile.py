@@ -41,36 +41,36 @@ def lambda_handler(event, context):
         items = []
         recordset = {}
         recordset = {
-                    "Put": {
-                        "TableName": "TuCita247",
-                        "Item": {
-                            "PKID": {"S": 'MOB#' + data['Phone'] },
-                            "SKID": {"S": 'CUS#' + userId },
-                            "GSI1PK": {"S": 'CUS#' + userId},
-                            "GSI1SK": {"S": 'CUS#' + userId},
-                            "NAME": {"S": data['Name']},
-                            "EMAIL": {"S": str(data['Email']) if str(data['Email']) != '' else None},
-                            "DOB": {"S": str(data['DOB']) if str(data['DOB']) != '' else None},
-                            "GENDER": {"S": str(data['Gender']) if str(data['Gender']) != '' else None},
-                            "PREFERENCES": {"S": str(data['Preferences']) if str(data['Preferences']) != '' else None},
-                            "DISABILITY": {"S": str(data['Disability']) if str(data['Disability']) != '' else None},
-                            "STATUS": {"N": "1"}
-                        },
-                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                "Put": {
+                    "TableName": "TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'MOB#' + data['Phone'] },
+                        "SKID": {"S": 'CUS#' + userId },
+                        "GSI1PK": {"S": 'CUS#' + userId},
+                        "GSI1SK": {"S": 'CUS#' + userId},
+                        "NAME": {"S": data['Name']},
+                        "EMAIL": {"S": str(data['Email']) if str(data['Email']) != '' else None},
+                        "DOB": {"S": str(data['DOB']) if str(data['DOB']) != '' else None},
+                        "GENDER": {"S": str(data['Gender']) if str(data['Gender']) != '' else None},
+                        "PREFERENCES": {"N": str(data['Preferences']) if str(data['Preferences']) != '' else None},
+                        "DISABILITY": {"N": str(data['Disability']) if str(data['Disability']) != '' else None},
+                        "STATUS": {"N": "1"}
                     },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                    }
                 }
         items.append(cleanNullTerms(recordset))
 
         recordset = {
-                    "Put": {
-                        "TableName": "TuCita247",
-                        "Item": {
-                            "PKID": {"S": 'MOB#' + data['Phone']},
-                            "SKID": {"S": 'MOB#' + data['Phone']}
-                        },
-                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                "Put": {
+                    "TableName": "TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'MOB#' + data['Phone']},
+                        "SKID": {"S": 'MOB#' + data['Phone']}
+                    },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     }
                 }
         items.append(cleanNullTerms(recordset))
