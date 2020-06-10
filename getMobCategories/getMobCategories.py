@@ -20,11 +20,8 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 def lambda_handler(event, context):
     records =[]
     stage = event['headers']
-    if stage['origin'] != "http://localhost:4200":
-        cors = os.environ['prodCors']
-    else:
-        cors = os.environ['devCors']
-        
+    cors = stage['origin']
+
     try:
         e = {'#s': 'STATUS'}
         f = '#s = :stat'
@@ -32,11 +29,11 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :categories AND begins_with( GSI1SK , :categories )',
+            KeyConditionExpression='GSI1PK = :categories AND GSI1SK = :categories',
             ExpressionAttributeNames=e,
             FilterExpression=f,
             ExpressionAttributeValues={
-                ':categories': {'S': 'CAT#SUB#'},
+                ':categories': {'S': 'CAT#'},
                 ':stat' : {'N': '1'}
             },
         )

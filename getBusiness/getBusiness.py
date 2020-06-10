@@ -41,7 +41,6 @@ def lambda_handler(event, context):
         )
         itemsbusiness = json_dynamodb.loads(response['Items'])
        
-       
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
