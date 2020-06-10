@@ -18,13 +18,10 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
     stage = event['headers']
-    if stage['origin'] != "http://localhost:8100":
-        cors = os.environ['prodCors']
-    else:
-        cors = os.environ['devCors']
+    cors = stage['origin']
     
     try:
-        details = dynamodb.query(
+        response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='PKID = :ads',
@@ -34,7 +31,7 @@ def lambda_handler(event, context):
         )
         recordset = {}
         items = []
-        for item in json_dynamodb.loads(details['Items']):
+        for item in json_dynamodb.loads(response['Items']):
             recordset = {
                 'AdsId': item['SKID'].replace('ADS#',''),
                 'ImgPath': item['IMAGE_PATH']

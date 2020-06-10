@@ -1310,6 +1310,29 @@ Resources:
             Path: /mobile
             Method: post
             ApiId: !Ref HttpApiMobile
+
+  GetResultSearchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetResultSearch
+      CodeUri: getResultSearch/
+      Handler: getResultSearch.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/search/{search}
+            Method: get
+            ApiId: !Ref HttpApiMobile
 # Outputs:
 #   HttpApiUrl:
 #     Description: URL of your API endpoint
