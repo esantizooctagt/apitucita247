@@ -31,6 +31,7 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         country = event['pathParameters']['country']
+        language = event['pathParameters']['language']
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -57,7 +58,7 @@ def lambda_handler(event, context):
             for det in json_dynamodb.loads(sectors['Items']):
                 rows = {
                     'SectorId': det['SKID'].replace('SECTOR#',''),
-                    'Name': det['NAME']
+                    'Name': det['NAME_ENG'] if language == 'EN' else det['NAME_ESP']
                 }
                 items.append(rows)
 
