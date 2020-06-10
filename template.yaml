@@ -1254,6 +1254,8 @@ Resources:
             twilioAccountSID: "AC01b465597255d541bcf1c91379284b7a"
             twilioAccountToken: "63ac05514d3d614f76f0a2efab2a51a7"
             fromNumber: "+12038720681"
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -1262,6 +1264,52 @@ Resources:
             Method: post
             ApiId: !Ref HttpApiMobile
 
+  GetAdsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAds
+      CodeUri: getAds/
+      Handler: getAds.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers:
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/ads
+            Method: get
+            ApiId: !Ref HttpApiMobile
+      
+  PostUserMobileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostUserMobile
+      CodeUri: postUserMobile/
+      Handler: postUserMobile.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile
+            Method: post
+            ApiId: !Ref HttpApiMobile
 # Outputs:
 #   HttpApiUrl:
 #     Description: URL of your API endpoint

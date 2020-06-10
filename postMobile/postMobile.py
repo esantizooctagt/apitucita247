@@ -24,10 +24,7 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
     stage = event['headers']
-    if stage['origin'] != "http://localhost:8100":
-        cors = os.environ['prodCors']
-    else:
-        cors = os.environ['devCors']
+    cors = stage['origin']
 
     response = ''
     verifCode = 0
@@ -64,8 +61,8 @@ def lambda_handler(event, context):
                 'Name': item['NAME'],
                 'Gender': item['GENDER'] if 'GENDER' in item else '',
                 'Email': item['EMAIL'] if 'EMAIL' in item else '',
-                'PREFERENCES': item['PREFERENCES'] if 'PREFERENCES' in item else '',
-                'DISABILITY': item['DISABILITY'] if 'DISABILITY' in item else '',
+                'Preferences': item['PREFERENCES'] if 'PREFERENCES' in item else '',
+                'Disability': item['DISABILITY'] if 'DISABILITY' in item else '',
                 'DOB': item['DOB'] if 'DOB' in item else ''
             }
 
