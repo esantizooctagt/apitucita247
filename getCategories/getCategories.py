@@ -32,10 +32,11 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :categories AND begins_with( GSI1SK , :categories )',
+            KeyConditionExpression='GSI1PK = :key AND begins_with( GSI1SK , :categories )',
             ExpressionAttributeNames=e,
             FilterExpression=f,
             ExpressionAttributeValues={
+                ':key': {'S': 'CAT#'},
                 ':categories': {'S': 'CAT#SUB#'},
                 ':stat' : {'N': '1'}
             },
