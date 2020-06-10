@@ -1298,6 +1298,7 @@ Resources:
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
       VpcConfig: !Ref AWS::NoValue
       Environment:
         Variables:
@@ -1321,6 +1322,7 @@ Resources:
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
       VpcConfig: !Ref AWS::NoValue
       Environment:
         Variables:
@@ -1331,6 +1333,30 @@ Resources:
           Type: HttpApi
           Properties:
             Path: /mobile/search/{search}
+            Method: get
+            ApiId: !Ref HttpApiMobile
+      
+  GetMobCateogiesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetMobCateogies
+      CodeUri: getMobCategories/
+      Handler: getMobCategories.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/categories
             Method: get
             ApiId: !Ref HttpApiMobile
 # Outputs:
