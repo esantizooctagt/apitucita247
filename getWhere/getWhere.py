@@ -24,9 +24,11 @@ def lambda_handler(event, context):
     records =[]
     try:
         country = event['pathParameters']['country']
+        language = event['pathParameters']['language']
 
         response = dynamodb.query(
             TableName="TuCita247",
+            IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='GSI1PK = :country',
             ExpressionAttributeValues={
@@ -37,7 +39,7 @@ def lambda_handler(event, context):
             recordset = {
                 'Parent': row['PKID'].replace('COUNTRY#' + country,''),
                 'City': row['SKID'],
-                'Name': row['NAME']
+                'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
             }
             records.append(recordset)
         
@@ -47,6 +49,7 @@ def lambda_handler(event, context):
 
             response = dynamodb.query(
                 TableName="TuCita247",
+                IndexName="TuCita247_Index",
                 ExclusiveStartKey= lastItem,
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='GSI1PK = :country',
@@ -58,7 +61,7 @@ def lambda_handler(event, context):
                 recordset = {
                     'Parent': row['PKID'].replace('COUNTRY#' + country,''),
                     'City': row['SKID'],
-                    'Name': row['NAME']
+                    'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
                 }
                 records.append(recordset)
         

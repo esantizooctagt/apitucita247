@@ -29,6 +29,7 @@ def lambda_handler(event, context):
     records =[]
     try:
         country = event['pathParameters']['country']
+        language = event['pathParameters']['language']
 
         response = dynamodb.query(
             TableName="TuCita247",
@@ -42,7 +43,7 @@ def lambda_handler(event, context):
         for row in json_dynamodb.loads(response['Items']):
             recordset = {
                 'CityId': row['SKID'].replace('CITY#',''),
-                'Name': row['NAME']
+                'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
             }
             records.append(recordset)
         
@@ -63,7 +64,7 @@ def lambda_handler(event, context):
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'CityId': row['SKID'].replace('CITY#',''),
-                    'Name': row['NAME']
+                    'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
                 }
                 records.append(recordset)
         

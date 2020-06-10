@@ -476,7 +476,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /categories
+            Path: /categories/{language}
             Method: get
             ApiId: !Ref HttpApi
 
@@ -1000,7 +1000,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /locations/cities/{country}
+            Path: /locations/cities/{country}/{language}
             Method: get
             ApiId: !Ref HttpApi
         
@@ -1021,7 +1021,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /locations/sectors/{country}/{city}
+            Path: /locations/sectors/{country}/{city}/{language}
             Method: get
             ApiId: !Ref HttpApi
 
@@ -1356,7 +1356,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /mobile/categories
+            Path: /mobile/categories/{language}
             Method: get
             ApiId: !Ref HttpApiMobile
 
@@ -1405,7 +1405,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /mobile/where/{country}
+            Path: /mobile/where/{country}/{language}
             Method: get
             ApiId: !Ref HttpApiMobile
             
