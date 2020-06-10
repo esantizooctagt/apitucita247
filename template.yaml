@@ -1374,6 +1374,7 @@ Resources:
       VpcConfig: !Ref AWS::NoValue
       Environment:
         Variables:
+            premiumCode: "200"
             devCors: !Ref AWS::NoValue
             prodCors: !Ref AWS::NoValue
       Events:

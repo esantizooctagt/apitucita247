@@ -22,7 +22,7 @@ def lambda_handler(event, context):
     cors = stage['origin']
     
     try:
-        planId = event['pathParameters']['planId']
+        planId = os.environ['premiumCode']
 
         response = dynamodb.query(
             TableName="TuCita247",
