@@ -18,6 +18,17 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def cleanNullTerms(d):
+   clean = {}
+   for k, v in d.items():
+      if isinstance(v, dict):
+         nested = cleanNullTerms(v)
+         if len(nested.keys()) > 0:
+            clean[k] = nested
+      elif v is not None:
+         clean[k] = v
+   return clean
+
 def lambda_handler(event, context):
     stage = event['headers']
     cors = stage['origin']
@@ -26,9 +37,10 @@ def lambda_handler(event, context):
         statusCode = ''
         userId = str(uuid.uuid4()).replace("-","")
         data = json.loads(event['body'])
-        response = dynamodb.transact_write_items(
-            TransactItems=[
-                {
+
+        items = []
+        recordset = {}
+        recordset = {
                     "Put": {
                         "TableName": "TuCita247",
                         "Item": {
@@ -47,8 +59,10 @@ def lambda_handler(event, context):
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     },
-                },
-                {
+                }
+        items.append(cleanNullTerms(recordset))
+
+        recordset = {
                     "Put": {
                         "TableName": "TuCita247",
                         "Item": {
@@ -59,6 +73,11 @@ def lambda_handler(event, context):
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                     }
                 }
+        items.append(cleanNullTerms(recordset))
+
+        response = dynamodb.transact_write_items(
+            TransactItems=[
+                items
             ]
         )
 
