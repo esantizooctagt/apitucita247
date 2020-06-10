@@ -76,9 +76,7 @@ def lambda_handler(event, context):
         items.append(cleanNullTerms(recordset))
 
         response = dynamodb.transact_write_items(
-            TransactItems=[
-                items
-            ]
+            TransactItems = items
         )
 
         statusCode = 200
