@@ -26,6 +26,7 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
+        language = event['pathParameters']['language']
         e = {'#s': 'STATUS'}
         f = '#s = :stat'
         response = dynamodb.query(
@@ -45,8 +46,7 @@ def lambda_handler(event, context):
         for row in items:
             recordset = {
                 'CategoryId': row['PKID'].replace('CAT#',''),
-                'Name_ESP': row['NAME_ESP'],
-                'Name_ENG': row['NAME_ENG']
+                'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
             }
             records.append(recordset)
         
