@@ -1452,16 +1452,6 @@ Resources:
             Method: get
             ApiId: !Ref HttpApiMobile
             
-# Outputs:
-#   HttpApiUrl:
-#     Description: URL of your API endpoint
-#     Value:
-#       Fn::Sub: 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}/'
-#   HttpApiId:
-#     Description: Api id of HttpApi
-#     Value:
-#       Ref: HttpApi
-
 # CustomMessageFunction:
 #   Type: AWS::Serverless::Function
 #   Properties:
@@ -1469,36 +1459,3 @@ Resources:
 #     CodeUri: customMessage/
 #     Handler: customMessage.lambda_handler
 #     Role: arn:aws:iam::821843840552:role/LambdaDynamo
-# Outputs:
-#  outputs  
-#   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-#   # Find out more about other implicit resources you can reference within SAM
-#   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-#   HelloWorldApi:
-#     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-#     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-#   HelloWorldFunction:
-#     Description: "Hello World Lambda Function ARN"
-#     Value: !GetAtt HelloWorldFunction.Arn
-#   HelloWorldFunctionIamRole:
-#     Description: "Implicit IAM Role created for Hello World function"
-#     Value: !GetAtt HelloWorldFunctionRole.Arn
-# HelloWorldFunction:
-#   Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-#   Properties:
-#     FunctionName: GetHelloWorld
-#     CodeUri: hello_world/
-#     Handler: getHello.lambda_handler
-#     Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
-#     Layers: 
-#       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:1
-#     # VpcConfig:
-#     #   SecurityGroupIds: !Ref SecurityGroupIds
-#     #   SubnetIds: !Ref VpcSubnetIds
-#     Events:
-#       RootGet:
-#         Type: HttpApi
-#         Properties:
-#           Path: /
-#           Method: get
-#           ApiId: !Ref HttpApi
