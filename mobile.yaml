@@ -3,9 +3,6 @@ Transform: AWS::Serverless-2016-10-31
 Description: TuCita 247 App Mobile
 
 Parameters:
-  UserPoolId:
-    Type: String
-    Description: User poolID for Cognito provider
   Audience:
     Type: String
     Description: Client id for user pool
