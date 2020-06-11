@@ -220,9 +220,10 @@ def getBusiness(businessId):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId',
+            KeyConditionExpression='PKID = :businessId AND SKID =:meta',
             ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId}
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':meta': {'S': 'METADATA'}
             },
             Limit=1
         )
