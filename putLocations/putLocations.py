@@ -63,7 +63,6 @@ def lambda_handler(event, context):
                     },
                 }
             else:
-                # CAMBIARLO A UPDATE EN VEZ DE PUT
                 locations = {
                     "Update":{
                         "TableName":"TuCita247",
