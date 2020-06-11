@@ -1,0 +1,223 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: TuCita 247 App Mobile
+
+Parameters:
+  UserPoolId:
+    Type: String
+    Description: User poolID for Cognito provider
+  Audience:
+    Type: String
+    Description: Client id for user pool
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 128
+    Runtime: python3.8
+
+Resources:
+  HttpApiMobile:
+    ApiId: HttpApiMobile
+    Type: AWS::Serverless::HttpApi
+    Name: TuCita247App
+    Properties:  
+      Domain:
+        DomainName: apimob.tucita247.com
+        CertificateArn: arn:aws:acm:us-east-1:821843840552:certificate/91a63656-8adc-479c-96a4-1345641cf20b
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId: Z05029142564P6F9HXWMB
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - PUT
+          - PATCH
+          - DELETE
+          - POST
+        AllowOrigins:
+          - '*'
+        AllowHeaders:
+          - content-type
+        MaxAge: "10"
+        AllowCredentials: False
+
+  PostMobileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostMobile
+      CodeUri: postMobile/
+      Handler: postMobile.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers:
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:twilio:4
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            twilioAccountSID: "AC01b465597255d541bcf1c91379284b7a"
+            twilioAccountToken: "63ac05514d3d614f76f0a2efab2a51a7"
+            fromNumber: "+12038720681"
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/{number}
+            Method: post
+            ApiId: !Ref HttpApiMobile
+
+  GetAdsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAds
+      CodeUri: getAds/
+      Handler: getAds.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers:
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/ads
+            Method: get
+            ApiId: !Ref HttpApiMobile
+      
+  PostUserMobileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostUserMobile
+      CodeUri: postUserMobile/
+      Handler: postUserMobile.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile
+            Method: post
+            ApiId: !Ref HttpApiMobile
+
+  GetResultSearchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetResultSearch
+      CodeUri: getResultSearch/
+      Handler: getResultSearch.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/search/{search}
+            Method: get
+            ApiId: !Ref HttpApiMobile
+      
+  GetMobCateogiesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetMobCateogies
+      CodeUri: getMobCategories/
+      Handler: getMobCategories.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/categories/{language}
+            Method: get
+            ApiId: !Ref HttpApiMobile
+
+  GetPremiumFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetPremium
+      CodeUri: getPremium/
+      Handler: getPremium.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            premiumCode: "200"
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/business/ads
+            Method: get
+            ApiId: !Ref HttpApiMobile
+            
+  GetWhereFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetWhere
+      CodeUri: getWhere/
+      Handler: getWhere.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Environment:
+        Variables:
+            devCors: !Ref AWS::NoValue
+            prodCors: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/where/{country}/{language}
+            Method: get
+            ApiId: !Ref HttpApiMobile
+            
+# CustomMessageFunction:
+#   Type: AWS::Serverless::Function
+#   Properties:
+#     FunctionName: CustomMessage
+#     CodeUri: customMessage/
+#     Handler: customMessage.lambda_handler
+#     Role: arn:aws:iam::821843840552:role/LambdaDynamo
