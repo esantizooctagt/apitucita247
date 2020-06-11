@@ -70,6 +70,7 @@ def lambda_handler(event, context):
                 'LongDescription': row['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in row else '',
                 'ShortDescription': row['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in row else '',
                 'Imagen': row['IMGBUSINESS'] if 'IMGBUSINESS' in row else '',
+                'ImagenLink': row['IMGLINK'] if 'IMGLINK' in row else '',
                 'City': row['CITY'] if 'CITY' in row else '',
                 'ZipCode': row['ZIPCODE'] if 'ZIPCODE' in row else '',
                 'Geolocation': row['GEOLOCATION'] if 'GEOLOCATION' in row else '',
