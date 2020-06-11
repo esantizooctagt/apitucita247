@@ -84,6 +84,7 @@ def lambda_handler(event, context):
                 'Tags': row['TAGS'] if 'TAGS' in row else '',
                 'ApposPurpose': row['APPOINTMENTS_PURPOSE'] if 'APPOINTMENTS_PURPOSE' in row else '',
                 'ParentBusiness': row['PARENTBUSINESS'] if 'PARENTBUSINESS' in row else '',
+                'TuCitaLink': row['TU_CITA_LINK'] if 'TU_CITA_LINK' in row else '',
                 'Status': row['STATUS']
             }
             

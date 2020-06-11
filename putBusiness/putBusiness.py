@@ -97,6 +97,20 @@ def lambda_handler(event, context):
                 items.append(recordset)
         
         rows = {}
+        if data['TuCitaLink'] != '':
+            rows = {
+                "Put": {
+                    "TableName": "TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'BUS#'+businessId},
+                        "SKID": {"S": 'LINK#'+data['TuCitaLink']}
+                    },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                }
+            }
+            items.append(rows)
+    
         rows = {
             "Update": {
                 "TableName": "TuCita247",
@@ -104,7 +118,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA' }
                 },
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, OPERATIONHOURS = :operationHours, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, APPOINTMENTS_PURPOSE = :appospurpose" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else ""),
+                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, OPERATIONHOURS = :operationHours, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, APPOINTMENTS_PURPOSE = :appospurpose" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
                 "ExpressionAttributeNames": { '#n': 'NAME' },
                 "ExpressionAttributeValues": { 
                     ":longDescrip": {"S": data['LongDescription']},
@@ -124,6 +138,7 @@ def lambda_handler(event, context):
                     ":parentBus": {"N": str(data['ParentBusiness'])},
                     ":tags": {"S": data['Tags']},
                     ":appospurpose": {"S": data['ApposPurpose']},
+                    ":tucitalink": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
                     ":key1": {"S": "PARENT#BUS" if parentBusiness == 1 else None},
                     ":skey1": {"S": data['Name'] + "#" + businessId if parentBusiness == 1 else None},
                     ":zipcode": {"S": data['ZipCode']}
