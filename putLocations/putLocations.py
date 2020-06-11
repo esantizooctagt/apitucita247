@@ -50,10 +50,7 @@ def lambda_handler(event, context):
                             "SECTOR": {"S": str(locs['Sector'])},
                             "GEOLOCATION": {"S": str(locs['Geolocation'])},
                             "PARENT_LOCATION": {"S": str(locs['ParentLocation'])},
-                            "TOTAL_TRANSITABLE_AREA": {"N": str(locs['TotalPiesTransArea'])},
-                            "LOCATION_DENSITY": {"N": str(locs['LocationDensity'])},
-                            "MAX_NUMBER_EMPLOYEES_LOC": {"N": str(locs['MaxNumberEmployeesLocation'])},
-                            "MAX_CUSTOMER_LOC": {"N": str(locs['MaxConcurrentCustomerLocation'])},
+                            "MAX_CUSTOMER": {"N": str(locs['MaxConcurrentCustomer'])},
                             "BUCKET_INTERVAL": {"N": str(locs['BucketInterval'])},
                             "CUSTOMER_PER_BUCKET": {"N": str(locs['TotalCustPerBucketInter'])},
                             "OPERATIONHOURS": {"S": str(locs['OperationHours'])},
@@ -67,26 +64,27 @@ def lambda_handler(event, context):
             else:
                 # CAMBIARLO A UPDATE EN VEZ DE PUT
                 locations = {
-                    "Put":{
+                    "Update":{
                         "TableName":"TuCita247",
-                        "Item": {
+                        "Key": {
                             "PKID": {"S": 'BUS#'+businessId},
-                            "SKID": {"S": 'LOC#'+locs['LocationId']},
-                            "NAME": {"S": str(locs['Name'])},
-                            "CITY": {"S": str(locs['City'])},
-                            "SECTOR": {"S": str(locs['Sector'])},
-                            "ADDRESS": {"S": str(locs['Address'])},
-                            "GEOLOCATION": {"S": str(locs['Geolocation'])},
-                            "PARENT_LOCATION": {"S": str(locs['ParentLocation'])},
-                            "TOTAL_TRANSITABLE_AREA": {"N": str(locs['TotalPiesTransArea'])},
-                            "LOCATION_DENSITY": {"N": str(locs['LocationDensity'])},
-                            "MAX_NUMBER_EMPLOYEES_LOC": {"N": str(locs['MaxNumberEmployeesLocation'])},
-                            "MAX_CUSTOMER_LOC": {"N": str(locs['MaxConcurrentCustomerLocation'])},
-                            "BUCKET_INTERVAL": {"N": str(locs['BucketInterval'])},
-                            "CUSTOMER_PER_BUCKET": {"N": str(locs['TotalCustPerBucketInter'])},
-                            "OPERATIONHOURS": {"S": str(locs['OperationHours'])},
-                            "DOORS": {"S": str(locs['Doors'])},
-                            "STATUS": {"N": str(locs['Status'])}
+                            "SKID": {"S": 'LOC#'+locs['LocationId']}
+                        },
+                        "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, BUCKET_INTERVAL = :bucketInterval, CUSTOMER_PER_BUCKET = :customerPerBucket,  OPERATIONHOURS = :operationHours, DOORS = :doors, #s = :status",
+                        "ExpressionAttributeNames": {"#n":"NAME", "#s":"STATUS"},
+                        "ExpressionAttributeValues": {
+                            ":name": {"S": str(locs['Name'])},
+                            ":city": {"S": str(locs['City'])},
+                            ":sector": {"S": str(locs['Sector'])},
+                            ":address": {"S": str(locs['Address'])},
+                            ":geolocation": {"S": str(locs['Geolocation'])},
+                            ":parentLocation": {"S": str(locs['ParentLocation'])},
+                            ":maxCustomer": {"N": str(locs['MaxConcurrentCustomer'])},
+                            ":bucketInterval": {"N": str(locs['BucketInterval'])},
+                            ":customerPerBucket": {"N": str(locs['TotalCustPerBucketInter'])},
+                            ":operationHours": {"S": str(locs['OperationHours'])},
+                            ":doors": {"S": str(locs['Doors'])},
+                            ":status": {"N": str(locs['Status'])}
                         },
                         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
