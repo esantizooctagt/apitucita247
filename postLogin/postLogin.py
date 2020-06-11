@@ -153,18 +153,24 @@ def lambda_handler(event, context):
                 statusCode = 404
                 body = json.dumps({'Message':'Auth failed','Code':400})
             if user != None:
-                recordset = {
-                    'User_Id': user['USERID'],
-                    'Email': user['GSI1PK'].replace('EMAIL#',''),
-                    'Is_Admin': int(user['IS_ADMIN']),
-                    'Business_Id': user['PKID'].replace('BUS#',''),
-                    'Avatar': user['AVATAR'] if 'AVATAR' in user else '',
-                    'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
-                    'Language': user['LANGUAGE'] if 'LANGUAGE' in user else ''
-                }
-                result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
-                statusCode = 200
-                body = json.dumps(result)
+                business, error = getBusiness(user['PKID'].replace('BUS#',''))
+                if business != None:
+                    recordset = {
+                        'User_Id': user['USERID'],
+                        'Email': user['GSI1PK'].replace('EMAIL#',''),
+                        'Is_Admin': int(user['IS_ADMIN']),
+                        'Business_Id': user['PKID'].replace('BUS#',''),
+                        'Avatar': user['AVATAR'] if 'AVATAR' in user else '',
+                        'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
+                        'Language': user['LANGUAGE'] if 'LANGUAGE' in user else '',
+                        'Business_Name': business['NAME']
+                    }
+                    result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
+                    statusCode = 200
+                    body = json.dumps(result)
+                else:
+                    statusCode = 404
+                    body = json.dumps({'Message':'Auth failed','Code':400})
 
         if error != '':
             statusCode = 404
@@ -195,6 +201,28 @@ def getUser(email):
             KeyConditionExpression='GSI1PK = :email',
             ExpressionAttributeValues={
                 ':email': {'S': 'EMAIL#' + email}
+            },
+            Limit=1
+        )
+        if response['Count'] == 0:
+            error = json.dumps({'Message':'Auth failed','Code':400})
+        if response['Count'] > 0:
+            item = response['Items']
+            res = json_dynamodb.loads(item[0])
+    except Exception as e:
+        error = json.dumps(str(e))
+    return res, error
+
+def getBusiness(businessId):
+    res = ''
+    error = ''
+    try:
+        response = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#' + businessId}
             },
             Limit=1
         )
