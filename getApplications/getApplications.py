@@ -84,7 +84,8 @@ def lambda_handler(event, context):
                     recordset = {
                         'ApplicationId': apps['SKID'],
                         'Name': apps['NAME'],
-                        'Level_Access': '0'
+                        'Level_Access': '0',
+                        'Active': '0'
                     }
                     records.append(recordset)
                     
@@ -93,7 +94,9 @@ def lambda_handler(event, context):
                     recordset = {
                         'ApplicationId': apps['SKID'],
                         'Name': apps['NAME'],
-                        'Level_Access': str(items['LEVEL_ACCESS'])
+                        'Level_Access': str(items['LEVEL_ACCESS']),
+                        'Active': '1',
+                        'Route': line['ROUTE']
                     }
                     records.append(recordset)
  
