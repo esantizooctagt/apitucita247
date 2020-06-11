@@ -57,7 +57,7 @@ def lambda_handler(event, context):
         gender = data['Gender']
         preference = data['Preference']
         disability = data['Disability']
-        companions = data['Companions']
+        guests = data['Guests']
         customerId = str(uuid.uuid4()).replace("-","")
         existe = 0
         opeHours = ''
@@ -179,7 +179,7 @@ def lambda_handler(event, context):
                         "PHONE": {"S": phone},
                         "DOOR": {"S": door},
                         "ON_BEHALF": {"N": "0"},
-                        "PEOPLE_QTY": {"N": str(companions) if str(companions) != '' else None},
+                        "PEOPLE_QTY": {"N": str(guests) if str(guests) != '' else None},
                         "DISABILITY": {"N": disability if disability != '' else None},
                         "QRCODE": {"S": qrCode},
                         "TYPE": {"N": "2"},
@@ -205,7 +205,7 @@ def lambda_handler(event, context):
                 'Name': name,
                 'Phone': phone,
                 'OnBehalf': 0,
-                'Companions': 0 if companions == '' else int(companions),
+                'Guests': 0 if guests == '' else int(guests),
                 'Door': door,
                 'Disability': 0 if disability == '' else int(disability),
                 'DateFull': dateAppo,

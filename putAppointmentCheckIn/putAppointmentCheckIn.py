@@ -48,7 +48,7 @@ def lambda_handler(event, context):
         appointmentId = event['pathParameters']['id']
         status = data['Status']
         dateAppo = data['DateAppo']
-        qty = data['Companions']
+        qty = data['Guests']
         qrCode = data['qrCode'] if 'qrCode' in data else ''
         businessId = data['BusinessId'] if 'BusinessId' in data else ''
         locationId = data['LocationId'] if 'LocationId' in data else ''
