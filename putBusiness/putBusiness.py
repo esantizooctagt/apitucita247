@@ -104,7 +104,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA' }
                 },
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, OPERATIONHOURS = :operationHours, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else ""),
+                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, OPERATIONHOURS = :operationHours, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, APPOINTMENTS_PURPOSE = :appospurpose" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else ""),
                 "ExpressionAttributeNames": { '#n': 'NAME' },
                 "ExpressionAttributeValues": { 
                     ":longDescrip": {"S": data['LongDescription']},
@@ -123,6 +123,7 @@ def lambda_handler(event, context):
                     ":website": {"S": data['Website']},
                     ":parentBus": {"N": str(data['ParentBusiness'])},
                     ":tags": {"S": data['Tags']},
+                    ":appospurpose": {"S", data['AppoPurpose']},
                     ":key1": {"S": "PARENT#BUS" if parentBusiness == 1 else None},
                     ":skey1": {"S": data['Name'] + "#" + businessId if parentBusiness == 1 else None},
                     ":zipcode": {"S": data['ZipCode']}

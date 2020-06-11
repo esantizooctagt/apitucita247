@@ -82,6 +82,7 @@ def lambda_handler(event, context):
                 'OperationHours': row['OPERATIONHOURS'],
                 'Categories': records,
                 'Tags': row['TAGS'],
+                'ApposPurpose': row['APPOINTMENTS_PURPOSE'],
                 'ParentBusiness': row['PARENTBUSINESS'],
                 'Status': row['STATUS']
             }

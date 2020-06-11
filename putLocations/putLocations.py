@@ -53,6 +53,7 @@ def lambda_handler(event, context):
                             "MAX_CUSTOMER": {"N": str(locs['MaxConcurrentCustomer'])},
                             "BUCKET_INTERVAL": {"N": str(locs['BucketInterval'])},
                             "CUSTOMER_PER_BUCKET": {"N": str(locs['TotalCustPerBucketInter'])},
+                            "MANUAL_CHECK_OUT": {"N": str(locs['ManualCheckOut'])},
                             "OPERATIONHOURS": {"S": str(locs['OperationHours'])},
                             "DOORS": {"S": str(locs['Doors'])},
                             "STATUS": {"N": str(locs['Status'])}
@@ -70,7 +71,7 @@ def lambda_handler(event, context):
                             "PKID": {"S": 'BUS#'+businessId},
                             "SKID": {"S": 'LOC#'+locs['LocationId']}
                         },
-                        "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, BUCKET_INTERVAL = :bucketInterval, CUSTOMER_PER_BUCKET = :customerPerBucket,  OPERATIONHOURS = :operationHours, DOORS = :doors, #s = :status",
+                        "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, BUCKET_INTERVAL = :bucketInterval, CUSTOMER_PER_BUCKET = :customerPerBucket,  OPERATIONHOURS = :operationHours, DOORS = :doors, #s = :status, MANUAL_CHECK_OUT = :manualCheckOut",
                         "ExpressionAttributeNames": {"#n":"NAME", "#s":"STATUS"},
                         "ExpressionAttributeValues": {
                             ":name": {"S": str(locs['Name'])},
@@ -83,6 +84,7 @@ def lambda_handler(event, context):
                             ":bucketInterval": {"N": str(locs['BucketInterval'])},
                             ":customerPerBucket": {"N": str(locs['TotalCustPerBucketInter'])},
                             ":operationHours": {"S": str(locs['OperationHours'])},
+                            ":manualCheckOut": {"N": str(locs['ManualCheckOut'])},
                             ":doors": {"S": str(locs['Doors'])},
                             ":status": {"N": str(locs['Status'])}
                         },

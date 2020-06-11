@@ -77,6 +77,7 @@ def lambda_handler(event, context):
                 'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else '',
                 'Doors': row['DOORS'] if 'DOORS' in row else '',
                 'Status': row['STATUS'] if 'STATUS' in row else 0,
+                'ManualCheckOut': row['MANUAL_CHECK_OUT'] if 'MANUAL_CHECK_OUT' in row else 0,
                 'Sectors': items
             }
             records.append(recordset)
