@@ -46,7 +46,7 @@ def lambda_handler(event, context):
             recordset = {
                 'LocationId': row['SKID'].replace('LOC#',''),
                 'Name': row['NAME'],
-                'Door': row['DOORS'].split(',')
+                'Door': row['DOORS'].split(',') if 'DOORS' in row else ''
             }
             records.append(recordset)
             
@@ -69,7 +69,7 @@ def lambda_handler(event, context):
                 recordset = {
                     'LocationId': row['SKID'].replace('LOC#',''),
                     'Name': row['NAME'],
-                    'Door': row['DOORS'].split(',')
+                    'Door': row['DOORS'].split(',') if 'DOORS' in row else ''
                 }
                 records.append(recordset)
 

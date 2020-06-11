@@ -42,9 +42,9 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': businessId,
                 'LocationId': row['SKID'].replace('LOC#',''),
-                'Name': row['NAME'],
-                'Doors': row['DOORS'],
-                'Status': row['STATUS']
+                'Name': row['NAME'] if 'NAME' in row else '',
+                'Doors': row['DOORS'] if 'DOORS' in row else '',
+                'Status': row['STATUS'] if 'STATUS' in row else 0
             }
             record.append(recordset)
 
