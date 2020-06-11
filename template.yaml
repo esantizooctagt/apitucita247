@@ -1231,26 +1231,26 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
   
-  PutBusinessImgLinkFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: PutBusinessImgLink
-      CodeUri: putBusinessImgLink/
-      Handler: putBusinessImgLink.lambda_handler
-      Role: arn:aws:iam::821843840552:role/LambdaDynamoS3
-      Layers: 
-        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
-        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
-        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
-      Events:
-        RootGet:
-          Type: HttpApi
-          Properties:
-            Auth:
-              Authorizer: CognitoAuth
-            Path: /business/imagen/link/{businessId}
-            Method: put
-            ApiId: !Ref HttpApi
+  # PutBusinessImgLinkFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: PutBusinessImgLink
+  #     CodeUri: putBusinessImgLink/
+  #     Handler: putBusinessImgLink.lambda_handler
+  #     Role: arn:aws:iam::821843840552:role/LambdaDynamoS3
+  #     Layers: 
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+  #     Events:
+  #       RootGet:
+  #         Type: HttpApi
+  #         Properties:
+  #           Auth:
+  #             Authorizer: CognitoAuth
+  #           Path: /business/imagen/link/{businessId}
+  #           Method: put
+  #           ApiId: !Ref HttpApi
     
   # 
   # MOBILE APPS
