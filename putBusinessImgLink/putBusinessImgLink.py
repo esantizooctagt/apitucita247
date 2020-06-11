@@ -63,7 +63,6 @@ def lambda_handler(event, context):
         Img_Path = Img_Path[Img_Path.find("Img_Path")+9:]
 
         businessId = event['pathParameters']['businessId']
-        
         table = dynamodb.Table('TuCita247')
         response = table.update_item(
             Key={
@@ -76,8 +75,7 @@ def lambda_handler(event, context):
         )
         
         statusCode = 200
-        body = json.dumps({'Message': 'Image updated successfully'})
-                
+        body = json.dumps({'Message': 'Image updated successfully'})       
         if statusCode == '':
             statusCode = 500
             body = json.dumps({'Message': 'Error on update the image'})
