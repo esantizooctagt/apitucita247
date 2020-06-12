@@ -111,6 +111,7 @@ def lambda_handler(event, context):
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='GSI2PK = :key AND GSI2SK <= :datePoll',
                 ScanIndexForward=False,
+                FilterExpression='DATE_FIN_POLL >= :datePoll',
                 ExpressionAttributeValues={
                     ':key': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':datePoll': {'S': '1#DT#' + dateOpe}

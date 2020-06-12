@@ -33,12 +33,12 @@ def lambda_handler(event, context):
         salir = 0
 
         e = {'#s': 'STATUS'}
-        a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':polls': {'S':'POLL#'}}
+        a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':surveys': {'S':'SUR#'}}
         f = '#s < :stat'
         if search != '_':
             e = {'#s': 'STATUS', '#n': 'NAME'}
             f = '#s < :stat and begins_with (#n , :search)'
-            a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':polls': {'S':'POLL#'}, ':search': {'S': search}}
+            a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':surveys': {'S':'SUR#'}, ':search': {'S': search}}
 
         if lastItem == '_':
             lastItem = ''
@@ -46,14 +46,14 @@ def lambda_handler(event, context):
             if lastItem == '':
                 salir = 1
             else:
-                lastItem = {'PKID': {'S': 'BUS#' + businessId },'SKID': {'S': 'POLL#' + lastItem }}
+                lastItem = {'PKID': {'S': 'BUS#' + businessId },'SKID': {'S': 'SUR#' + lastItem }}
 
         if salir == 0:
             if lastItem == '':
                 response = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND begins_with ( SKID, :polls )',
+                    KeyConditionExpression='PKID = :businessId AND begins_with ( SKID, :surveys )',
                     ExpressionAttributeNames=e,
                     ExpressionAttributeValues=a,
                     FilterExpression=f,
@@ -64,7 +64,7 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
                     ExclusiveStartKey= lastItem,
-                    KeyConditionExpression='PKID = :businessId AND begins_with ( SKID, :polls )',
+                    KeyConditionExpression='PKID = :businessId AND begins_with ( SKID, :surveys )',
                     ExpressionAttributeNames=e,
                     ExpressionAttributeValues=a,
                     FilterExpression=f,
@@ -74,22 +74,21 @@ def lambda_handler(event, context):
             recordset ={}
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
-                    'PollId': row['SKID'].replace('POLL#',''),
+                    'SurveyId': row['SKID'].replace('SUR#',''),
                     'Name': row['NAME'],
                     'LocationId': row['LOCATIONID'],
-                    'DatePoll': row['DATE_POLL'],
-                    'DateFinPoll': row['DATE_FIN_POLL'],
+                    'DateSurvey': row['DATE_SURVEY'],
                     'Status': row['STATUS']
                 }
                 records.append(recordset)
 
             if 'LastEvaluatedKey' in response:
                 lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
-                lastItem = lastItem['SKID'].replace('POLL#','')
+                lastItem = lastItem['SKID'].replace('SUR#','')
 
             resultSet = { 
                 'lastItem': lastItem,
-                'polls': records
+                'surveys': records
             }
         
             statusCode = 200

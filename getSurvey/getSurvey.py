@@ -25,29 +25,49 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
 
     try:
-        pollId = event['pathParameters']['pollId']
+        surveyId = event['pathParameters']['surveyId']
+
+        items=[]
+        lines={}
+        details = dynamodb.query(
+            TableName="TuCita247",
+            IndexName="TuCita247_Index",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='GSI1PK = :surveys AND begins_with (GSI1SK , :item)',
+            ExpressionAttributeValues={
+                ':surveys': {'S': 'SUR#' + surveyId},
+                ':item': {'S': 'ITEM#'}
+            }
+        )
+        for item in json_dynamodb.loads(details['Items']):
+            lines = {
+                'QuestionId': item['GSI1SK'].replace('ITEM#',''),
+                'Description': item['DESCRIPTION'],
+                'Status': item['STATUS'],
+                'Happy': item['HAPPY'],
+                'Neutral': item['NEUTRAL'],
+                'Angry': item['ANGRY']
+            }
+            items.append(lines)
 
         master = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :polls AND GSI1SK = :polls',
+            KeyConditionExpression='GSI1PK = :surveys AND GSI1SK = :surveys',
             ExpressionAttributeValues={
-                ':polls': {'S': 'POLL#' + pollId}
+                ':surveys': {'S': 'SUR#' + surveyId}
             },
             Limit =1
         )
         for item in json_dynamodb.loads(master['Items']):
             recordset = {
-                'PollId': item['GSI1SK'].replace('POLL#',''),
+                'SurveyId': item['GSI1SK'].replace('SUR#',''),
                 'Name': item['NAME'],
                 'LocationId': item['LOCATIONID'],
-                'DatePoll': item['DATE_POLL'],
-                'DateFinPoll': item['DATE_FIN_POLL'],
+                'DateSurvey': item['DATE_SURVEY'],
                 'Status': int(item['STATUS']),
-                'Happy': item['HAPPY'],
-                'Neutral': item['NEUTRAL'],
-                'Angry': item['ANGRY']
+                'Questions': items
             }
     
         statusCode = 200

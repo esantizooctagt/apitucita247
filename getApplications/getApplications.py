@@ -68,8 +68,7 @@ def lambda_handler(event, context):
                     ':stat' : {'N': '1'}
                 }
             )
-            for line in response['Items']:
-                apps = json_dynamodb.loads(line)
+            for apps in json_dynamodb.loads(response['Items']):
                 response02 = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
@@ -96,7 +95,7 @@ def lambda_handler(event, context):
                         'Name': apps['NAME'],
                         'Level_Access': str(items['LEVEL_ACCESS']),
                         'Active': '1',
-                        'Route': line['ROUTE']
+                        'Route': apps['ROUTE']
                     }
                     records.append(recordset)
  
