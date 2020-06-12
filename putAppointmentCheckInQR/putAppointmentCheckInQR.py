@@ -43,11 +43,10 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
-        typeAppo = ''
         data = json.loads(event['body'])
+
         appointmentId = event['pathParameters']['id']
         status = data['Status']
-        # dateAppo = data['DateAppo']
         qty = data['Guests']
         qrCode = data['qrCode'] if 'qrCode' in data else ''
         businessId = data['BusinessId'] if 'BusinessId' in data else ''
@@ -70,10 +69,7 @@ def lambda_handler(event, context):
         for row in json_dynamodb.loads(response['Items']):
             appointmentId = row['PKID']
             dateAppo = row['DATE_APPO']
-            qty = row['PEOPLE_QTY']
             customerId = row['GSI2PK'].replace('CUS#','')
-            #no se para qu eel typeAppo
-            typeAppo = row['TYPE']
 
         items = []
         recordset = {
