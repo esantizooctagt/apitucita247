@@ -88,7 +88,7 @@ def lambda_handler(event, context):
             TransactItems = items
         )
         statusCode = 200
-        body = json.dumps({'Message': 'Poll added successfully', 'Code': 200})
+        body = json.dumps({'Message': 'Poll added successfully', 'PollId': pollId, 'Code': 200})
 
         if statusCode == '':
             statusCode = 500
