@@ -28,8 +28,8 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         items = int(event['pathParameters']['items'])
-        lastItem = event['pathParameters']['lastItem']
         search = event['pathParameters']['search']
+        lastItem = event['pathParameters']['lastItem']
         salir = 0
 
         e = {'#s': 'STATUS'}

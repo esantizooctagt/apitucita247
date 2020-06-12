@@ -20,7 +20,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
-# dynamodbTable = boto3.resource('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
