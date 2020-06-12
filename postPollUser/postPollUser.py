@@ -5,6 +5,7 @@ import json
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
+from dynamodb_json import json_util as json_dynamodb
 
 import base64
 
@@ -33,53 +34,65 @@ def lambda_handler(event, context):
         items = []
         recordset = {}
         response = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='GSI1PK = :pollId AND GSI1SK = :customerId',
+            ExpressionAttributeValues={
+                ':pollId': {'S': 'POLL#' + data['PollId']},
+                ':customerId': {'S': 'CUS#' + data['CustomerId']}
+            }
+        )
+
+        if response['Count'] == 0:
+            businessId = ''
+            response = dynamodb.query(
                 TableName="TuCita247",
                 IndexName="TuCita247_Index",
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='GSI1PK = :key AND GSI1SK = :key',
+                KeyConditionExpression='GSI1PK = :pollId AND GSI1SK = :pollId',
                 ExpressionAttributeValues={
-                    ':key': {'S': 'CUS#' + data['CustomerId']}
+                    ':pollId': {'S': 'POLL#' + data['PollId']}
                 }
             )
+            for row in json_dynamodb.loads(response['Items']):
+                businessId = row['PKID'].replace('BUS#','')
 
-        if response['Count'] > 0:
-            for item in data['Questions']:
-                recordset = {
-                    "Put": {
-                        "TableName": "TuCita247",
-                        "Item": {
-                            "PKID": {"S": 'POLL#' + data['PollId'] + '#ITEM#' + item['QuestionId']},
-                            "SKID": {"S": 'CUS#' + data['CustomerId']},
-                            "GSI1PK": {"S": 'POLL#' + data['PollId']},
-                            "GSI1SK": {"S": 'CUS#' + data['CustomerId']},
-                            "HAPPY": {"N": str(item['Happy'])},
-                            "NEUTRAL": {"N": str(item['Neutral'])},
-                            "ANGRY": {"N": str(item['Angry'])}
-                        },
-                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "NONE"
+            recordset = {
+                "Put": {
+                    "TableName": "TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'POLL#' + data['PollId']},
+                        "SKID": {"S": 'CUS#' + data['CustomerId']},
+                        "GSI1PK": {"S": 'POLL#' + data['PollId']},
+                        "GSI1SK": {"S": 'CUS#' + data['CustomerId']},
+                        "HAPPY": {"N": str(data['Happy'])},
+                        "NEUTRAL": {"N": str(data['Neutral'])},
+                        "ANGRY": {"N": str(data['Angry'])}
                     },
-                }
-                items.append(recordset)
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "NONE"
+                },
+            }
+            items.append(recordset)
 
-                recordset = {
-                    "Update": {
-                        "TableName": "TuCita247",
-                        "Key": {
-                            "PKID": {"S": 'POLL#' + data['PollId'] + '#ITEM#' + item['QuestionId']},
-                            "SKID": {"S": 'POLL#' + data['PollId'] + '#ITEM#' + item['QuestionId']}
-                        },
-                        "UpdateExpression": "SET HAPPY = HAPPY + :happy, NEUTRAL = NEUTRAL + :neutral, ANGRY = ANGRY + :angry",
-                        "ExpressionAttributeValues": {
-                            ':happy': {'N': str(item['Happy'])},
-                            ':neutral': {'N': str(item['Neutral'])},
-                            ':angry': {'N': str(item['Angry'])}
-                        },
-                        "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "NONE"
-                    }
+            recordset = {
+                "Update": {
+                    "TableName": "TuCita247",
+                    "Key": {
+                        "PKID": {"S": 'BUS#' + businessId },
+                        "SKID": {"S": 'POLL#' + data['PollId'] }
+                    },
+                    "UpdateExpression": "SET HAPPY = HAPPY + :happy, NEUTRAL = NEUTRAL + :neutral, ANGRY = ANGRY + :angry",
+                    "ExpressionAttributeValues": {
+                        ':happy': {'N': str(data['Happy'])},
+                        ':neutral': {'N': str(data['Neutral'])},
+                        ':angry': {'N': str(data['Angry'])}
+                    },
+                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "NONE"
                 }
-                items.append(recordset)
+            }
+            items.append(recordset)
                 
             logger.info(items)
             response = dynamodb.transact_write_items(
@@ -89,7 +102,7 @@ def lambda_handler(event, context):
             body = json.dumps({'Message': 'Poll saved successfully', 'Code': 200})
         else:
             statusCode = 404
-            body = json.dumps({'Message': 'Customer no valid', 'Code': 404})
+            body = json.dumps({'Message': 'Poll already filled', 'Code': 404})
 
         if statusCode == '':
             statusCode = 500
