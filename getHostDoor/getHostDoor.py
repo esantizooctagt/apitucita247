@@ -33,6 +33,7 @@ def lambda_handler(event, context):
     dateOpe = today.strftime("%Y-%m-%d")
 
     try:
+        statusCode = ''
         businessId = event['pathParameters']['businessId']
         userId = event['pathParameters']['userId']
 
@@ -49,8 +50,8 @@ def lambda_handler(event, context):
         locationId = ''
         door = '' 
         for row in json_dynamodb.loads(response['Items']):
-            locationId = row['LOCATIONID']
-            door = row['DOOR']
+            locationId = row['LOCATIONID'] if 'LOCATIONID' in row else ''
+            door = row['DOOR'] if 'DOOR' in row else ''
         
         if locationId != '':
             locs = dynamodb.query(

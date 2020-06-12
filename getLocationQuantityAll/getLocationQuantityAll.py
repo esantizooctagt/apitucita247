@@ -33,16 +33,28 @@ def lambda_handler(event, context):
     
     try:
         businessId = event['pathParameters']['businessId']
+        locationId = event['pathParameters']['locationId']
 
-        response = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :locationId )',
-            ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId},
-                ':locationId': {'S': 'LOC#'}
-            }
-        )
+        if locationId == '_':
+            response = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :locationId )',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + businessId},
+                    ':locationId': {'S': 'LOC#'}
+                }
+            )
+        else:
+            response = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + businessId},
+                    ':locationId': {'S': 'LOC#' + locationId}
+                }
+            )
 
         qtyPeople = 0
         totLocation = 0

@@ -1206,7 +1206,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/checkinall/{businessId}
+            Path: /location/checkinall/{businessId}/{locationId}
             Method: get
             ApiId: !Ref HttpApi
   
