@@ -51,7 +51,7 @@ def lambda_handler(event, context):
         for row in locations:
             recordset = {
                 'Quantity': row['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in row else 0,
-                'TotLocation': row['MAX_CUSTOMER_LOC'] if 'MAX_CUSTOMER_LOC' in row else 0,
+                'TotLocation': row['MAX_CUSTOMER'] if 'MAX_CUSTOMER' in row else 0,
                 'Name': row['NAME']
             }
             item.append(recordset)

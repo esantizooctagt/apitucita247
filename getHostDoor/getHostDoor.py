@@ -79,7 +79,7 @@ def lambda_handler(event, context):
                     'Door': door,
                     'Open': open,
                     'Closed': closed,
-                    'MaxCustomers': item['MAX_CUSTOMER_LOC'],
+                    'MaxCustomers': item['MAX_CUSTOMER'],
                     'ManualCheckOut': item['MANUAL_CHECK_OUT']
                 }
     
