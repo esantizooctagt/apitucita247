@@ -42,9 +42,10 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
+        dateAppo = ''
+        appointmentId = ''
+        
         data = json.loads(event['body'])
-
-        appointmentId = event['pathParameters']['id']
         status = data['Status']
         qty = data['Guests']
         qrCode = data['qrCode'] if 'qrCode' in data else ''
@@ -53,8 +54,7 @@ def lambda_handler(event, context):
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
-        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
-
+        dateOpe = today.strftime("%Y-%m-%d")
         response = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Appos",
@@ -66,56 +66,58 @@ def lambda_handler(event, context):
             }
         )
         for row in json_dynamodb.loads(response['Items']):
-            appointmentId = row['PKID']
+            appointmentId = row['PKID'].replace('APPO#','')
             dateAppo = row['DATE_APPO']
             customerId = row['GSI2PK'].replace('CUS#','')
 
         items = []
-        recordset = {
-            "Update": {
-                "TableName": "TuCita247",
-                "Key": {
-                    "PKID": {"S": 'APPO#' + appointmentId}, 
-                    "SKID": {"S": 'APPO#' + appointmentId}
-                },
-                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKIN = :dateOpe", 
-                "ExpressionAttributeValues": {
-                    ":status": {"N": "3"}, 
-                    ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
-                    ":dateOpe": {"S": str(dateAppo)},
-                    ":qrCode": {"S": qrCode}
-                },
-                "ExpressionAttributeNames": {'#s': 'STATUS'},
-                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND QRCODE = :qrCode",
-                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+        if dateAppo != '':
+            recordset = {
+                "Update": {
+                    "TableName": "TuCita247",
+                    "Key": {
+                        "PKID": {"S": 'APPO#' + appointmentId}, 
+                        "SKID": {"S": 'APPO#' + appointmentId}
+                    },
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty", 
+                    "ExpressionAttributeValues": {
+                        ":status": {"N": "3"}, 
+                        ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
+                        ":qty": {"N": str(qty)},
+                        ":dateOpe": {"S": str(dateAppo)}
+                    },
+                    "ExpressionAttributeNames": {'#s': 'STATUS'},
+                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                }
             }
-        }
-        items.append(cleanNullTerms(recordset))
+            items.append(cleanNullTerms(recordset))
 
-        recordset = {
-            "Update": {
-                "TableName": "TuCita247",
-                "Key": {
-                    "PKID": {"S": 'BUS#' + businessId}, 
-                    "SKID": {"S": 'LOC#' + locationId}, 
-                },
-                "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
-                "ExpressionAttributeValues": { 
-                    ":increment": {"N": str(qty)}
-                },
-                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+            recordset = {
+                "Update": {
+                    "TableName": "TuCita247",
+                    "Key": {
+                        "PKID": {"S": 'BUS#' + businessId}, 
+                        "SKID": {"S": 'LOC#' + locationId}, 
+                    },
+                    "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
+                    "ExpressionAttributeValues": { 
+                        ":increment": {"N": str(qty)}
+                    },
+                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                }
             }
-        }
-        items.append(recordset)
+            items.append(recordset)
 
-        tranAppo = dynamodb.transact_write_items(
-            TransactItems = items
-        )
-        
-        logger.info(tranAppo)
-        statusCode = 200
-        body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
+            tranAppo = dynamodb.transact_write_items(
+                TransactItems = items
+            )
+            
+            logger.info(tranAppo)
+            statusCode = 200
+            body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
 
         if statusCode == '':
             statusCode = 500
