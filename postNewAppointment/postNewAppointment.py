@@ -59,6 +59,7 @@ def lambda_handler(event, context):
         disability = data['Disability']
         guests = data['Guests']
         customerId = str(uuid.uuid4()).replace("-","")
+        status = data['Status'] if 'Status' in data else 0
         existe = 0
         opeHours = ''
         daysOff = []
@@ -74,6 +75,7 @@ def lambda_handler(event, context):
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dayName = today.strftime("%A")[0:3].upper()
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
         getCurrDate = dynamodb.query(
             TableName = "TuCita247",
@@ -174,7 +176,7 @@ def lambda_handler(event, context):
                     "Item": {
                         "PKID": {"S": 'APPO#'+appoId}, 
                         "SKID": {"S": 'APPO#'+appoId}, 
-                        "STATUS": {"N": "1"}, 
+                        "STATUS": {"N": "1" if status == 0 else str(status)}, 
                         "NAME": {"S": name},
                         "DATE_APPO": {"S": dateAppo},
                         "PHONE": {"S": phone},
@@ -184,10 +186,13 @@ def lambda_handler(event, context):
                         "DISABILITY": {"N": disability if disability != '' else None},
                         "QRCODE": {"S": qrCode},
                         "TYPE": {"N": "2"},
+                        "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
                         "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-                        "GSI1SK": {"S": '1#DT#' + dateAppo}, 
+                        "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppo}, 
                         "GSI2PK": {"S": 'CUS#' + customerId},
-                        "GSI2SK": {"S": '1#DT#' + dateAppo},
+                        "GSI2SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppo},
+                        "GSI4PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId if status == 3 else None},
+                        "GSI4SK": {"S": str(status) + "#DT#" + str(dateAppo) + "#" + appoId if status == 3 else None},
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -195,6 +200,24 @@ def lambda_handler(event, context):
                 }
             logger.info(cleanNullTerms(recordset))
             items.append(cleanNullTerms(recordset))
+
+            if status == 3:
+                recordset = {
+                    "Update": {
+                        "TableName": "TuCita247",
+                        "Key": {
+                            "PKID": {"S": 'BUS#' + businessId}, 
+                            "SKID": {"S": 'LOC#' + locationId}, 
+                        },
+                        "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
+                        "ExpressionAttributeValues": { 
+                            ":increment": {"N": str(guests)}
+                        },
+                        "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                    }
+                }
+                items.append(recordset)
             
             logger.info(items)
             response = dynamodb.transact_write_items(
