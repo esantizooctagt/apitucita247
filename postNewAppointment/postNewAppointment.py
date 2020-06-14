@@ -152,18 +152,19 @@ def lambda_handler(event, context):
                 logger.info(cleanNullTerms(recordset))
                 items.append(cleanNullTerms(recordset))
 
-                recordset = {
-                "Put": {
-                    "TableName": "TuCita247",
-                    "Item": {
-                        "PKID": {"S": 'MOB#' + phone},
-                        "SKID": {"S": 'MOB#' + phone}
-                    },
-                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                if phone != '0000000000':
+                    recordset = {
+                    "Put": {
+                        "TableName": "TuCita247",
+                        "Item": {
+                            "PKID": {"S": 'MOB#' + phone},
+                            "SKID": {"S": 'MOB#' + phone}
+                        },
+                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                        }
                     }
-                }
-                items.append(cleanNullTerms(recordset))
+                    items.append(cleanNullTerms(recordset))
             
             appoId = str(uuid.uuid4()).replace("-","")
             recordset = {}

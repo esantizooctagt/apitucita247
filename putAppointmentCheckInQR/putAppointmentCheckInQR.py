@@ -85,7 +85,7 @@ def lambda_handler(event, context):
                         ":status": {"N": "3"}, 
                         ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
                         ":qty": {"N": str(qty)},
-                        ":dateOpe": {"S": str(dateAppo)}
+                        ":dateOpe": {"S": str(dateOpe)}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
