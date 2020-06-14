@@ -165,7 +165,7 @@ def lambda_handler(event, context):
                         'Language': user['LANGUAGE'] if 'LANGUAGE' in user else '',
                         'Business_Name': business['NAME']
                     }
-                    result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"] }
+                    result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"], 'refresh': resp["AuthenticationResult"]["RefreshToken"] }
                     statusCode = 200
                     body = json.dumps(result)
                 else:
