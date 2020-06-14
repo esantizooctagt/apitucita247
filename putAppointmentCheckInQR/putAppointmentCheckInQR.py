@@ -55,14 +55,20 @@ def lambda_handler(event, context):
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d")
+
+        e = {'#s': 'STATUS'}
+        f = '#s = :stat'
         response = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Appos",
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='GSI3PK = :key01 AND GSI3SK = :key02',
+            ExpressionAttributeNames=e,
+            FilterExpression=f,
             ExpressionAttributeValues={
                 ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#'+dateOpe},
-                ':key02': {'S': 'QR#'+qrCode}
+                ':key02': {'S': 'QR#'+qrCode},
+                ':stat' : {'N': '2'}
             }
         )
         for row in json_dynamodb.loads(response['Items']):
@@ -72,7 +78,7 @@ def lambda_handler(event, context):
 
         items = []
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
-        if dateAppo != '':
+        if appointmentId != '':
             recordset = {
                 "Update": {
                     "TableName": "TuCita247",
@@ -118,6 +124,9 @@ def lambda_handler(event, context):
             logger.info(tranAppo)
             statusCode = 200
             body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
+        else:
+            statusCode = 404
+            body = json.dumps({'Message': 'Invalid appointment, please verify', 'Code': 404})
 
         if statusCode == '':
             statusCode = 500

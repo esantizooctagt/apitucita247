@@ -51,10 +51,10 @@ def get_secret_hash(username):
     return d2
 
 def initiate_auth(client, username, password):
-    secret_hash = get_secret_hash(username)
-    error = ''
-    auth = ''
     try:
+        secret_hash = get_secret_hash(username)
+        error = ''
+        auth = ''
         resp = client.admin_initiate_auth(
                 UserPoolId = 'us-east-1_gXhBD4bsG',
                 ClientId = '52k0o8239mueu31uu5fihccbbf',
@@ -147,7 +147,6 @@ def lambda_handler(event, context):
             #         "expires_in": resp["AuthenticationResult"]["ExpiresIn"]
             #         "token_type": resp["AuthenticationResult"]["TokenType"]
             #         }}
-        
             user, error = getUser(email)
             if error != '':
                 statusCode = 404
