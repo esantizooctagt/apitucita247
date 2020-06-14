@@ -62,6 +62,7 @@ def lambda_handler(event, context):
 
         if appointmentId != '':
             items = []
+            dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
             recordset = {
                 "Update": {
                     "TableName": "TuCita247",
@@ -73,7 +74,7 @@ def lambda_handler(event, context):
                     "ExpressionAttributeValues": {
                         ":status": {"N": str(status)}, 
                         ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
-                        ":dateOpe": {"S": str(dateAppo)},
+                        ":dateOpe": {"S": str(dateOpe)},
                         ":qrCode": {"S": qrCode}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS'},
@@ -105,6 +106,7 @@ def lambda_handler(event, context):
             )
 
             #SEND NOTIFICATION CON LINK DE ENCUESTA
+            dateOpe = today.strftime("%Y-%m-%d")
             response = dynamodb.query(
                 TableName="TuCita247",
                 IndexName="TuCita247_CustAppos",
