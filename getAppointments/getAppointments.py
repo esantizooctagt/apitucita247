@@ -37,8 +37,6 @@ def lambda_handler(event, context):
 
         if lastItem == '_':
             lastItem = ''
-            if status == 2:
-                dateAppoIni = dateAppoIni[0:10]+'-00-00'
             if typeAppo != '_':
                 n = {'#t': 'TYPE'}
                 f = '#t = :type'
@@ -72,8 +70,6 @@ def lambda_handler(event, context):
                 )
         else:
             lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
-            if status == 2:
-                dateAppoIni = dateAppoIni[0:10]+'-00-00'
             if typeAppo != '_':
                 n = {'#t': 'TYPE'}
                 f = '#t = :type'
