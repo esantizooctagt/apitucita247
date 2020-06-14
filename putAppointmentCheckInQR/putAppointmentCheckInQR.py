@@ -57,7 +57,7 @@ def lambda_handler(event, context):
         dateOpe = today.strftime("%Y-%m-%d")
 
         e = {'#s': 'STATUS'}
-        f = '#s = :stat'
+        f = '#s <= :stat'
         response = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Appos",
