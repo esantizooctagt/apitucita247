@@ -106,7 +106,6 @@ def lambda_handler(event, context):
 
         record = []
         recordset = {}
-        logger.info(response)
         for row in json_dynamodb.loads(response['Items']):
             recordset = {
                 'BusinessId': businessId,

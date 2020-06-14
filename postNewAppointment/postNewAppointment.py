@@ -209,7 +209,7 @@ def lambda_handler(event, context):
                 'Door': door,
                 'Disability': 0 if disability == '' else int(disability),
                 'DateFull': dateAppo,
-                'DateAppo': str(int(today.strftime("%H"))-12).ljust(2,'0') + ':00 PM' if int(today.strftime("%H")) > 12 else today.strftime("%H").ljust(2,'0') + ':00 AM'
+                'DateAppo': str(int(today.strftime("%H"))-12).rjust(2,'0') + ':00 PM' if int(today.strftime("%H")) > 12 else today.strftime("%H").rjust(2,'0') + ':00 AM'
             }
 
             statusCode = 200
