@@ -91,7 +91,6 @@ def lambda_handler(event, context):
                 preference = row['PREFERENCES'] if 'PREFERENCES' in row else ''
                 mobile = row['PKID'].replace('MOB#','')
                 email = row['EMAIL'] if 'EMAIL' in row else ''
-            
             if preference == 1 and mobile != '':
                 #SMS        
                 to_number = mobile
@@ -107,8 +106,8 @@ def lambda_handler(event, context):
                     to = to_number,
                     body = bodyStr
                 )
-
             if preference == 2 and email != '':
+                #EMAIL
                 message = Mail(
                     from_email='Tu Cita 24/7 <no-reply@tucita247.com>',
                     to_emails=email,
