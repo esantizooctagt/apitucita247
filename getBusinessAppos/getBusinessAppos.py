@@ -38,7 +38,7 @@ def lambda_handler(event, context):
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m")
 
-        businessId = event['pathParameters']['id']
+        businessId = event['pathParameters']['businessId']
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
