@@ -17,10 +17,7 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
-def lambda_handler(event, context):
-    stage = event['headers']
-    cors = stage['origin']
-    
+def lambda_handler(event, context):    
     try:
         planId = os.environ['premiumCode']
 
@@ -87,7 +84,7 @@ def lambda_handler(event, context):
         'statusCode' : statusCode,
         'headers' : {
             "content-type" : "application/json",
-            "access-control-allow-origin" : cors
+            "access-control-allow-origin" : "*"
         },
         'body' : body
     }

@@ -23,14 +23,11 @@ dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
-    # stage = event['headers']
-    # cors = stage['origin']
-
     response = ''
     verifCode = 0
     verifCode = random.randint(100000, 999999)
     to_number = event['pathParameters']['number']
-    temp_number = '+19392670007'
+    # temp_number = '+19392670007'
     from_number = fromNumber
     bodyStr = 'Your TuCita247 verification code is: ' + str(verifCode)
     
@@ -39,11 +36,11 @@ def lambda_handler(event, context):
         auth_token = twilioAccountToken
         client = Client(account_sid, auth_token)
         
-        message = client.messages.create(
-            from_= from_number,
-            to = temp_number,
-            body = bodyStr
-        )
+        # message = client.messages.create(
+        #     from_= from_number,
+        #     to = temp_number,
+        #     body = bodyStr
+        # )
 
         details = dynamodb.query(
             TableName="TuCita247",

@@ -18,9 +18,6 @@ dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
-    stage = event['headers']
-    cors = stage['origin']
-
     records =[]
     try:
         country = event['pathParameters']['country']
@@ -75,7 +72,7 @@ def lambda_handler(event, context):
         'statusCode' : statusCode,
         'headers' : {
             "content-type" : "application/json",
-            "Access-Control-Allow-Origin" : cors
+            "Access-Control-Allow-Origin" : "*"
         },
         'body' : body
     }

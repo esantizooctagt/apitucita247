@@ -43,7 +43,7 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             IndexName="TuCita247_Appos",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :link',
+            KeyConditionExpression='GSI3PK = :link',
             ExpressionAttributeValues={
                 ':link': {'S': 'LINK#' + dateOpe}
             },

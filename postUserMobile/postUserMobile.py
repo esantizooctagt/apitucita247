@@ -30,9 +30,6 @@ def cleanNullTerms(d):
    return clean
 
 def lambda_handler(event, context):
-    stage = event['headers']
-    cors = stage['origin']
-
     try:
         statusCode = ''
         userId = str(uuid.uuid4()).replace("-","")
@@ -99,7 +96,7 @@ def lambda_handler(event, context):
         'statusCode' : statusCode,
         'headers' : {
             "content-type" : "application/json",
-            "access-control-allow-origin" : cors
+            "access-control-allow-origin" : "*"
         },
         'body' : body
     }

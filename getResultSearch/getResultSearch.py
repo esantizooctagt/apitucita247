@@ -20,9 +20,6 @@ cloudsearch = boto3.client('cloudsearchdomain', endpoint_url="https://search-tuc
 logger.info("SUCCESS: Connection to CloudSearch")
 
 def lambda_handler(event, context):
-    stage = event['headers']
-    cors = stage['origin']
-    
     # DELETE VPC FROM LAMBDA FUNCTION NEEDS CONNECTION TO INTERNET TO CALL ENDPOINT_URL
     try:
         queryStr = event['pathParameters']['search']
@@ -47,7 +44,7 @@ def lambda_handler(event, context):
         'statusCode' : statusCode,
         'headers' : {
             "content-type" : "application/json",
-            "access-control-allow-origin" : cors
+            "access-control-allow-origin" : "*"
         },
         'body' : body
     }
