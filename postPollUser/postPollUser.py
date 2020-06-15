@@ -36,7 +36,7 @@ def lambda_handler(event, context):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :pollId AND GSI1SK = :customerId',
+            KeyConditionExpression='PKID = :pollId AND SKID = :customerId',
             ExpressionAttributeValues={
                 ':pollId': {'S': 'POLL#' + data['PollId']},
                 ':customerId': {'S': 'CUS#' + data['CustomerId']}
@@ -56,50 +56,53 @@ def lambda_handler(event, context):
             )
             for row in json_dynamodb.loads(response['Items']):
                 businessId = row['PKID'].replace('BUS#','')
-
-            recordset = {
-                "Put": {
-                    "TableName": "TuCita247",
-                    "Item": {
-                        "PKID": {"S": 'POLL#' + data['PollId']},
-                        "SKID": {"S": 'CUS#' + data['CustomerId']},
-                        "GSI1PK": {"S": 'POLL#' + data['PollId']},
-                        "GSI1SK": {"S": 'CUS#' + data['CustomerId']},
-                        "HAPPY": {"N": str(data['Happy'])},
-                        "NEUTRAL": {"N": str(data['Neutral'])},
-                        "ANGRY": {"N": str(data['Angry'])}
+            if businessId != '':
+                recordset = {
+                    "Put": {
+                        "TableName": "TuCita247",
+                        "Item": {
+                            "PKID": {"S": 'POLL#' + data['PollId']},
+                            "SKID": {"S": 'CUS#' + data['CustomerId']},
+                            "GSI1PK": {"S": 'POLL#' + data['PollId']},
+                            "GSI1SK": {"S": 'CUS#' + data['CustomerId']},
+                            "HAPPY": {"N": str(data['Happy'])},
+                            "NEUTRAL": {"N": str(data['Neutral'])},
+                            "ANGRY": {"N": str(data['Angry'])}
+                        },
+                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "NONE"
                     },
-                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "NONE"
-                },
-            }
-            items.append(recordset)
-
-            recordset = {
-                "Update": {
-                    "TableName": "TuCita247",
-                    "Key": {
-                        "PKID": {"S": 'BUS#' + businessId },
-                        "SKID": {"S": 'POLL#' + data['PollId'] }
-                    },
-                    "UpdateExpression": "SET HAPPY = HAPPY + :happy, NEUTRAL = NEUTRAL + :neutral, ANGRY = ANGRY + :angry",
-                    "ExpressionAttributeValues": {
-                        ':happy': {'N': str(data['Happy'])},
-                        ':neutral': {'N': str(data['Neutral'])},
-                        ':angry': {'N': str(data['Angry'])}
-                    },
-                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "NONE"
                 }
-            }
-            items.append(recordset)
-                
-            logger.info(items)
-            response = dynamodb.transact_write_items(
-                TransactItems = items
-            )
-            statusCode = 200
-            body = json.dumps({'Message': 'Poll saved successfully', 'Code': 200})
+                items.append(recordset)
+
+                recordset = {
+                    "Update": {
+                        "TableName": "TuCita247",
+                        "Key": {
+                            "PKID": {"S": 'BUS#' + businessId },
+                            "SKID": {"S": 'POLL#' + data['PollId'] }
+                        },
+                        "UpdateExpression": "SET HAPPY = HAPPY + :happy, NEUTRAL = NEUTRAL + :neutral, ANGRY = ANGRY + :angry",
+                        "ExpressionAttributeValues": {
+                            ':happy': {'N': str(data['Happy'])},
+                            ':neutral': {'N': str(data['Neutral'])},
+                            ':angry': {'N': str(data['Angry'])}
+                        },
+                        "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "NONE"
+                    }
+                }
+                items.append(recordset)
+                    
+                logger.info(items)
+                response = dynamodb.transact_write_items(
+                    TransactItems = items
+                )
+                statusCode = 200
+                body = json.dumps({'Message': 'Poll saved successfully', 'Code': 200})
+            else:
+                statusCode = 404
+                body = json.dumps({'Message': 'Something goes wrong', 'Code': 404})    
         else:
             statusCode = 404
             body = json.dumps({'Message': 'Poll already filled', 'Code': 404})

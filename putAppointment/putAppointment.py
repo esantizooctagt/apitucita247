@@ -12,14 +12,23 @@ import datetime
 import dateutil.tz
 from datetime import timezone
 
+from twilio.rest import Client
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
 import os
 
 REGION = 'us-east-1'
+
+twilioAccountSID = os.environ['twilioAccountSID']
+twilioAccountToken = os.environ['twilioAccountToken']
+fromNumber = os.environ['fromNumber']
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodbQuery = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -33,9 +42,11 @@ def lambda_handler(event, context):
         statusCode = ''
         data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
+        
         status = data['Status']
         dateAppo = data['DateAppo']
         reasonId = data['Reason'] if 'Reason' in data else ''
+        customerId = data['CustomerId'] if 'CustomerId' in data else ''
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -64,9 +75,93 @@ def lambda_handler(event, context):
 
         logger.info(response)
         #PASA A PRE-CHECK IN Y ENVIA NOTIFICACION POR TWILIO A SMS y CORREO (TWILIO), ONESIGNAL (PUSH NOTIFICATION)
-        # if status == 2:
-        #     # GET USER PREFERENCE NOTIFICATION
-        #     status = 1
+        if status == 2:
+            # GET USER PREFERENCE NOTIFICATION
+            response = dynamodbQuery.query(
+                TableName="TuCita247",
+                IndexName="TuCita247_Index",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='GSI1PK = :key AND GSI1SK = :key',
+                ExpressionAttributeValues={
+                    ':key': {'S': 'CUS#' + customerId}
+                }
+            )
+            preference = ''
+            for row in json_dynamodb.loads(response['Items']):
+                preference = row['PREFERENCES'] if 'PREFERENCES' in row else ''
+                mobile = row['PKID'].replace('MOB#','')
+                email = row['EMAIL'] if 'EMAIL' in row else ''
+            
+            if preference == 1 and mobile != '':
+                #SMS        
+                to_number = mobile
+                from_number = fromNumber
+                bodyStr = 'You can go to the nearest entrance to check in'
+
+                account_sid = twilioAccountSID
+                auth_token = twilioAccountToken
+                client = Client(account_sid, auth_token)
+                
+                message = client.messages.create(
+                    from_= from_number,
+                    to = to_number,
+                    body = bodyStr
+                )
+
+            if preference == 2 and email != '':
+                message = Mail(
+                    from_email='Tu Cita 24/7 <no-reply@tucita247.com>',
+                    to_emails=email,
+                    subject='Tu Cita 24/7 Check-In',
+                    html_content='<strong>You can yo to the nearest entrance to check in</strong>'
+                )
+                sg = SendGridAPIClient('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')
+                response = sg.send(message)
+                logger.info(response)
+                # #EMAIL
+                # SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+                # RECIPIENT = email
+                # SUBJECT = "Tu Cita 24/7 Check-In"
+                # BODY_TEXT = ("You can yo to the nearest entrance to check in")
+                            
+                # # The HTML body of the email.
+                # BODY_HTML = """<html>
+                # <head></head>
+                # <body>
+                # <h1>Tu Cita 24/7</h1>
+                # <p>You can yo to the nearest entrance to check in</p>
+                # </body>
+                # </html>"""
+
+                # AWS_REGION = REGION
+                # CHARSET = "UTF-8"
+
+                # client = boto3.client('ses',region_name=AWS_REGION)
+                # response = client.send_email(
+                #     Destination={
+                #         'ToAddresses': [
+                #             RECIPIENT,
+                #         ],
+                #     },
+                #     Message={
+                #         'Body': {
+                #             'Html': {
+                #                 'Charset': CHARSET,
+                #                 'Data': BODY_HTML,
+                #             },
+                #             'Text': {
+                #                 'Charset': CHARSET,
+                #                 'Data': BODY_TEXT,
+                #             },
+                #         },
+                #         'Subject': {
+                #             'Charset': CHARSET,
+                #             'Data': SUBJECT,
+                #         },
+                #     },
+                #     Source=SENDER
+                # )
+
         if statusCode == '':
             statusCode = 500
             body = json.dumps({'Message': 'Error on update appointment', 'Code': 500})
