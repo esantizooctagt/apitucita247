@@ -38,7 +38,7 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK <= :gsi1sk AND GSI1SK > :initDate',
+            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :initDate AND :gsi1sk',
             ExpressionAttributeNames=n,
             FilterExpression=f,
             ExpressionAttributeValues={
@@ -86,7 +86,7 @@ def lambda_handler(event, context):
                 IndexName="TuCita247_Index",
                 ReturnConsumedCapacity='TOTAL',
                 ExclusiveStartKey= lastItem,
-                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK <= :gsi1sk AND GSI1SK > :initDate',
+                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :initDate AND :gsi1sk',
                 FilterExpression=f,
                 ExpressionAttributeNames=n,
                 ExpressionAttributeValues={
