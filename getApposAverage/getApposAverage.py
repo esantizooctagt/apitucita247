@@ -27,6 +27,7 @@ def lambda_handler(event, context):
     try:
         initDate = event['pathParameters']['initDate']
         businessId = event['pathParameters']['businessId']
+        
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -36,6 +37,7 @@ def lambda_handler(event, context):
                 ':locations': {'S': 'LOC#'}
             }
         )
+        
         locs = []
         for row in json_dynamodb.loads(response['Items']):
             recordset = {

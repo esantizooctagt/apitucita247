@@ -45,9 +45,10 @@ def lambda_handler(event, context):
         details = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :mobile',
+            KeyConditionExpression='PKID = :mobile AND begins_with ( SKID , :customer )',
             ExpressionAttributeValues={
-                ':mobile': {'S': 'MOB#' + to_number.replace('+1','')}
+                ':mobile': {'S': 'MOB#' + to_number.replace('+1','')},
+                ':customer': {'S': 'CUS#'}
             }
         )
         recordset = {}
