@@ -31,18 +31,20 @@ def lambda_handler(event, context):
         dateAppo = event['pathParameters']['dateAppo']
         status = event['pathParameters']['status']
 
+        initDate = dateAppo[0:10]+'-00-00'
         n = {'#t': 'TYPE'}
         f = '#t = :type'
         response = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK <= :gsi1sk',
+            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK <= :gsi1sk AND GSI1SK > :initDate',
             ExpressionAttributeNames=n,
             FilterExpression=f,
             ExpressionAttributeValues={
                 ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                 ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
+                ':initDate': {'S': str(status) +'#DT#' + initDate},
                 ':type': {'N': str(1)}
             }
         )   
@@ -84,12 +86,13 @@ def lambda_handler(event, context):
                 IndexName="TuCita247_Index",
                 ReturnConsumedCapacity='TOTAL',
                 ExclusiveStartKey= lastItem,
-                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK <= :gsi1sk',
+                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK <= :gsi1sk AND GSI1SK > :initDate',
                 FilterExpression=f,
                 ExpressionAttributeNames=n,
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
+                    ':initDate': {'S': str(status) +'#DT#' + initDate},
                     ':type': {'N': str(1)}
                 },
             )
