@@ -66,6 +66,7 @@ def lambda_handler(event, context):
                 if timeCheckIn != '':
                     inTime = datetime.datetime.strptime(timeCheckIn, '%Y-%m-%d-%H-%M-%S-%f')
                     citaTime = outTime - inTime
+                    citaTime = int(str(citaTime).split(':')[0]) + int(str(citaTime).split(':')[1])/60
                     dateAvg = str(dateAppo)[0:10]
 
                     response = dynamodb.query(
