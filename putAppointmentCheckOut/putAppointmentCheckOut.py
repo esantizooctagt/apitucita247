@@ -96,8 +96,8 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :key01 AND SKID = :key02',
                     ExpressionAttributeValues={
-                        ':key01': {'S': 'BUS#'+businessId},
-                        ':key02': {'S': 'LOC#'+locationId+'#'+dateAvg}
+                        ':key01': {'S': 'LOC#'+locationId},
+                        ':key02': {'S': 'DT#'+dateAvg}
                     }
                 )
                 for row in json_dynamodb.loads(response['Items']):
@@ -179,6 +179,7 @@ def lambda_handler(event, context):
 
                 items.append(recordset)
 
+            logger.info(items)
             tranAppo = dynamodb.transact_write_items(
                 TransactItems = items
             )
