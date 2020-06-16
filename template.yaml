@@ -1427,6 +1427,25 @@ Resources:
             Path: /business/landing/{link}
             Method: get
             ApiId: !Ref HttpApi
+
+  GetApposAverageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetApposAverage
+      CodeUri: getApposAverage/
+      Handler: getApposAverage.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /business/average/appos/{businessId}/{initDate}
+            Method: get
+            ApiId: !Ref HttpApi
   
   PutRefreshTokenFunction:
     Type: AWS::Serverless::Function
