@@ -30,7 +30,7 @@ def lambda_handler(event, context):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND begins_with( GSI1SK , :locations )',
+            KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :locations )',
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
                 ':locations': {'S': 'LOC#'}
@@ -52,15 +52,15 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :locationId AND begins_with( SKID , :date )',
                 ExpressionAttributeValues={
                     ':locationId': {'S': 'LOC#' + item['LocationId'] + '#DT#' + initDate[0:7]},
-                    ':date': {'S': 'DT#' + initDate}
+                    ':date': {'S': 'DT#' + initDate[0:7]}
                 }
             )
             record = []
             for det in json_dynamodb.loads(response['Items']):
                 recordset = {
-                    'qty': det['QTY_APPOS'],
-                    'avg': det['TIME_APPO'],
-                    'dateAppo': det['SKID'].replace('DT#','')
+                    'Qty': det['QTY_APPOS'],
+                    'Average': det['TIME_APPO'],
+                    'DateAppo': det['SKID'].replace('DT#','')
                 }
                 record.append(recordset)
             locations = {

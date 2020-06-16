@@ -1443,7 +1443,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /business/average/appos/{businessId}/{initDate}
+            Path: /appointments/average/{businessId}/{initDate}
             Method: get
             ApiId: !Ref HttpApi
   
