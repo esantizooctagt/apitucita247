@@ -41,7 +41,9 @@ def lambda_handler(event, context):
         statusCode = ''
         appointmentId = ''
         dateAppo = ''
+        timeCheckIn = ''
         qty = 0
+        existe = 0
         data = json.loads(event['body'])
         status = data['Status']
         qrCode = data['qrCode']
@@ -51,7 +53,12 @@ def lambda_handler(event, context):
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d")
-        
+
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        outTime = datetime.datetime.now(tz=country_date)
+        outTime = outTime.strftime('%Y-%m-%d %H:%M:%S.%f')
+        outTime = datetime.datetime.strptime(outTime,'%Y-%m-%d %H:%M:%S.%f')
+
         e = {'#s': 'STATUS'}
         f = '#s = :stat'
         response = dynamodb.query(
@@ -72,10 +79,30 @@ def lambda_handler(event, context):
             dateAppo = row['DATE_APPO']
             qty = row['PEOPLE_QTY']
             customerId = row['GSI2PK'].replace('CUS#','')
+            timeCheckIn = row['TIMECHECKIN'] + '-000000' if 'TIMECHECKIN' in row else ''
 
         if appointmentId != '':
             items = []
             dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
+            if timeCheckIn != '':
+                inTime = datetime.datetime.strptime(timeCheckIn, '%Y-%m-%d-%H-%M-%S-%f')
+                citaTime = outTime - inTime
+                dateAvg = str(dateAppo)[0:10]
+
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :key01 AND SKID = :key02',
+                    ExpressionAttributeValues={
+                        ':key01': {'S': 'BUS#'+businessId},
+                        ':key02': {'S': 'LOC#'+locationId+'#'+dateAvg}
+                    }
+                )
+                for row in json_dynamodb.loads(response['Items']):
+                    timeAct = row['TIME_APPO']
+                    existe = 1
+
             recordset = {
                 "Update": {
                     "TableName": "TuCita247",
@@ -113,6 +140,41 @@ def lambda_handler(event, context):
                 }
             }
             items.append(recordset)
+
+            if citaTime != '':
+                if existe == 1:
+                    recordset = {
+                        "Update":{
+                            "TableName": "TuCita247",
+                            "Key":{
+                                "PKID": {"S": 'BUS#' + businessId},
+                                "SKID": {"S": 'LOC#' + locationId + '#' + dateAvg}
+                            },
+                            "UpdateExpression": "SET TIME_APPO = TIME_APPO + :citaTime, QTY_APPOS = QTY_APPOS + :qty",
+                            "ExpressionAttributeValues": { 
+                                ":citaTime": {"N": str(citaTime)},
+                                ":qty": {"N": str(1)}
+                            },
+                            "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                        }
+                    }
+                else:
+                    recordset = {
+                        "Put": {
+                            "TableName": "TuCita247",
+                            "Item":{
+                                "PKID": {"S": 'BUS#' + businessId},
+                                "SKID": {"S": 'LOC#' + locationId + '#' + dateAvg},
+                                "TIME_APPO": {"N": str(citaTime)},
+                                "QTY_APPOS": {"N": str(1)}
+                            },
+                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                        }
+                    }
+
+                items.append(recordset)
 
             tranAppo = dynamodb.transact_write_items(
                 TransactItems = items
