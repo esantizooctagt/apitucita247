@@ -146,7 +146,7 @@ def lambda_handler(event, context):
                                 "PKID": {"S": 'LOC#' + locationId},
                                 "SKID": {"S": 'DT#'+ dateAvg},
                                 "GSI1PK": {"S": 'BUS#' + businessId},
-                                "GSI1SK": {"S": 'LOC#' + locationId},
+                                "GSI1SK": {"S": 'LOC#' + locationId + '#DT#' + dateAvg},
                                 "TIME_APPO": {"N": str(citaTime)},
                                 "QTY_APPOS": {"N": str(1)}
                             },
