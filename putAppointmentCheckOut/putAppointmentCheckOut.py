@@ -147,8 +147,8 @@ def lambda_handler(event, context):
                         "Update":{
                             "TableName": "TuCita247",
                             "Key":{
-                                "PKID": {"S": 'BUS#' + businessId},
-                                "SKID": {"S": 'LOC#' + locationId + '#' + dateAvg}
+                                "PKID": {"S": 'LOC#' + locationId},
+                                "SKID": {"S": 'DT#' + dateAvg}
                             },
                             "UpdateExpression": "SET TIME_APPO = TIME_APPO + :citaTime, QTY_APPOS = QTY_APPOS + :qty",
                             "ExpressionAttributeValues": { 
@@ -164,8 +164,10 @@ def lambda_handler(event, context):
                         "Put": {
                             "TableName": "TuCita247",
                             "Item":{
-                                "PKID": {"S": 'BUS#' + businessId},
-                                "SKID": {"S": 'LOC#' + locationId + '#' + dateAvg},
+                                "PKID": {"S": 'LOC#' + locationId},
+                                "SKID": {"S": 'DT#'+ dateAvg},
+                                "GSI1PK": {"S": 'BUS#' + businessId},
+                                "GSI1SK": {"S": 'LOC#' + locationId},
                                 "TIME_APPO": {"N": str(citaTime)},
                                 "QTY_APPOS": {"N": str(1)}
                             },
