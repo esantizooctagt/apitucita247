@@ -40,7 +40,9 @@ def lambda_handler(event, context):
         for row in items:
             recordset = {
                 'CategoryId': row['PKID'].replace('CAT#',''),
-                'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
+                'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP'],
+                'Icon': row['ICON'],
+                'Imagen': row['IMG_CAT']
             }
             records.append(recordset)
         

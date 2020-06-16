@@ -2,10 +2,6 @@ import sys
 import logging
 import json
 
-import datetime
-import dateutil.tz
-from datetime import timezone
-
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
@@ -34,10 +30,6 @@ def lambda_handler(event, context):
 
     try:
         statusCode = ''
-        country_date = dateutil.tz.gettz('America/Puerto_Rico')
-        today = datetime.datetime.now(tz=country_date)
-        dateOpe = today.strftime("%Y-%m")
-
         link = event['pathParameters']['link']
         response = dynamodb.query(
             TableName="TuCita247",
@@ -45,7 +37,7 @@ def lambda_handler(event, context):
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='GSI3PK = :link',
             ExpressionAttributeValues={
-                ':link': {'S': 'LINK#' + dateOpe}
+                ':link': {'S': 'LINK#' + link}
             },
             Limit =1
         )
@@ -56,9 +48,10 @@ def lambda_handler(event, context):
                 locations = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId',
-                    ExpressionAttributeValeus={
-                        ':businessId': {'S': 'BUS#' + businessId}
+                    KeyConditionExpression='PKID = :businessId and begins_with (SKID, :locs) ',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':locs': {'S': 'LOC#'}
                     }
                 )
                 for det in json_dynamodb.loads(locations['Items']):
