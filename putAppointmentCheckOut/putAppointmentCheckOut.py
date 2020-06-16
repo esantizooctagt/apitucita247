@@ -96,7 +96,7 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :key01 AND SKID = :key02',
                     ExpressionAttributeValues={
-                        ':key01': {'S': 'LOC#'+locationId},
+                        ':key01': {'S': 'LOC#'+locationId+'#DT#'+dateAvg[0:7]},
                         ':key02': {'S': 'DT#'+dateAvg}
                     }
                 )
@@ -148,7 +148,7 @@ def lambda_handler(event, context):
                         "Update":{
                             "TableName": "TuCita247",
                             "Key":{
-                                "PKID": {"S": 'LOC#' + locationId},
+                                "PKID": {"S": 'LOC#' + locationId + '#DT#' + dateAvg[0:7]},
                                 "SKID": {"S": 'DT#' + dateAvg}
                             },
                             "UpdateExpression": "SET TIME_APPO = TIME_APPO + :citaTime, QTY_APPOS = QTY_APPOS + :qty",
@@ -165,10 +165,8 @@ def lambda_handler(event, context):
                         "Put": {
                             "TableName": "TuCita247",
                             "Item":{
-                                "PKID": {"S": 'LOC#' + locationId},
+                                "PKID": {"S": 'LOC#' + locationId + '#DT#'+ dateAvg[0:7]},
                                 "SKID": {"S": 'DT#'+ dateAvg},
-                                "GSI1PK": {"S": 'BUS#' + businessId},
-                                "GSI1SK": {"S": 'DT#' + dateAvg},
                                 "TIME_APPO": {"N": str(citaTime)},
                                 "QTY_APPOS": {"N": str(1)}
                             },
