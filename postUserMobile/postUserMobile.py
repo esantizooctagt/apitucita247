@@ -32,7 +32,7 @@ def cleanNullTerms(d):
 def lambda_handler(event, context):
     try:
         statusCode = ''
-        userId = str(uuid.uuid4()).replace("-","")
+        customerId = str(uuid.uuid4()).replace("-","")
         data = json.loads(event['body'])
 
         items = []
@@ -42,9 +42,9 @@ def lambda_handler(event, context):
                     "TableName": "TuCita247",
                     "Item": {
                         "PKID": {"S": 'MOB#' + data['Phone'] },
-                        "SKID": {"S": 'CUS#' + userId },
-                        "GSI1PK": {"S": 'CUS#' + userId},
-                        "GSI1SK": {"S": 'CUS#' + userId},
+                        "SKID": {"S": 'CUS#' + customerId},
+                        "GSI1PK": {"S": 'CUS#' + customerId},
+                        "GSI1SK": {"S": 'CUS#' + customerId},
                         "NAME": {"S": data['Name']},
                         "EMAIL": {"S": str(data['Email']) if str(data['Email']) != '' else None},
                         "DOB": {"S": str(data['DOB']) if str(data['DOB']) != '' else None},

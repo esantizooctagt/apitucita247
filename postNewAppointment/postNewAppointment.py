@@ -100,11 +100,12 @@ def lambda_handler(event, context):
                 ini = Decimal(item['I'])
                 fin = Decimal(item['F'])
                 currHour = Decimal(today.strftime("%H"))
+                dateAppo = ''
                 if  currHour >= ini and currHour <= fin:
                     dateAppo = today.strftime("%Y-%m-%d") + '-' + today.strftime("%H").ljust(2,'0')  + '-00'
                     break
                     
-        if dayOffValid == False:
+        if dayOffValid == False or dateAppo == '':
             statusCode = 500
             body = json.dumps({'Message': 'Date is not valid', 'Code': 400})
         else:

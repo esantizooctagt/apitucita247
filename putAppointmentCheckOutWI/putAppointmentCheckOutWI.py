@@ -20,7 +20,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
-dynamodbTable = boto3.resource('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -91,7 +90,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'APPO#' + appo['AppointmentId']}, 
                         "SKID": {"S": 'APPO#' + appo['AppointmentId']}
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKOUT = :dateOpe", 
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKOUT = :dateOpe REMOVE GSI4PK, GSI4SK", 
                     "ExpressionAttributeValues": {
                         ":status": {"N": str(status)}, 
                         ":key": {"S": str(status) + '#DT#' + str(appo['DateAppo'])}, 
@@ -160,16 +159,6 @@ def lambda_handler(event, context):
                 TransactItems = items
             )
 
-            table = dynamodbTable.Table('TuCita247')
-            response = table.update_item(
-                Key={
-                    'PKID': 'APPO#' + appo['AppointmentId'],
-                    'SKID': 'APPO#' + appo['AppointmentId']
-                },
-                UpdateExpression="REMOVE GSI4PK, GSI4SK",
-                ReturnValues="NONE"
-            )
-            
         logger.info(tranAppo)
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})

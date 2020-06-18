@@ -70,7 +70,7 @@ def lambda_handler(event, context):
                 'SKID': 'METADATA'
             },
             UpdateExpression="SET IMGLINK = :path",
-            ExpressionAttributeValues= {':path': businessId+'/img/link/'+businessId+'.'+ext },
+            ExpressionAttributeValues= {':path': '/'+businessId+'/img/link/'+businessId+'.'+ext },
             ReturnValues="UPDATED_NEW"
         )
         

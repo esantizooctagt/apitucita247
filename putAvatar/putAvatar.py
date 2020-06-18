@@ -71,7 +71,7 @@ def lambda_handler(event, context):
                 'SKID': 'USER#' + userId
             },
             UpdateExpression="SET AVATAR = :path",
-            ExpressionAttributeValues= {':path': businessId+'/img/avatars/'+userId+'.'+ext },
+            ExpressionAttributeValues= {':path': '/'+businessId+'/img/avatars/'+userId+'.'+ext },
             ReturnValues="UPDATED_NEW"
         )
         
