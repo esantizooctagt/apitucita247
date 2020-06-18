@@ -42,8 +42,7 @@ def lambda_handler(event, context):
                 ':stat' : {'N': '1'}
             },
         )
-        items = json_dynamodb.loads(response['Items'])
-        for row in items:
+        for row in json_dynamodb.loads(response['Items']):
             recordset = {
                 'CategoryId': row['PKID'].replace('CAT#',''),
                 'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']

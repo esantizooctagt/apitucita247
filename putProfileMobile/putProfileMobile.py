@@ -44,12 +44,17 @@ def lambda_handler(event, context):
                 ':preferences': data['Preferences'] if data['Preferences'] != '' else None,
                 ':disability': data['Disability'] if data['Disability'] != '' else None
         }
+        rem = (" REMOVE EMAIL" if data['Email'] == '' else '') 
+        rem = rem + ((", DOB" if rem != '' else " REMOVE DOB") if data['DOB'] == '' else '')
+        rem = rem + ((", GENDER" if rem != '' else " REMOVE GENDER") if data['Gender'] == '' else '')
+        rem = rem + ((", PREFERENCES" if rem != '' else " REMOVE PREFERENCES") if data['Preferences'] == '' else '')
+        rem = rem + ((", DISABILITY" if rem != '' else " REMOVE DISABILITY" ) if data['Disability'] == '' else '')
         response = table.update_item(
             Key={
                 'PKID': 'MOB#' + mobile,
                 'SKID': 'CUS#' + customerId
             },
-            UpdateExpression="SET #n = :name" + (", EMAIL = :email" if data['Email'] != '' else '') + (", DOB = :dob" if data['DOB'] != '' else '') + (", GENDER = :gender" if data['Gender'] != '' else '') + (", PREFERENCES = :preferences" if data['Preferences'] != '' else '') + (", DISABILITY = :disability" if data['disability'] != '' else ''),
+            UpdateExpression="SET #n = :name" + (", EMAIL = :email" if data['Email'] != '' else '') + (", DOB = :dob" if data['DOB'] != '' else '') + (", GENDER = :gender" if data['Gender'] != '' else '') + (", PREFERENCES = :preferences" if data['Preferences'] != '' else '') + (", DISABILITY = :disability" if data['Disability'] != '' else '') + rem,
             ExpressionAttributeNames=e,
             ExpressionAttributeValues=cleanNullTerms(expUpdate),
             ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)"
