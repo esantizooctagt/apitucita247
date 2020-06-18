@@ -24,10 +24,10 @@ def lambda_handler(event, context):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :customerId AND SKID = :favs',
+            KeyConditionExpression='PKID = :customerId AND begins_with ( SKID , :favs )',
             ExpressionAttributeValues={
                 ':customerId': {'S': 'CUS#' + customerId},
-                ':favs': {'S': 'FAVS'}
+                ':favs': {'S': 'FAVS#'}
             },
         )
         for row in json_dynamodb.loads(response['Items']):

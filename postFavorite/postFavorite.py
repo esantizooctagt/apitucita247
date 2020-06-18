@@ -12,13 +12,13 @@ from dynamodb_json import json_util as json_dynamodb
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
     try:
         data = json.loads(event['body'])
-        
+
         customerId = data['CustomerId']
         businessId = data['BusinessId']
         locationId = data['LocationId']
@@ -27,16 +27,10 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             ReturnConsumedCapacity="TOTAL",
             Item={
-                'PKID': {'S': ':key'},
-                'SKID': {'S': ':skey'},
-                'BUSID': {'S': ':businessId'},
-                'LOCID': {'S': 'locationId'}
-            },
-            ExpressionAttributeValues={
-                ':key': {'S': 'CUS#' + customerId},
-                ':skey': {'S': 'FAVS'},
-                ':businessId': {'S': businessId},
-                ':locationId': {'S': locationId}
+                'PKID': {'S': 'CUS#' + customerId},
+                'SKID': {'S': 'FAVS#' + locationId},
+                'BUSID': {'S': businessId},
+                'LOCID': {'S': locationId}
             },
             ConditionExpression="attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
             ReturnValues='NONE'
