@@ -8,10 +8,6 @@ from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
-import datetime
-import dateutil.tz
-from datetime import timezone
-
 import os
 
 REGION = 'us-east-1'
@@ -26,23 +22,15 @@ def lambda_handler(event, context):
     try:
         statusCode = ''
         appointmentId = event['pathParameters']['appointmentId']
-        dateAppo = event['pathParameters']['dateAppo']
-
-        status = 5
-        country_date = dateutil.tz.gettz('America/Puerto_Rico')
-        today = datetime.datetime.now(tz=country_date)
-        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
         table = dynamodb.Table('TuCita247')
-        e = {'#s': 'STATUS'}
         response = table.update_item(
             Key={
                 'PKID': 'APPO#' + appointmentId,
                 'SKID': 'APPO#' + appointmentId
             },
-            UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key01, TIMECANCEL = :dateope",
-            ExpressionAttributeNames=e,
-            ExpressionAttributeValues={':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe},
+            UpdateExpression="SET READY = :ready",
+            ExpressionAttributeValues={':ready': str(1)},
             ReturnValues="NONE"
         )
 
