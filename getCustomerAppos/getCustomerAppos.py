@@ -19,12 +19,9 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
-def lambda_handler(event, context):
-    response = ''
-    
+def lambda_handler(event, context):    
     try:
         customerId = event['pathParameters']['customerId']
-
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-00-00")
@@ -60,7 +57,8 @@ def lambda_handler(event, context):
             record.append(recordset)
 
         statusCode = 200
-        body = json.dumps({'Customer': recordset, 'Code': 200})
+        body = json.dumps({'Appointments': recordset, 'Code': 200})
+        
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': str(e), 'Code': 500})
