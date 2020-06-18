@@ -271,6 +271,63 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
 
+  GetMessagesMobileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetMessagesMobile
+      CodeUri: getMessagesMobile/
+      Handler: getMessagesMobile.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/messages/{appointmentId}
+            Method: get
+            ApiId: !Ref HttpApi
+
+  DelFavoriteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DelFavorite
+      CodeUri: delFavorite/
+      Handler: delFavorite.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/favorite/{customerId}/{locationId}
+            Method: delete
+            ApiId: !Ref HttpApi
+
+  PutMessageMobileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutMessageMobile
+      CodeUri: putMessageMobile/
+      Handler: putMessageMobile.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/message/{appointmentId}
+            Method: put
+            ApiId: !Ref HttpApi
+
 # CustomMessageFunction:
 #   Type: AWS::Serverless::Function
 #   Properties:

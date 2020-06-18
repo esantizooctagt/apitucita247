@@ -57,8 +57,8 @@ def lambda_handler(event, context):
             record.append(recordset)
 
         statusCode = 200
-        body = json.dumps({'Appointments': recordset, 'Code': 200})
-        
+        body = json.dumps({'Appointments': record, 'Code': 200})
+
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': str(e), 'Code': 500})
