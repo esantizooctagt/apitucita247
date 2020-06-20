@@ -23,6 +23,8 @@ def lambda_handler(event, context):
         subcategoryId = event['pathParameters']['subcategoryId']
         businessId = event['pathParameters']['businessId']
         lastItem = event['pathParameters']['lastItem']
+        bussList = {}
+        bussList = set()
 
         if lastItem == '_':
             lastItem = ''
@@ -30,27 +32,15 @@ def lambda_handler(event, context):
            lastItem = {'PKID': {'S': 'BUS#' + businessId },'SKID': {'S': 'METADATA'}}
 
         if businessId != '_':
-            if lastItem == '':
-                response = dynamodb.query(
-                    TableName="TuCita247",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
-                    ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#' + businessId},
-                        ':metadata': {'S': 'METADATA'}
-                    }
-                )
-            else:
-                response = dynamodb.query(
-                    TableName="TuCita247",
-                    ReturnConsumedCapacity='TOTAL',
-                    ExclusiveStartKey= lastItem,
-                    KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
-                    ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#' + businessId},
-                        ':metadata': {'S': 'METADATA'}
-                    }
-                )
+            response = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + businessId},
+                    ':metadata': {'S': 'METADATA'}
+                }
+            )
         if categoryId != '_' and subcategoryId == '_':
             if lastItem == '':
                 response = dynamodb.query(
@@ -59,7 +49,7 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='GSI1PK = :categoryId',
                     ExpressionAttributeValues={
-                        ':categoryId': {'S': 'CAT#' + categoryId}
+                        ':categoryId': {'S': 'CAT#' + str(categoryId)}
                     }
                 )
             else:
@@ -70,7 +60,7 @@ def lambda_handler(event, context):
                     ExclusiveStartKey= lastItem,
                     KeyConditionExpression='GSI1PK = :categoryId',
                     ExpressionAttributeValues={
-                        ':categoryId': {'S': 'CAT#' + categoryId}
+                        ':categoryId': {'S': 'CAT#' + str(categoryId)}
                     }
                 )
         if subcategoryId != '_':
@@ -81,8 +71,8 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='GSI1PK = :categoryId AND GSI1SK = :subcategoryId',
                     ExpressionAttributeValues={
-                        ':categoryId': {'S': 'CAT#' + categoryId},
-                        ':subcategoryId': {'S': 'SUB#' + subcategoryId}
+                        ':categoryId': {'S': 'CAT#' + str(categoryId)},
+                        ':subcategoryId': {'S': 'SUB#' + str(subcategoryId)}
                     }
                 )
             else:
@@ -93,8 +83,8 @@ def lambda_handler(event, context):
                     ExclusiveStartKey= lastItem,
                     KeyConditionExpression='GSI1PK = :categoryId AND GSI1SK = :subcategoryId',
                     ExpressionAttributeValues={
-                        ':categoryId': {'S': 'CAT#' + categoryId},
-                        ':subcategoryId': {'S': 'SUB#' + subcategoryId}
+                        ':categoryId': {'S': 'CAT#' + str(categoryId)},
+                        ':subcategoryId': {'S': 'SUB#' + str(subcategoryId)}
                     }
                 )
 
@@ -128,7 +118,7 @@ def lambda_handler(event, context):
                     },
                     Limit = 1
                 )
-                for item in json_dynamodb.loads(buss):
+                for item in json_dynamodb.loads(buss['Items']):
                     recordset = {
                         'Business_Id': item['PKID'].replace('BUS#',''),
                         'Name': item['NAME'],
@@ -150,7 +140,9 @@ def lambda_handler(event, context):
                     'Categories': records,
                     'Status': row['STATUS']
                 }
-            business.append(recordset)
+            if not row['PKID'].replace('BUS#','') in bussList:
+                bussList.add(row['PKID'].replace('BUS#',''))
+                business.append(recordset)
         
         if 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
