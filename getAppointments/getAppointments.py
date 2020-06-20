@@ -123,6 +123,7 @@ def lambda_handler(event, context):
                 'Unread': row['UNREAD'] if 'UNREAD' in row else 0,
                 'CheckInTime': row['TIMECHEK'] if 'TIMECHEK' in row else '',
                 'Purpose': row['PURPOSE'] if 'PURPOSE' in row else '',
+                'Ready': row['READY'] if 'READY' in row else '',
                 'Status': row['STATUS']
             }
             record.append(recordset)
