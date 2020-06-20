@@ -44,7 +44,7 @@ def lambda_handler(event, context):
         )
         for row in json_dynamodb.loads(response['Items']):
             recordset = {
-                'CategoryId': row['PKID'].replace('CAT#',''),
+                'CategoryId': row['PKID'].replace('CAT#','')+'#'+row['SKID'],
                 'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
             }
             records.append(recordset)

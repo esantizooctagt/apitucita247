@@ -115,10 +115,10 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
       
-  GetMobCateogiesFunction:
+  GetMobCategoriesFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: GetMobCateogies
+      FunctionName: GetMobCategories
       CodeUri: getMobCategories/
       Handler: getMobCategories.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaDynamo
@@ -385,12 +385,12 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
   
-  GetMobSubCateogiesFunction:
+  GetMobSubCategoriesFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: GetMobSubCateogies
-      CodeUri: getMobSubCateogies/
-      Handler: getMobSubCateogies.lambda_handler
+      FunctionName: GetMobSubCategories
+      CodeUri: getMobSubCategories/
+      Handler: getMobSubCategories.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3

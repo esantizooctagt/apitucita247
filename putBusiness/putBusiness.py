@@ -88,6 +88,8 @@ def lambda_handler(event, context):
                         "Item": {
                             "PKID": {"S": 'BUS#'+businessId},
                             "SKID": {"S": 'CAT#'+row['CategoryId']},
+                            "GSI1PK": {"S": 'CAT#'+row['CategoryId'].split('#')[0]},
+                            "GSI1SK": {"S": 'SUB#'+row['CategoryId'].split('#')[1]},
                             "NAME": {"S": str(row['Name'])}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
