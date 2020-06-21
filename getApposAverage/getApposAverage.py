@@ -61,7 +61,7 @@ def lambda_handler(event, context):
             for det in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'Qty': det['QTY_APPOS'],
-                    'Average': det['TIME_APPO'],
+                    'Average': det['TIME_APPO']/det['QTY_APPOS'],
                     'DateAppo': det['SKID'].replace('DT#','')
                 }
                 record.append(recordset)

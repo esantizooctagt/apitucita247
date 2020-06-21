@@ -32,16 +32,15 @@ def lambda_handler(event, context):
             },
             Limit = 1
         )
-        recordset = ''
+        recordset = []
         for row in json_dynamodb.loads(response['Items']):
-            recordset = row['APPOINTMENTS_PURPOSE'].split(',')
-
+            recordset = row['APPOINTMENTS_PURPOSE'].split(',') if 'APPOINTMENTS_PURPOSE' in row else [] 
             statusCode = 200
             body = json.dumps({'Purpose': recordset, 'Code': 200})
 
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Message': 'Error on get reasons', 'Code': 500})
+            body = json.dumps({'Message': 'Error on get purpose', 'Code': 500})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e), 'Code': 500})
