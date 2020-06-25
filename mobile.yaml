@@ -461,6 +461,24 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
 
+  GetFavoriteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetFavorite
+      CodeUri: getFavorite/
+      Handler: getFavorite.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/favorite/{customerId}/{locationId}
+            Method: get
+            ApiId: !Ref HttpApi
 # CustomMessageFunction:
 #   Type: AWS::Serverless::Function
 #   Properties:

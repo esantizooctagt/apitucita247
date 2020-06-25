@@ -5,6 +5,7 @@ import json
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
+from dynamodb_json import json_util as json_dynamodb
 
 import uuid
 import os
@@ -76,8 +77,32 @@ def lambda_handler(event, context):
             TransactItems = items
         )
 
+        response = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :mobile AND SKID = :customer',
+            ExpressionAttributeValues={
+                ':mobile': {'S': 'MOB#' + data['Phone'] },
+                ':customer': {'S': 'CUS#' + customerId}
+            },
+            Limit = 1
+        )
+        recordset = {}
+        for item in json_dynamodb.loads(response['Items']):
+            recordset = {
+                'CustomerId': item['SKID'].replace('CUS#',''),
+                'Status': item['STATUS'],
+                'Name': item['NAME'],
+                'Gender': item['GENDER'] if 'GENDER' in item else '',
+                'Email': item['EMAIL'] if 'EMAIL' in item else '',
+                'Preferences': item['PREFERENCES'] if 'PREFERENCES' in item else '',
+                'Disability': item['DISABILITY'] if 'DISABILITY' in item else '',
+                'DOB': item['DOB'] if 'DOB' in item else '',
+                'Mobile': data['Phone']
+            }
+
         statusCode = 200
-        body = json.dumps({'Message': 'User added successfully', 'Code': 200})
+        body = json.dumps({'Message': 'User added successfully','Customer': recordset, 'Code': 200})
 
         if statusCode == '':
             statusCode = 500

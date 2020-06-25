@@ -41,9 +41,37 @@ def lambda_handler(event, context):
         recordset = {}
         record = []
         for item in json_dynamodb.loads(details['Items']):
+            locs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + item['GSI1PK'].split('#')[1]},
+                    ':locationId': {'S': 'LOC#' + item['GSI1PK'].split('#')[3] }
+                },
+                Limit = 1
+            )
+            for locations in json_dynamodb.loads(locs['Items']):
+                Address = locations['ADDRESS']
+
+            bus = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND SKID = :meta',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + item['GSI1PK'].split('#')[1]},
+                    ':meta': {'S': 'METADATA' }
+                },
+                Limit = 1
+            )
+            for business in json_dynamodb.loads(bus['Items']):
+                Name = business['NAME']
+
             recordset = {
                 'AppointmentId': item['PKID'].replace('APPO#',''),
                 'Status': item['STATUS'],
+                'Address': Address,
+                'NameBusiness': Name,
                 'Name': item['NAME'],
                 'Phone': item['PHONE'],
                 'DateAppo': item['DATE_APPO'],
@@ -52,7 +80,8 @@ def lambda_handler(event, context):
                 'PeopleQty': item['PEOPLE_QTY'] if 'PEOPLE_QTY' in item else 0,
                 'QRCode': item['QRCODE'] if 'QRCODE' in item else '',
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
-                'UnRead': item['UNREAD'] if 'UNREAD' in item else ''
+                'UnRead': item['UNREAD'] if 'UNREAD' in item else '',
+                'Ready': item['READY'] if 'READY' in item else 0
             }
             record.append(recordset)
 

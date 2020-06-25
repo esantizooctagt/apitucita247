@@ -12,7 +12,7 @@ import os
 REGION = 'us-east-1'
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.INFO)   
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
@@ -44,6 +44,8 @@ def lambda_handler(event, context):
             )
             for loc in json_dynamodb.loads(location['Items']):
                 locAddress = loc['ADDRESS']
+                locationId = loc['SKID'].replace('LOC#','')
+                businessId = loc['PKID'].replace('BUS#','')
 
             business = dynamodb.query(
                 TableName="TuCita247",
@@ -62,7 +64,9 @@ def lambda_handler(event, context):
                     'Imagen': business['IMGBUSINESS'],
                     'LongDescrip': business['LONGDESCRIPTION'],
                     'ShortDescrip': business['SHORTDESCRIPTION'],
-                    'Location': locAddress
+                    'Location': locAddress,
+                    'LocationId': locationId,
+                    'BusinessId': businessId
                 }
                 records.append(recordset)
 

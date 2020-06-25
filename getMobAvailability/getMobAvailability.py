@@ -8,6 +8,7 @@ from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
 import string
+import math
 
 from decimal import *
 
@@ -41,7 +42,7 @@ def lambda_handler(event, context):
         statusCode = ''
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        appoDate = datetime.strptime(event['pathParameters']['appoDate'], '%Y/%m/%d')
+        appoDate = datetime.datetime.strptime(event['pathParameters']['appoDate'], '%m-%d-%Y')
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -50,7 +51,9 @@ def lambda_handler(event, context):
         dayName = appoDate.strftime("%A")[0:3].upper()
         dateStd = appoDate.strftime("%Y-%m-%d")
         dateMonth = appoDate.strftime("%Y-%m")
-
+        dateFin = appoDate + datetime.timedelta(days=90)
+        dateFin = dateFin.strftime("%Y-%m-%d")
+        logger.info(dateFin)
         statusPlan = 0
         numberAppos = 0
         availablePackAppos = 0
@@ -68,34 +71,39 @@ def lambda_handler(event, context):
             Limit = 1
         )
         for stat in json_dynamodb.loads(statPlan['Items']):
-            statusPlan = stat['STATUS']
-            numberAppos = stat['APPOINTMENTS']
+            dueDate = datetime.datetime.strptime(stat['DUE_DATE'], '%Y-%m-%d').strftime("%Y-%m-%d")
+            if dueDate > today.strftime("%Y-%m-%d") and stat['STATUS'] == 1:
+                statusPlan = stat['STATUS']
+                numberAppos = stat['AVAILABLE']
 
-        if statusPlan == 0 or statusPlan == 2:
+        if statusPlan == 0:
             statusCode = 404
             body = json.dumps({'Message': 'Disabled plan', 'Data': result, 'Code': 400})
         else:
-            #CITAS DISPONIBLES PARA EL MES ENVIADO
-            availableAppoPlan = dynamodb.query(
-                TableName = "TuCita247",
-                ReturnConsumedCapacity = 'TOTAL',
-                KeyConditionExpression = 'PKID = :businessId AND SKID = :key',
-                ExpressionAttributeValues = {
-                    ':businessId': {'S': 'BUS#' + businessId},
-                    ':key': {'S': 'APPOS#' + dateMonth}
-                },
-                Limit = 1
-            )
-            for avaiPlanAppo in json_dynamodb.loads(availableAppoPlan['Items']):
-                numberAppos = avaiPlanAppo['AVAILABLE']
+            # #CITAS DISPONIBLES PARA EL MES ENVIADO
+            # availableAppoPlan = dynamodb.query(
+            #     TableName = "TuCita247",
+            #     ReturnConsumedCapacity = 'TOTAL',
+            #     KeyConditionExpression = 'PKID = :businessId AND SKID = :key',
+            #     ExpressionAttributeValues = {
+            #         ':businessId': {'S': 'BUS#' + businessId},
+            #         ':key': {'S': 'APPOS#' + dateMonth}
+            #     },
+            #     Limit = 1
+            # )
+            # logger.info("appos#")
+            # for avaiPlanAppo in json_dynamodb.loads(availableAppoPlan['Items']):
+            #     numberAppos = avaiPlanAppo['AVAILABLE']
+
             #CITAS DISPONIBLES DE PAQUETES ADQUIRIDOS QUE VENCEN A FUTURO
             avaiAppoPack = dynamodb.query(
                 TableName = "TuCita247",
                 ReturnConsumedCapacity = 'TOTAL',
-                KeyConditionExpression = 'PKID = :businessId AND SKID >= :key',
+                KeyConditionExpression = 'PKID = :businessId AND SKID BETWEEN :key and :fin',
                 ExpressionAttributeValues = {
                     ':businessId': {'S': 'BUS#' + businessId},
-                    ':key': {'S': 'PACK#' + dateStd}
+                    ':key': {'S': 'PACK#' + dateStd},
+                    ':fin': {'S': 'PACK#' + dateFin}
                 }
             )
             availablePackAppos = 0
@@ -103,6 +111,8 @@ def lambda_handler(event, context):
                 availablePackAppos = availablePackAppos + availablePlan['AVAILABLE']
 
             #ENTRA SI HAY CITAS DISPONIBLES YA SEA DE PLAN O PAQUETE VIGENTE
+            logger.info("available packs")
+            logger.info(availablePackAppos)
             if numberAppos > 0 or availablePackAppos > 0:
                 #GET OPERATION HOURS FROM SPECIFIC LOCATION
                 getCurrDate = dynamodb.query(
@@ -135,12 +145,14 @@ def lambda_handler(event, context):
                     getCurrHours = dynamodb.query(
                         TableName = "TuCita247",
                         ReturnConsumedCapacity = 'TOTAL',
-                        KeyConditionExpression = 'PKID = :key AND SKID > :hours',
+                        KeyConditionExpression = 'PKID = :key AND SKID >= :hours',
                         ExpressionAttributeValues = {
                             ':key': {'S': 'LOC#' + locationId + '#' + dateStd},
-                            '::hours': {'S': '0'}
+                            ':hours': {'S': '0'}
                         }
                     )
+                    logger.info("get curre hours")
+                    logger.info(getCurrHours)
                     for row in json_dynamodb.loads(getCurrHours['Items']):
                         recordset = {
                             'Hour': row['SKID'].split('#')[1].replace('-',':'),
@@ -148,17 +160,28 @@ def lambda_handler(event, context):
                         }
                         hours.append(recordset)
 
-                    if hours == []:
-                        for item in dateAppo:
-                            ini = Decimal(item['I'])
-                            fin = Decimal(item['F'])
-                            scale = 10
-                            for h in range(int(scale*ini), int(scale*fin), int(scale*bucket)):
+                    for item in dateAppo:
+                        ini = Decimal(item['I'])
+                        fin = Decimal(item['F'])
+                        scale = 10
+                        for h in range(int(scale*ini), int(scale*fin), int(scale*bucket)):
+                            res = math.trunc(h/scale) if math.trunc(h/scale) < 13 else math.trunc(h/scale)-12
+                            if (h/scale).is_integer():
+                                h = str(res).zfill(2) + ':00 ' + 'AM' if math.trunc(h/scale) < 13 else 'PM'
+                            else:
+                                h = str(res).zfill(2) + ':30 ' + 'AM' if math.trunc(h/scale) < 13 else 'PM'
+                            available = numCustomer
+                            for x in hours:
+                                if x['Hour'] == h:
+                                    available = x['Available']
+                                    break
+                            if available > 0:
                                 recordset = {
-                                    'Hour': h/scale,
-                                    'Available': numCustomer
+                                    'Hour': h,
+                                    'Available': available
                                 }
                                 hours.append(recordset)
+
                 statusCode = 200
                 body = json.dumps({'Hours': hours, 'Code': 200})
         
