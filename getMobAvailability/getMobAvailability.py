@@ -165,19 +165,22 @@ def lambda_handler(event, context):
                         fin = Decimal(item['F'])
                         scale = 10
                         for h in range(int(scale*ini), int(scale*fin), int(scale*bucket)):
+                            hStd = ''
                             res = math.trunc(h/scale) if math.trunc(h/scale) < 13 else math.trunc(h/scale)-12
                             if (h/scale).is_integer():
-                                h = str(res).zfill(2) + ':00 ' + 'AM' if math.trunc(h/scale) < 13 else 'PM'
+                                hr = str(res).zfill(2) + ':00 ' + 'AM' if math.trunc(h/scale) < 13 else 'PM'
+                                hStd = str(math.trunc(h/scale)).zfill(2) + ':00'
                             else:
-                                h = str(res).zfill(2) + ':30 ' + 'AM' if math.trunc(h/scale) < 13 else 'PM'
+                                hr = str(res).zfill(2) + ':30 ' + 'AM' if math.trunc(h/scale) < 13 else 'PM'
+                                hStd = str(math.trunc(h/scale)).zfill(2) + ':30'
                             available = numCustomer
                             for x in hours:
-                                if x['Hour'] == h:
-                                    available = x['Available']
+                                if x['Hour'] == hStd:
+                                    available = int(x['Available'])
                                     break
                             if available > 0:
                                 recordset = {
-                                    'Hour': h,
+                                    'Hour': hr,
                                     'Available': available
                                 }
                                 hours.append(recordset)
