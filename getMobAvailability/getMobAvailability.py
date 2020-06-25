@@ -53,7 +53,7 @@ def lambda_handler(event, context):
         dateMonth = appoDate.strftime("%Y-%m")
         dateFin = appoDate + datetime.timedelta(days=90)
         dateFin = dateFin.strftime("%Y-%m-%d")
-        logger.info(dateFin)
+
         statusPlan = 0
         numberAppos = 0
         availablePackAppos = 0
@@ -111,8 +111,6 @@ def lambda_handler(event, context):
                 availablePackAppos = availablePackAppos + availablePlan['AVAILABLE']
 
             #ENTRA SI HAY CITAS DISPONIBLES YA SEA DE PLAN O PAQUETE VIGENTE
-            logger.info("available packs")
-            logger.info(availablePackAppos)
             if numberAppos > 0 or availablePackAppos > 0:
                 #GET OPERATION HOURS FROM SPECIFIC LOCATION
                 getCurrDate = dynamodb.query(
@@ -147,12 +145,10 @@ def lambda_handler(event, context):
                         ReturnConsumedCapacity = 'TOTAL',
                         KeyConditionExpression = 'PKID = :key AND SKID >= :hours',
                         ExpressionAttributeValues = {
-                            ':key': {'S': 'LOC#' + locationId + '#' + dateStd},
+                            ':key': {'S': 'LOC#' + locationId + '#DT#' + dateStd},
                             ':hours': {'S': '0'}
                         }
                     )
-                    logger.info("get curre hours")
-                    logger.info(getCurrHours)
                     for row in json_dynamodb.loads(getCurrHours['Items']):
                         recordset = {
                             'Hour': row['SKID'].split('#')[1].replace('-',':'),
