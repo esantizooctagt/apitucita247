@@ -58,7 +58,13 @@ def lambda_handler(event, context):
         numberAppos = 0
         availablePackAppos = 0
         result = {}
+        hoursData = []
         hours = []
+        currHour = ''
+
+        if appoDate.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
+            currHour = today.strftime("%H:%M")
+
         #STATUS DEL PAQUETE ADQUIRIDO 1 ACTIVO Y TRAE TOTAL DE NUMERO DE CITAS
         statPlan = dynamodb.query(
             TableName = "TuCita247",
@@ -80,21 +86,6 @@ def lambda_handler(event, context):
             statusCode = 404
             body = json.dumps({'Message': 'Disabled plan', 'Data': result, 'Code': 400})
         else:
-            # #CITAS DISPONIBLES PARA EL MES ENVIADO
-            # availableAppoPlan = dynamodb.query(
-            #     TableName = "TuCita247",
-            #     ReturnConsumedCapacity = 'TOTAL',
-            #     KeyConditionExpression = 'PKID = :businessId AND SKID = :key',
-            #     ExpressionAttributeValues = {
-            #         ':businessId': {'S': 'BUS#' + businessId},
-            #         ':key': {'S': 'APPOS#' + dateMonth}
-            #     },
-            #     Limit = 1
-            # )
-            # logger.info("appos#")
-            # for avaiPlanAppo in json_dynamodb.loads(availableAppoPlan['Items']):
-            #     numberAppos = avaiPlanAppo['AVAILABLE']
-
             #CITAS DISPONIBLES DE PAQUETES ADQUIRIDOS QUE VENCEN A FUTURO
             avaiAppoPack = dynamodb.query(
                 TableName = "TuCita247",
@@ -139,7 +130,7 @@ def lambda_handler(event, context):
                             body = json.dumps({'Message': 'Day Off', 'Data': [], 'Code': 400})
                             break
                     
-                    #GET OPERATION HOURS FROM SPECIFIC LOCATION
+                    #GET HOURS WITH DATA FROM SPECIFIC LOCATION
                     getCurrHours = dynamodb.query(
                         TableName = "TuCita247",
                         ReturnConsumedCapacity = 'TOTAL',
@@ -154,32 +145,40 @@ def lambda_handler(event, context):
                             'Hour': row['SKID'].split('#')[1].replace('-',':'),
                             'Available': row['SKID'].split('#')[0]
                         }
-                        hours.append(recordset)
+                        hoursData.append(recordset)
 
                     for item in dateAppo:
                         ini = Decimal(item['I'])
                         fin = Decimal(item['F'])
                         scale = 10
                         for h in range(int(scale*ini), int(scale*fin), int(scale*bucket)):
-                            hStd = ''
-                            res = math.trunc(h/scale) if math.trunc(h/scale) < 13 else math.trunc(h/scale)-12
                             if (h/scale).is_integer():
-                                hr = str(res).zfill(2) + ':00 ' + 'AM' if math.trunc(h/scale) < 13 else 'PM'
                                 hStd = str(math.trunc(h/scale)).zfill(2) + ':00'
+                                res = math.trunc(h/scale) if math.trunc(h/scale) < 13 else math.trunc(h/scale)-12
+                                h = str(res).zfill(2) + ':00 ' + 'AM' if math.trunc(h/scale) < 13 else str(res).zfill(2) + ':00 ' + 'PM'
                             else:
-                                hr = str(res).zfill(2) + ':30 ' + 'AM' if math.trunc(h/scale) < 13 else 'PM'
                                 hStd = str(math.trunc(h/scale)).zfill(2) + ':30'
+                                res = math.trunc(h/scale) if math.trunc(h/scale) < 13 else math.trunc(h/scale)-12
+                                h = str(res).zfill(2) + ':30 ' + 'AM' if math.trunc(h/scale) < 13 else  str(res).zfill(2) + ':30 ' + 'PM'
                             available = numCustomer
-                            for x in hours:
+                            for x in hoursData:
                                 if x['Hour'] == hStd:
                                     available = int(x['Available'])
                                     break
-                            if available > 0:
-                                recordset = {
-                                    'Hour': hr,
-                                    'Available': available
-                                }
-                                hours.append(recordset)
+                            if int(available) > 0:
+                                if currHour != '':
+                                    if int(hStd.replace(':','')) > int(currHour.replace(':','')):
+                                        recordset = {
+                                            'Hour': h,
+                                            'Available': available
+                                        }
+                                        hours.append(recordset)
+                                else:
+                                    recordset = {
+                                        'Hour': h,
+                                        'Available': available
+                                    }
+                                    hours.append(recordset)
 
                 statusCode = 200
                 body = json.dumps({'Hours': hours, 'Code': 200})

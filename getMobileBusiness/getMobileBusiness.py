@@ -41,7 +41,8 @@ def lambda_handler(event, context):
                 'Name': row['NAME'] if 'NAME' in row else '',
                 'Address': row['ADDRESS'] if 'ADDRESS' in row else '',
                 'Geolocation': row['GEOLOCATION'] if 'GEOLOCATION' in row else '',
-                'Status': row['STATUS'] if 'STATUS' in row else 0
+                'Status': row['STATUS'] if 'STATUS' in row else 0,
+                'Door': row['DOORS'] if 'DOORS' in row else ''
             }
             records.append(recordset)
         
