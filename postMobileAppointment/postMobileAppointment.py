@@ -56,6 +56,7 @@ def lambda_handler(event, context):
         onbehalf = data['OnBehalf']
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%m-%d-%Y')
         hourDate = data['AppoHour']
+        purpose = data['Purposes']
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
@@ -170,21 +171,28 @@ def lambda_handler(event, context):
                     getCurrHours = dynamodb.query(
                         TableName = "TuCita247",
                         ReturnConsumedCapacity = 'TOTAL',
-                        KeyConditionExpression = 'PKID = :key AND SKID >= :hours',
+                        KeyConditionExpression = 'PKID = :key',
                         ExpressionAttributeValues = {
-                            ':key': {'S': 'LOC#' + locationId + '#DT#' + appoDate.strftime("%Y-%m-%d")},
-                            ':hours': {'S': '0'}
+                            ':key': {'S': 'LOC#' + locationId + '#DT#' + appoDate.strftime("%Y-%m-%d")}
                         }
                     )
                     for row in json_dynamodb.loads(getCurrHours['Items']):
                         recordset = {
-                            'Hour': row['SKID'].split('#')[1].replace('-',':'),
-                            'Available': row['SKID'].split('#')[0]
+                            'Hour': row['SKID'].replace('HR#','').replace('-',':'),
+                            'Available': row['AVAILABLE']
                         }
                         hoursData.append(recordset)
 
                     validAppo = 0
+                    existe = 0
+                    for x in hoursData:
+                        if x['Hour'] == hourDate and int(x['Available']) > 0:
+                            existe = 1
+                            break
+
                     for item in dateAppo:
+                        if existe == 1:
+                            break
                         ini = Decimal(item['I'])
                         fin = Decimal(item['F'])
                         scale = 10
@@ -194,10 +202,6 @@ def lambda_handler(event, context):
                             else:
                                 h = str(math.trunc(h/scale)).zfill(2) + ':30'
                             available = numCustomer
-                            for x in hoursData:
-                                if x['Hour'] == h:
-                                    available = int(x['Available'])
-                                    break
                             if int(available) > 0:
                                 if currHour != '':
                                     if int(h.replace(':','')) > int(currHour.replace(':','')):
@@ -228,10 +232,11 @@ def lambda_handler(event, context):
                                 "DATE_APPO": {"S": dateAppointment},
                                 "PHONE": {"S": phone},
                                 "DOOR": {"S": door},
-                                "ON_BEHALF": {"N": onbehalf},
+                                "ON_BEHALF": {"N": str(onbehalf)},
                                 "PEOPLE_QTY": {"N": str(guest)},
                                 "DISABILITY": {"N": str(disability) if disability != '' else None},
                                 "QRCODE": {"S": qrCode},
+                                "PURPOSE": {"S": purpose},
                                 "TYPE": {"N": "1"},
                                 "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
                                 "GSI1SK": {"S": '1#DT#' + dateAppointment}, 
@@ -269,18 +274,77 @@ def lambda_handler(event, context):
                                     "PKID": {"S": 'BUS#' + businessId}, 
                                     "SKID": {"S": 'PLAN'}, 
                                 },
-                                "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
+                                "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
                                 "ExpressionAttributeValues": { 
-                                    ":increment": {"N": str(guests)}
+                                    ":increment": {"N": str(1)},
+                                    ":nocero": {"N": str(0)}
                                 },
-                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE > :nocero",
                                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
                                 }
                             }
                     else:
+                        recordset = {
+                            "Update":{
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'BUS#' + businessId}, 
+                                    "SKID": {"S": code}, 
+                                },
+                                "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
+                                "ExpressionAttributeValues": { 
+                                    ":increment": {"N": str(1)},
+                                    ":nocero": {"N": str(0)}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE > :nocero",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                                }
+                            }
+                    
+                    logger.info(recordset)
+                    items.append(recordset)
 
-                statusCode = 200
-                body = json.dumps({'Hours': hours, 'Code': 200})
+                    if existe == 1:
+                        #update
+                        recordset = {
+                            "Update":{
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'LOC#' + locationId + '#DT#' + dateAppointment[0:10]}, 
+                                    "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}, 
+                                },
+                                "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
+                                "ExpressionAttributeValues": { 
+                                    ":increment": {"N": str(1)},
+                                    ":nocero": {"N": str(0)}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE > :nocero",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                                }
+                            }
+                    else:
+                        #put
+                        recordset = {
+                        "Put": {
+                            "TableName": "TuCita247",
+                            "Item": {
+                                "PKID": {"S": 'LOC#' + locationId + '#DT#' + dateAppointment[0:10]}, 
+                                "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
+                                "AVAILABLE": {"N": str(numCustomer-1)}
+                            },
+                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                            }
+                        }
+                    logger.info(recordset)
+                    items.append(recordset)
+
+                    logger.info(items)
+                    response = dynamodb.transact_write_items(
+                        TransactItems = items
+                    )
+                    statusCode = 200
+                    body = json.dumps({'Message': 'Appointment saved successfully', 'Code': 200})
         
         if statusCode == '':
             statusCode = 500

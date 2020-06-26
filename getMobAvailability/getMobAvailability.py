@@ -134,16 +134,15 @@ def lambda_handler(event, context):
                     getCurrHours = dynamodb.query(
                         TableName = "TuCita247",
                         ReturnConsumedCapacity = 'TOTAL',
-                        KeyConditionExpression = 'PKID = :key AND SKID >= :hours',
+                        KeyConditionExpression = 'PKID = :key',
                         ExpressionAttributeValues = {
-                            ':key': {'S': 'LOC#' + locationId + '#DT#' + dateStd},
-                            ':hours': {'S': '0'}
+                            ':key': {'S': 'LOC#' + locationId + '#DT#' + dateStd}
                         }
                     )
                     for row in json_dynamodb.loads(getCurrHours['Items']):
                         recordset = {
-                            'Hour': row['SKID'].split('#')[1].replace('-',':'),
-                            'Available': row['SKID'].split('#')[0]
+                            'Hour': row['SKID'].replace('HR#','').replace('-',':'),
+                            'Available': row['AVAILABLE']
                         }
                         hoursData.append(recordset)
 
