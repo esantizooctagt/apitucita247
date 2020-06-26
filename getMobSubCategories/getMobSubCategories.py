@@ -27,20 +27,19 @@ def lambda_handler(event, context):
         f = '#s = :stat'
         response = dynamodb.query(
             TableName="TuCita247",
-            IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :categories AND GSI1SK = :subcat',
+            KeyConditionExpression='PKID = :categories AND begins_with (SKID , :subcat)',
             ExpressionAttributeNames=e,
             FilterExpression=f,
             ExpressionAttributeValues={
                 ':categories': {'S': 'CAT#' + categoryId},
-                ':subcat': {'S': 'CAT#SUB#'},
+                ':subcat': {'S': 'SUB#'},
                 ':stat' : {'N': '1'}
             },
         )
         for row in json_dynamodb.loads(response['Items']):
             recordset = {
-                'SubCategoryId': row['PKID'].replace('CAT#' + categoryId + '#',''),
+                'SubCategoryId': row['SKID'].replace('SUB#',''),
                 'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP'],
                 'Icon': row['ICON'],
                 'Imagen': row['IMG_CAT']

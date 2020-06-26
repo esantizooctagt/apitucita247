@@ -24,10 +24,10 @@ def lambda_handler(event, context):
         queryStr = event['pathParameters']['search']
 
         response = cloudsearch.search(
-            query=queryStr,
+            query='+'+queryStr+'*',
             queryParser='simple',
-            # returnFields='_all',
-            # size=10
+            sort='name_esp asc, name_eng asc, _score desc',
+            size=10
         )
                 
         statusCode = 200
