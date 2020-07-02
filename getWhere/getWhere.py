@@ -33,8 +33,23 @@ def lambda_handler(event, context):
             }
         )
         for row in json_dynamodb.loads(response['Items']):
+            parentName = ''
+            if row['PKID'].replace('COUNTRY#' + country,'') != '':
+                parent = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :country AND SKID = :city',
+                        ExpressionAttributeValues={
+                            ':country': {'S': 'COUNTRY#' + country},
+                            ':city': {'S': row['PKID'].replace('COUNTRY#' + country + '#','')}
+                        }
+                )
+                for parent in json_dynamodb.loads(parent['Items']):
+                    parentName = parent['NAME_ENG'] if language == 'EN' else parent['NAME_ESP']
+
             recordset = {
                 'Parent': row['PKID'].replace('COUNTRY#' + country,'') if row['PKID'] == 'COUNTRY#' + country  else row['PKID'].replace('COUNTRY#' + country + '#',''),
+                'ParentName': parentName,
                 'City': row['SKID'],
                 'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
             }
@@ -55,8 +70,23 @@ def lambda_handler(event, context):
                 }
             )
             for row in json_dynamodb.loads(response['Items']):
+                parentName = ''
+                if row['PKID'].replace('COUNTRY#' + country,'') != '':
+                    parent = dynamodb.query(
+                            TableName="TuCita247",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='PKID = :country AND SKID = :city',
+                            ExpressionAttributeValues={
+                                ':country': {'S': 'COUNTRY#' + country},
+                                ':city': {'S': row['PKID'].replace('COUNTRY#' + country + '#','')}
+                            }
+                    )
+                    for parent in json_dynamodb.loads(parent['Items']):
+                        parentName = parent['NAME_ENG'] if language == 'EN' else parent['NAME_ESP']
+
                 recordset = {
                     'Parent': row['PKID'].replace('COUNTRY#' + country,''),
+                    'ParentName': parentName,
                     'City': row['SKID'],
                     'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
                 }

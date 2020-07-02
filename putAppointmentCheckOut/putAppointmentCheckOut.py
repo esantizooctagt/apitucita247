@@ -1,4 +1,5 @@
 import sys
+import requests
 import logging
 import json
 
@@ -12,21 +13,15 @@ import datetime
 import dateutil.tz
 from datetime import timezone
 
-from twilio.rest import Client
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-
 import os
 
 REGION = 'us-east-1'
 
-twilioAccountSID = os.environ['twilioAccountSID']
-twilioAccountToken = os.environ['twilioAccountToken']
-fromNumber = os.environ['fromNumber']
-
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+sms = boto3.client('sns')
+email = boto3.client('ses',region_name=REGION)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
@@ -217,85 +212,71 @@ def lambda_handler(event, context):
                     Limit = 1
                 )
                 preference = ''
-                logger.info("preference vacio")
-                logger.info(response)
+                playerId = ''
                 for row in json_dynamodb.loads(response['Items']):
                     preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                     mobile = row['PKID'].replace('MOB#','')
                     email = row['EMAIL'] if 'EMAIL' in row else ''
-                    logger.info(preference)
-                    if preference == 1 and mobile != '':
-                        #SMS        
-                        to_number = mobile
-                        from_number = fromNumber
-                        bodyStr = 'Please fill the next poll ' + link
+                    playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
 
-                        account_sid = twilioAccountSID
-                        auth_token = twilioAccountToken
-                        client = Client(account_sid, auth_token)
-                        
-                        message = client.messages.create(
-                            from_= from_number,
-                            to = to_number,
-                            body = bodyStr
-                        )
+                #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
+                if playerId != '':
+                    header = {"Content-Type": "application/json; charset=utf-8"}
+                    payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
+                            "include_player_ids": [playerId],
+                            "contents": {"en": "You are invited to fill the next poll"}}
+                    req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
-                    if preference == 2 and email != '':
-                        message = Mail(
-                            from_email='Tu Cita 24/7 - Service Poll <no-reply@tucita247.com>',
-                            to_emails=email,
-                            subject='Tu Cita 24/7 Check-In - Service Poll',
-                            html_content='<strong>Please fill the next poll</strong><p>Link ' + link + '</p>'
-                        )
-                        sg = SendGridAPIClient('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')
-                        response = sg.send(message)
-                        logger.info(response)
-                        # logger.info("send email")
-                        # #EMAIL
-                        # SENDER = "Tu Cita 24/7 - Service Poll <no-reply@tucita247.com>"
-                        # RECIPIENT = email
-                        # SUBJECT = "Tu Cita 24/7 Check-In - Service Poll"
-                        # BODY_TEXT = ("Please fill the next poll \n\r " + link)
-                                    
-                        # # The HTML body of the email.
-                        # BODY_HTML = """<html>
-                        # <head></head>
-                        # <body>
-                        # <h1>Tu Cita 24/7 - Service Poll</h1>
-                        # <p>Please fill the next poll</p>
-                        # <p>Link """ + link + """</p>
-                        # </body>
-                        # </html>"""
+                if preference == 1 and mobile != '':
+                    #SMS
+                    to_number = mobile
+                    bodyStr = 'Please fill the next poll ' + link
+                    sms.publish(
+                        PhoneNumber="+"+to_number,
+                        Message=bodyStr
+                    ) 
 
-                        # AWS_REGION = REGION
-                        # CHARSET = "UTF-8"
+                if preference == 2 and email != '':
+                    SENDER = "Tu Cita 24/7 - Service Poll <no-reply@tucita247.com>"
+                    RECIPIENT = email
+                    SUBJECT = "Tu Cita 24/7 Service Poll"
+                    BODY_TEXT = ("Please fill the next poll " + link)
+                                
+                    # The HTML body of the email.
+                    BODY_HTML = """<html>
+                    <head></head>
+                    <body>
+                    <h1>Tu Cita 24/7</h1>
+                    <strong>Please fill the next poll</strong><p>Link """ + link + """</p>
+                    </body>
+                    </html>"""
 
-                        # client = boto3.client('ses',region_name=AWS_REGION)
-                        # response = client.send_email(
-                        #     Destination={
-                        #         'ToAddresses': [
-                        #             RECIPIENT,
-                        #         ],
-                        #     },
-                        #     Message={
-                        #         'Body': {
-                        #             'Html': {
-                        #                 'Charset': CHARSET,
-                        #                 'Data': BODY_HTML,
-                        #             },
-                        #             'Text': {
-                        #                 'Charset': CHARSET,
-                        #                 'Data': BODY_TEXT,
-                        #             },
-                        #         },
-                        #         'Subject': {
-                        #             'Charset': CHARSET,
-                        #             'Data': SUBJECT,
-                        #         },
-                        #     },
-                        #     Source=SENDER
-                        # )
-                        # logger.info(link)
+                    CHARSET = "UTF-8"
+
+                    response = email.send_email(
+                        Destination={
+                            'ToAddresses': [
+                                RECIPIENT,
+                            ],
+                        },
+                        Message={
+                            'Body': {
+                                'Html': {
+                                    'Charset': CHARSET,
+                                    'Data': BODY_HTML,
+                                },
+                                'Text': {
+                                    'Charset': CHARSET,
+                                    'Data': BODY_TEXT,
+                                },
+                            },
+                            'Subject': {
+                                'Charset': CHARSET,
+                                'Data': SUBJECT,
+                            },
+                        },
+                        Source=SENDER
+                    )
 
             logger.info(tranAppo)
             statusCode = 200

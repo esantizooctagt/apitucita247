@@ -21,14 +21,34 @@ logger.info("SUCCESS: Connection to CloudSearch")
 
 def lambda_handler(event, context):
     try:
-        queryStr = event['pathParameters']['search']
+        queryStd = event['pathParameters']['search']
+        city = event['pathParameters']['city']
+        sector = event['pathParameters']['sector']
 
-        response = cloudsearch.search(
-            query='+'+queryStr+'*',
-            queryParser='simple',
-            sort='name_esp asc, name_eng asc, _score desc',
-            size=10
-        )
+        if sector != '_' and city != '_':
+            response = cloudsearch.search(
+                query="(and (phrase field='name_esp' '" + queryStd + "') (phrase field='city' '" + city + "') (phrase field='sector' '" + sector + "'))",
+                queryParser='structured',
+                sort='tipo asc, _score desc, name_esp asc, name_eng asc',
+                highlight='{"name_esp":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"}, "name_eng":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"}, "name":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"} }',
+                size=10
+            )
+        if city != '_' and sector == '_':
+            response = cloudsearch.search(
+                query="(and (phrase field='name_esp' '" + queryStd + "') (phrase field='city' '" + city + "'))",
+                queryParser='structured',
+                sort='tipo asc, _score desc, name_esp asc, name_eng asc',
+                highlight='{"name_esp":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"}, "name_eng":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"}, "name":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"} }',
+                size=10
+            )
+        if city == '_' and sector == '_':
+            response = cloudsearch.search(
+                query='+'+queryStd+'*',
+                queryParser='simple',
+                sort='tipo asc, _score desc, name_esp asc, name_eng asc',
+                highlight='{"name_esp":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"}, "name_eng":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"}, "name":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"} }',
+                size=10
+            )
                 
         statusCode = 200
         body = json.dumps(response)

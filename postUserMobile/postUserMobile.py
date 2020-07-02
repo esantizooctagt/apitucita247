@@ -52,6 +52,7 @@ def lambda_handler(event, context):
                         "GENDER": {"S": str(data['Gender']) if str(data['Gender']) != '' else None},
                         "PREFERENCES": {"N": str(data['Preferences']) if str(data['Preferences']) != '' else None},
                         "DISABILITY": {"N": str(data['Disability']) if str(data['Disability']) != '' else None},
+                        "PLAYERID": {"S": data['PlayerId'] if data['PlayerId'] != '' else None},
                         "STATUS": {"N": "1"}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",

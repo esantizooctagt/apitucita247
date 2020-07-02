@@ -1,5 +1,6 @@
 import sys
 import logging
+import requests
 import json
 
 import boto3
@@ -12,23 +13,17 @@ import datetime
 import dateutil.tz
 from datetime import timezone
 
-from twilio.rest import Client
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-
 import os
 
 REGION = 'us-east-1'
-
-twilioAccountSID = os.environ['twilioAccountSID']
-twilioAccountToken = os.environ['twilioAccountToken']
-fromNumber = os.environ['fromNumber']
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 dynamodbQuery = boto3.client('dynamodb', region_name='us-east-1')
+sms = boto3.client('sns')
+email = boto3.client('ses',region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -74,7 +69,7 @@ def lambda_handler(event, context):
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200, 'Appo': json_dynamodb.loads(response['Attributes'])})
 
         logger.info(response)
-        #PASA A PRE-CHECK IN Y ENVIA NOTIFICACION POR TWILIO A SMS y CORREO (TWILIO), ONESIGNAL (PUSH NOTIFICATION)
+        #PASA A PRE-CHECK IN Y ENVIA NOTIFICACION POR SNS A SMS y CORREO, ONESIGNAL (PUSH NOTIFICATION)
         if status == 2:
             # GET USER PREFERENCE NOTIFICATION
             response = dynamodbQuery.query(
@@ -87,79 +82,72 @@ def lambda_handler(event, context):
                 }
             )
             preference = ''
+            playerId = ''
             for row in json_dynamodb.loads(response['Items']):
                 preference = row['PREFERENCES'] if 'PREFERENCES' in row else ''
                 mobile = row['PKID'].replace('MOB#','')
                 email = row['EMAIL'] if 'EMAIL' in row else ''
-            if preference == 1 and mobile != '':
-                #SMS        
-                to_number = mobile
-                from_number = fromNumber
-                bodyStr = 'You can go to the nearest entrance to check in'
+                playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
+            
+            #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
+            if playerId != '':
+                header = {"Content-Type": "application/json; charset=utf-8"}
+                payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
+                        "include_player_ids": [playerId],
+                        "contents": {"en": "You can go to the nearest entrance to check in"}}
+                req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
-                account_sid = twilioAccountSID
-                auth_token = twilioAccountToken
-                client = Client(account_sid, auth_token)
-                
-                message = client.messages.create(
-                    from_= from_number,
-                    to = to_number,
-                    body = bodyStr
+            if preference == 1 and mobile != '':
+                #SMS
+                to_number = mobile
+                bodyStr = 'You can go to the nearest entrance to check in'
+                sms.publish(
+                    PhoneNumber="+"+to_number,
+                    Message=bodyStr
                 )
+                
             if preference == 2 and email != '':
                 #EMAIL
-                message = Mail(
-                    from_email='Tu Cita 24/7 <no-reply@tucita247.com>',
-                    to_emails=email,
-                    subject='Tu Cita 24/7 Check-In',
-                    html_content='<strong>You can yo to the nearest entrance to check in</strong>'
-                )
-                sg = SendGridAPIClient('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')
-                response = sg.send(message)
-                logger.info(response)
-                # #EMAIL
-                # SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
-                # RECIPIENT = email
-                # SUBJECT = "Tu Cita 24/7 Check-In"
-                # BODY_TEXT = ("You can yo to the nearest entrance to check in")
+                SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+                RECIPIENT = email
+                SUBJECT = "Tu Cita 24/7 Check-In"
+                BODY_TEXT = ("You can yo to the nearest entrance to check in")
                             
-                # # The HTML body of the email.
-                # BODY_HTML = """<html>
-                # <head></head>
-                # <body>
-                # <h1>Tu Cita 24/7</h1>
-                # <p>You can yo to the nearest entrance to check in</p>
-                # </body>
-                # </html>"""
+                # The HTML body of the email.
+                BODY_HTML = """<html>
+                <head></head>
+                <body>
+                <h1>Tu Cita 24/7</h1>
+                <p>You can yo to the nearest entrance to check in</p>
+                </body>
+                </html>"""
 
-                # AWS_REGION = REGION
-                # CHARSET = "UTF-8"
+                CHARSET = "UTF-8"
 
-                # client = boto3.client('ses',region_name=AWS_REGION)
-                # response = client.send_email(
-                #     Destination={
-                #         'ToAddresses': [
-                #             RECIPIENT,
-                #         ],
-                #     },
-                #     Message={
-                #         'Body': {
-                #             'Html': {
-                #                 'Charset': CHARSET,
-                #                 'Data': BODY_HTML,
-                #             },
-                #             'Text': {
-                #                 'Charset': CHARSET,
-                #                 'Data': BODY_TEXT,
-                #             },
-                #         },
-                #         'Subject': {
-                #             'Charset': CHARSET,
-                #             'Data': SUBJECT,
-                #         },
-                #     },
-                #     Source=SENDER
-                # )
+                response = email.send_email(
+                    Destination={
+                        'ToAddresses': [
+                            RECIPIENT,
+                        ],
+                    },
+                    Message={
+                        'Body': {
+                            'Html': {
+                                'Charset': CHARSET,
+                                'Data': BODY_HTML,
+                            },
+                            'Text': {
+                                'Charset': CHARSET,
+                                'Data': BODY_TEXT,
+                            },
+                        },
+                        'Subject': {
+                            'Charset': CHARSET,
+                            'Data': SUBJECT,
+                        },
+                    },
+                    Source=SENDER
+                )
 
         if statusCode == '':
             statusCode = 500

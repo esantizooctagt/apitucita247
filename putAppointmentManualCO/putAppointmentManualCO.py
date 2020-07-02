@@ -31,6 +31,7 @@ def lambda_handler(event, context):
         statusCode = ''
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
+        qty = int(event['pathParameters']['qtyGuests'])
 
         table = dynamodb.Table('TuCita247')
         response = table.update_item(
@@ -39,7 +40,7 @@ def lambda_handler(event, context):
                 'SKID': 'LOC#' + locationId
             },
             UpdateExpression="SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
-            ExpressionAttributeValues={':increment': 1},
+            ExpressionAttributeValues={':increment': qty},
             ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)",
             ReturnValues="NONE"
         )
