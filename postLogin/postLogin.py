@@ -2,8 +2,7 @@ import sys
 import logging
 import json
 import decimal
-
-import pyotp
+import jwt
 
 import datetime
 import dateutil.tz
@@ -131,12 +130,15 @@ def lambda_handler(event, context):
             return error
 
         if resp.get("AuthenticationResult"):
-            try:
-                response = client.global_sign_out(
-                                AccessToken=resp["AuthenticationResult"]["AccessToken"]
-                            )
-            except Exception as e:
-                logger.info(error = e.__str__())
+            userNameCognitoEncode = jwt.decode(resp["AuthenticationResult"]["IdToken"], verify=False)
+            userNameCognito = userNameCognitoEncode["cognito:username"]
+            # try:
+            #     response = client.global_sign_out(
+            #                     AccessToken=resp["AuthenticationResult"]["AccessToken"]
+            #                 )
+            # except Exception as e:
+            #     logger.info(error = e.__str__())
+
             # return {'message': "success", 
             #         "error": False, 
             #         "success": True, 
@@ -162,7 +164,8 @@ def lambda_handler(event, context):
                         'Avatar': user['AVATAR'] if 'AVATAR' in user else '',
                         'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
                         'Language': user['LANGUAGE'] if 'LANGUAGE' in user else '',
-                        'Business_Name': business['NAME']
+                        'Business_Name': business['NAME'],
+                        'UsrCog': userNameCognito
                     }
                     result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"], 'refresh': resp["AuthenticationResult"]["RefreshToken"] }
                     statusCode = 200

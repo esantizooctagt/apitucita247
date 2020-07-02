@@ -37,17 +37,20 @@ def lambda_handler(event, context):
 
         client = boto3.client('cognito-idp')
         try:
+            secret_hash = get_secret_hash(email)
             response = client.initiate_auth(
-                ClientId='52k0o8239mueu31uu5fihccbbf',
-                AuthFlow='REFRESH_TOKEN_AUTH',
+                ClientId = '52k0o8239mueu31uu5fihccbbf',
+                AuthFlow = 'REFRESH_TOKEN_AUTH',
                 AuthParameters={
-                'REFRESH_TOKEN': token,
-                'SECRET_HASH': get_secret_hash(email)
+                    'REFRESH_TOKEN': token,
+                    'SECRET_HASH': secret_hash
                 }
             )
+            idToken = response["AuthenticationResult"]["IdToken"] if response["AuthenticationResult"]["IdToken"] in response else '' 
+            accessToken = response['AuthenticationResult']['AccessToken'] if response["AuthenticationResult"]["AccessToken"] in response else ''
             logger.info(response)
             statusCode = 200
-            body = json.dumps({'Message': 'Email send successfully'})
+            body = json.dumps({'Message': 'Tokens renew successfully', 'Code': 200, 'TokenId': idToken, 'TokenAccess': accessToken})
 
         except client.exceptions.UserNotFoundException:
             statusCode = 404
@@ -58,9 +61,9 @@ def lambda_handler(event, context):
         except client.exceptions.CodeMismatchException:
             statusCode = 404
             body = json.dumps({"error": True, "Code": 400, "success": False, "data": None, "Message": "Invalid Verification code"})
-        except client.exceptions.NotAuthorizedException:
+        except client.exceptions.NotAuthorizedException as e:
             statusCode = 404
-            body = json.dumps({"error": True, "Code": 400, "success": False, "data": None, "Message": "User is already confirmed"})
+            body = json.dumps({"error": True, "Code": 400, "success": False, "data": None, "Message": str(e)})
         except Exception as e:
             statusCode = 404
             body = json.dumps({"error": True, "Code": 400, "success": False, "data": None, "Message": f"Uknown    error {e.__str__()} "})
