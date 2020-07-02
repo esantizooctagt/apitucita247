@@ -37,6 +37,8 @@ def lambda_handler(event, context):
 
         client = boto3.client('cognito-idp')
         try:
+            idToken = ''
+            accessToken = ''
             secret_hash = get_secret_hash(email)
             response = client.initiate_auth(
                 ClientId = '52k0o8239mueu31uu5fihccbbf',
@@ -46,11 +48,12 @@ def lambda_handler(event, context):
                     'SECRET_HASH': secret_hash
                 }
             )
-            idToken = response["AuthenticationResult"]["IdToken"] if response["AuthenticationResult"]["IdToken"] in response else '' 
-            accessToken = response['AuthenticationResult']['AccessToken'] if response["AuthenticationResult"]["AccessToken"] in response else ''
+            if response['AuthenticationResult']:
+                idToken = response['AuthenticationResult']['IdToken']
+                accessToken = response['AuthenticationResult']['AccessToken']
             logger.info(response)
             statusCode = 200
-            body = json.dumps({'Message': 'Tokens renew successfully', 'Code': 200, 'TokenId': idToken, 'TokenAccess': accessToken})
+            body = json.dumps({'Message': 'Tokens renew successfully', 'Code': 200, 'token': idToken, 'access': accessToken})
 
         except client.exceptions.UserNotFoundException:
             statusCode = 404

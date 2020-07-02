@@ -99,8 +99,6 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            # Auth:
-            #   Authorizer: CognitoAuth
             Path: /user/login
             Method: post
             ApiId: !Ref HttpApi
