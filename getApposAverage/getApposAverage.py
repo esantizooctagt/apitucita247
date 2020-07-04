@@ -26,54 +26,33 @@ def lambda_handler(event, context):
         
     try:
         initDate = event['pathParameters']['initDate']
-        businessId = event['pathParameters']['businessId']
+        locationId = event['pathParameters']['locationId']
         
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :locations )',
+            KeyConditionExpression='PKID = :locationId AND begins_with( SKID , :date )',
             ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId},
-                ':locations': {'S': 'LOC#'}
+                ':locationId': {'S': 'LOC#' + locationId + '#DT#' + initDate[0:7]},
+                ':date': {'S': 'DT#' + initDate[0:7]}
             }
         )
-        
-        locs = []
-        for row in json_dynamodb.loads(response['Items']):
+        record = []
+        for det in json_dynamodb.loads(response['Items']):
             recordset = {
-                'LocationId': row['SKID'].replace('LOC#',''),
-                'Name': row['NAME']
+                'Qty': det['QTY_APPOS'],
+                'Average': det['TIME_APPO']/det['QTY_APPOS'],
+                'DateAppo': det['SKID'].replace('DT#','')
             }
-            locs.append(recordset)
+            record.append(recordset)
         
-        locsData = []
-        for item in locs:
-            response = dynamodb.query(
-                TableName="TuCita247",
-                ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :locationId AND begins_with( SKID , :date )',
-                ExpressionAttributeValues={
-                    ':locationId': {'S': 'LOC#' + item['LocationId'] + '#DT#' + initDate[0:7]},
-                    ':date': {'S': 'DT#' + initDate[0:7]}
-                }
-            )
-            record = []
-            for det in json_dynamodb.loads(response['Items']):
-                recordset = {
-                    'Qty': det['QTY_APPOS'],
-                    'Average': det['TIME_APPO']/det['QTY_APPOS'],
-                    'DateAppo': det['SKID'].replace('DT#','')
-                }
-                record.append(recordset)
-            locations = {
-                'LocationId': item['LocationId'],
-                'Name': item['Name'],
-                'Data': record
-            }
-            locsData.append(locations)
+        locData = {
+            'Code': 200,
+            'Data': record
+        }
 
         statusCode = 200
-        body = json.dumps(locsData)
+        body = json.dumps(locData)
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})

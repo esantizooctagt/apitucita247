@@ -36,22 +36,48 @@ def lambda_handler(event, context):
         statusCode = ''
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
-        dateOpe = today.strftime("%Y-%m")
-
+        dateFin = (today + datetime.timedelta(days=90)).strftime("%Y-%m-%d")
+        dateIni = today.strftime("%Y-%m-%d")
+        
         businessId = event['pathParameters']['businessId']
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND SKID = :dateOpe',
+            KeyConditionExpression='PKID = :businessId AND SKID = :plan',
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
-                ':dateOpe': {'S': 'APPOS#' + dateOpe}
+                ':plan': {'S': 'PLAN'}
             }
         )
+        records = []
+        packs = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId AND SKID between :packsIni AND :packsFin',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':packsIni': {'S': 'PACK#' + dateIni},
+                ':packsFin': {'S': 'PACK#' + dateFin}
+            }
+        )
+        recordset ={}
+        for pack in json_dynamodb.loads(packs['Items']):
+            recordset = {
+                'DueDate': pack['SKID'].replace('PACK#',''),
+                'Available': pack['AVAILABLE'],
+                'Used': pack['APPOINTMENTS']-pack['AVAILABLE'],
+                'Appointments': pack['APPOINTMENTS']
+            }
+            records.append(recordset)
+
         for row in json_dynamodb.loads(response['Items']):
             recordset = {
-                'Total': row['TOTAL'],
-                'Available': row['AVAILABLE']
+                'Total': row['APPOINTMENTS'],
+                'Available': row['AVAILABLE'],
+                'Used': row['APPOINTMENTS']-row['AVAILABLE'],
+                'DueDate': row['DUE_DATE'],
+                'Name': row['NAME'],
+                'Packs': records
             } 
             
             statusCode = 200

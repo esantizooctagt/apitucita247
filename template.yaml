@@ -1427,7 +1427,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /appointments/average/{businessId}/{initDate}
+            Path: /appointments/average/{locationId}/{initDate}
             Method: get
             ApiId: !Ref HttpApi
   
