@@ -17,6 +17,10 @@ import dateutil.tz
 from datetime import timezone
 
 import uuid
+import string
+import math
+import random
+
 import os
 
 REGION = 'us-east-1'
@@ -46,6 +50,7 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
+        letters = string.ascii_uppercase + string.digits
         data = json.loads(event['body'])
         businessId = data['BusinessId']
         locationId = data['LocationId']
@@ -60,179 +65,396 @@ def lambda_handler(event, context):
         guests = data['Guests']
         customerId = str(uuid.uuid4()).replace("-","")
         status = data['Status'] if 'Status' in data else 0
+        purpose = data['Purpose'] if 'Purpose' in data else ''
+        appoDate = datetime.datetime.strptime(data['AppoDate'], '%Y-%m-%d') if 'AppoDate' in data else ''
+        hourDate = data['AppoHour'] if 'AppoHour' in data else ''
+        dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
         existe = 0
         opeHours = ''
         daysOff = []
         dateAppo = '' 
-        qrCode = 'VALID'
+        qrCode = 'VALID' if appoDate == '' else ''.join(random.choice(letters) for i in range(6))
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dayName = today.strftime("%A")[0:3].upper()
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
-        getCurrDate = dynamodb.query(
+        dateIni= today.strftime("%Y-%m-%d")
+        dateFin = today + datetime.timedelta(days=90)
+        dateFin = dateFin.strftime("%Y-%m-%d")
+
+        statusPlan = 0
+        numberAppos = 0
+        result = {}
+        hoursData = []
+        hours = []
+        currHour = ''
+
+        if appoDate.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
+            currHour = today.strftime("%H:%M")
+            if int(currHour.replace(':','')) > int(hourDate.replace(':','')):
+                statusCode = 404
+                body = json.dumps({'Message': 'Hour not available', 'Data': result, 'Code': 400})
+                response = {
+                    'statusCode' : statusCode,
+                    'headers' : {
+                        "content-type" : "application/json",
+                        "access-control-allow-origin" : "*"
+                    },
+                    'body' : body
+                }
+                return response
+        
+        #STATUS DEL PAQUETE ADQUIRIDO 1 ACTIVO Y TRAE TOTAL DE NUMERO DE CITAS
+        statPlan = dynamodb.query(
             TableName = "TuCita247",
             ReturnConsumedCapacity = 'TOTAL',
-            KeyConditionExpression = 'PKID = :businessId and begins_with ( SKID , :locationId ) ',
+            KeyConditionExpression = 'PKID = :businessId AND SKID = :key',
             ExpressionAttributeValues = {
                 ':businessId': {'S': 'BUS#' + businessId},
-                ':locationId': {'S': 'LOC#' + locationId}
-            }
+                ':key': {'S': 'PLAN'}
+            },
+            Limit = 1
         )
-        for currDate in json_dynamodb.loads(getCurrDate['Items']):
-            periods = []
-            opeHours = json.loads(currDate['OPERATIONHOURS'])
-            daysOff = currDate['DAYS_OFF'].split(',') if 'DAYS_OFF' in currDate else []
-            dateAppo = opeHours[dayName] if dayName in opeHours else ''
-            dayOffValid = True
-            if daysOff != []:
-                dayOffValid = today.strftime("%Y-%m-%d") not in daysOff
-            
-            periods = dateAppo
-            for item in periods:
-                ini = Decimal(item['I'])
-                fin = Decimal(item['F'])
-                currHour = Decimal(today.strftime("%H"))
-                dateAppo = ''
-                if  currHour >= ini and currHour <= fin:
-                    dateAppo = today.strftime("%Y-%m-%d") + '-' + today.strftime("%H").ljust(2,'0')  + '-00'
-                    break
-                    
-        if dayOffValid == False or dateAppo == '':
-            statusCode = 500
-            body = json.dumps({'Message': 'Date is not valid', 'Code': 400})
+        for stat in json_dynamodb.loads(statPlan['Items']):
+            dueDate = datetime.datetime.strptime(stat['DUE_DATE'], '%Y-%m-%d').strftime("%Y-%m-%d")
+            if dueDate > today.strftime("%Y-%m-%d") and stat['STATUS'] == 1:
+                statusPlan = stat['STATUS']
+                numberAppos = stat['AVAILABLE']
+
+        if statusPlan == 0:
+            statusCode = 404
+            body = json.dumps({'Message': 'Disabled plan', 'Data': result, 'Code': 400})
         else:
-            if phone != '0000000000':
-                # SEARCH FOR PHONE NUMBER
-                getPhone = dynamodb.query(
+            typeAppo = 0
+            code = ''
+            if numberAppos > 0:
+                typeAppo = 1
+            else:
+                #CITAS DISPONIBLES DE PAQUETES ADQUIRIDOS QUE VENCEN A FUTURO
+                avaiAppoPack = dynamodb.query(
                     TableName = "TuCita247",
                     ReturnConsumedCapacity = 'TOTAL',
-                    KeyConditionExpression = 'PKID = :phone',
+                    KeyConditionExpression = 'PKID = :businessId AND SKID BETWEEN :key and :fin',
                     ExpressionAttributeValues = {
-                        ':phone': {'S': 'MOB#' + phone}
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':key': {'S': 'PACK#' + dateIni},
+                        ':fin': {'S': 'PACK#' + dateFin}
                     }
                 )
-                for phoneNumber in json_dynamodb.loads(getPhone['Items']):
-                    existe = 1
-                    customerId = phoneNumber['SKID'].replace('CUS#','')
-                    name = (phoneNumber['NAME'] if name == "" else name)
-                    email = (phoneNumber['EMAIL'] if email == "" else email)
-                    dob = (phoneNumber['DOB'] if dob == "" else dob)
-                    gender = (phoneNumber['GENDER'] if gender == "" else gender)
-                    preference = (phoneNumber['PREFERENCES'] if preference == "" else preference)
-                    disability = (phoneNumber['DISABILITY'] if disability == "" else disability)
-            
-            recordset = {}
-            items = []
-            if existe == 0:
-                recordset = {
-                    "Put": {
-                        "TableName": "TuCita247",
-                        "Item": {
-                            "PKID": {"S": 'MOB#' + phone}, 
-                            "SKID": {"S": 'CUS#' + customerId}, 
-                            "STATUS": {"N": "1"}, 
-                            "NAME": {"S": name}, 
-                            "EMAIL": {"S":  email if email != '' else None },
-                            "DOB": {"S": dob if dob != '' else None },
-                            "DISABILITY": {"N": disability if disability != '' else None},
-                            "GENDER": {"S": gender if gender != '' else None},
-                            "PREFERENCES": {"N": str(preference) if str(preference) != '' else None},
-                            "GSI1PK": {"S": "CUS#" + customerId}, 
-                            "GSI1SK": {"S": "CUS#" + customerId}
-                        },
-                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                        }
-                    }
-                logger.info(cleanNullTerms(recordset))
-                items.append(cleanNullTerms(recordset))
+                for availablePlan in json_dynamodb.loads(avaiAppoPack['Items']):
+                    if availablePlan['AVAILABLE'] > 0:
+                        numberAppos = availablePlan['AVAILABLE']
+                        typeAppo = 2
+                        code = availablePlan['SKID']
+                        break
 
-                if phone != '0000000000':
-                    recordset = {
-                    "Put": {
-                        "TableName": "TuCita247",
-                        "Item": {
-                            "PKID": {"S": 'MOB#' + phone},
-                            "SKID": {"S": 'MOB#' + phone}
-                        },
-                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                        }
-                    }
-                    items.append(cleanNullTerms(recordset))
-            
-            appoId = str(uuid.uuid4()).replace("-","")
-            recordset = {}
-            recordset = {
-                "Put": {
-                    "TableName": "TuCita247",
-                    "Item": {
-                        "PKID": {"S": 'APPO#'+appoId}, 
-                        "SKID": {"S": 'APPO#'+appoId}, 
-                        "STATUS": {"N": "1" if status == 0 else str(status)}, 
-                        "NAME": {"S": name},
-                        "DATE_APPO": {"S": dateAppo},
-                        "PHONE": {"S": phone},
-                        "DOOR": {"S": door},
-                        "ON_BEHALF": {"N": "0"},
-                        "PEOPLE_QTY": {"N": str(guests) if str(guests) != '' else None},
-                        "DISABILITY": {"N": disability if disability != '' else None},
-                        "QRCODE": {"S": qrCode},
-                        "TYPE": {"N": "2"},
-                        "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
-                        "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-                        "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppo}, 
-                        "GSI2PK": {"S": 'CUS#' + customerId},
-                        "GSI2SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppo},
-                        "GSI4PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId if status == 3 else None},
-                        "GSI4SK": {"S": str(status) + "#DT#" + str(dateAppo) + "#" + appoId if status == 3 else None},
+            #SIN DISPONIBILIDAD DE CITAS
+            if numberAppos == 0:
+                statusCode = 404
+                body = json.dumps({'Message': 'No appointments available', 'Data': result, 'Code': 400})
+            else:
+                #ENTRA SI HAY CITAS DISPONIBLES YA SEA DE PLAN O PAQUETE VIGENTE
+                #GET OPERATION HOURS FROM SPECIFIC LOCATION
+                getCurrDate = dynamodb.query(
+                    TableName = "TuCita247",
+                    ReturnConsumedCapacity = 'TOTAL',
+                    KeyConditionExpression = 'PKID = :businessId and begins_with ( SKID , :key ) ',
+                    ExpressionAttributeValues = {
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':key': {'S': 'LOC#' + locationId}
                     },
-                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                    }
-                }
-            logger.info(cleanNullTerms(recordset))
-            items.append(cleanNullTerms(recordset))
+                    Limit = 1
+                )
+                for currDate in json_dynamodb.loads(getCurrDate['Items']):
+                    periods = []
+                    dayOffValid = True
 
-            if status == 3:
-                recordset = {
-                    "Update": {
-                        "TableName": "TuCita247",
-                        "Key": {
-                            "PKID": {"S": 'BUS#' + businessId}, 
-                            "SKID": {"S": 'LOC#' + locationId}, 
-                        },
-                        "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
-                        "ExpressionAttributeValues": { 
-                            ":increment": {"N": str(guests)}
-                        },
-                        "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                    }
-                }
-                items.append(recordset)
-            
-            logger.info(items)
-            response = dynamodb.transact_write_items(
-                TransactItems = items
-            )
-            appoInfo = {
-                'AppId': appoId,
-                'ClientId': customerId,
-                'Name': name,
-                'Phone': phone,
-                'OnBehalf': 0,
-                'Guests': 0 if guests == '' else int(guests),
-                'Door': door,
-                'Disability': 0 if disability == '' else int(disability),
-                'DateFull': dateAppo,
-                'DateAppo': str(int(today.strftime("%H"))-12).rjust(2,'0') + ':00 PM' if int(today.strftime("%H")) > 12 else today.strftime("%H").rjust(2,'0') + ':00 AM'
-            }
+                    opeHours = json.loads(currDate['OPERATIONHOURS'])
+                    numCustomer = currDate['CUSTOMER_PER_BUCKET']
+                    bucket = currDate['BUCKET_INTERVAL']
+                    daysOff = currDate['DAYS_OFF'].split(',') if 'DAYS_OFF' in currDate else []
+                    dateAppo = opeHours[dayName] if dayName in opeHours else ''
+                    if daysOff != []:
+                        dayOffValid = appoDate.strftime("%Y-%m-%d") not in daysOff
+                        if dayOffValid == False:
+                            statusCode = 500
+                            body = json.dumps({'Message': 'Day Off', 'Data': [], 'Code': 400})
+                            break
+                    
+                    #GET OPERATION HOURS FROM SPECIFIC LOCATION
+                    getCurrHours = dynamodb.query(
+                        TableName = "TuCita247",
+                        ReturnConsumedCapacity = 'TOTAL',
+                        KeyConditionExpression = 'PKID = :key',
+                        ExpressionAttributeValues = {
+                            ':key': {'S': 'LOC#' + locationId + '#DT#' + appoDate.strftime("%Y-%m-%d")}
+                        }
+                    )
+                    for row in json_dynamodb.loads(getCurrHours['Items']):
+                        recordset = {
+                            'Hour': row['SKID'].replace('HR#','').replace('-',':'),
+                            'Available': row['AVAILABLE']
+                        }
+                        hoursData.append(recordset)
 
-            statusCode = 200
-            body = json.dumps({'Message': 'Appointment added successfully', 'Code': 200, 'Appointment': appoInfo})
+                    validAppo = 0
+                    existe = 0
+                    for x in hoursData:
+                        if x['Hour'] == hourDate and int(x['Available']) > 0:
+                            existe = 1
+                            break
+
+                    for item in dateAppo:
+                        if existe == 1:
+                            break
+                        ini = Decimal(item['I'])
+                        fin = Decimal(item['F'])
+                        scale = 10
+                        for h in range(int(scale*ini), int(scale*fin), int(scale*bucket)):
+                            if (h/scale).is_integer():
+                                h = str(math.trunc(h/scale)).zfill(2) + ':00' 
+                            else:
+                                h = str(math.trunc(h/scale)).zfill(2) + ':30'
+                            available = numCustomer
+                            if int(available) > 0:
+                                if currHour != '':
+                                    if int(h.replace(':','')) > int(currHour.replace(':','')):
+                                        if hourDate == h:
+                                            validAppo = 1
+                                            break
+                                else:
+                                    if hourDate == h:
+                                        validAppo = 1
+                                        break
+                        if validAppo == 1:
+                            break
+                
+                #PROCEDE A GUARDAR LA CITA
+                if validAppo == 1:
+                    existePhone = 0
+                    if phone != '0000000000':
+                        # SEARCH FOR PHONE NUMBER
+                        getPhone = dynamodb.query(
+                            TableName = "TuCita247",
+                            ReturnConsumedCapacity = 'TOTAL',
+                            KeyConditionExpression = 'PKID = :phone',
+                            ExpressionAttributeValues = {
+                                ':phone': {'S': 'MOB#' + phone}
+                            }
+                        )
+                        for phoneNumber in json_dynamodb.loads(getPhone['Items']):
+                            existePhone = 1
+                            customerId = phoneNumber['SKID'].replace('CUS#','')
+                            name = (phoneNumber['NAME'] if name == "" else name)
+                            email = (phoneNumber['EMAIL'] if email == "" else email)
+                            dob = (phoneNumber['DOB'] if dob == "" else dob)
+                            gender = (phoneNumber['GENDER'] if gender == "" else gender)
+                            preference = (phoneNumber['PREFERENCES'] if preference == "" else preference)
+                            disability = (phoneNumber['DISABILITY'] if disability == "" else disability)
+
+                    recordset = {}
+                    items = []
+                    if existePhone == 0:
+                        recordset = {
+                            "Put": {
+                                "TableName": "TuCita247",
+                                "Item": {
+                                    "PKID": {"S": 'MOB#' + phone}, 
+                                    "SKID": {"S": 'CUS#' + customerId}, 
+                                    "STATUS": {"N": "1"}, 
+                                    "NAME": {"S": name}, 
+                                    "EMAIL": {"S":  email if email != '' else None },
+                                    "DOB": {"S": dob if dob != '' else None },
+                                    "DISABILITY": {"N": disability if disability != '' else None},
+                                    "GENDER": {"S": gender if gender != '' else None},
+                                    "PREFERENCES": {"N": str(preference) if str(preference) != '' else None},
+                                    "GSI1PK": {"S": "CUS#" + customerId}, 
+                                    "GSI1SK": {"S": "CUS#" + customerId}
+                                },
+                                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                                }
+                            }
+                        logger.info(cleanNullTerms(recordset))
+                        items.append(cleanNullTerms(recordset))
+
+                        if phone != '0000000000':
+                            recordset = {
+                            "Put": {
+                                "TableName": "TuCita247",
+                                "Item": {
+                                    "PKID": {"S": 'MOB#' + phone},
+                                    "SKID": {"S": 'MOB#' + phone}
+                                },
+                                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                                }
+                            }
+                            items.append(cleanNullTerms(recordset))
+                    
+                    appoId = str(uuid.uuid4()).replace("-","")
+                    recordset = {}
+                    recordset = {
+                        "Put": {
+                            "TableName": "TuCita247",
+                            "Item": {
+                                "PKID": {"S": 'APPO#'+appoId}, 
+                                "SKID": {"S": 'APPO#'+appoId}, 
+                                "STATUS": {"N": "1" if status == 0 else str(status)}, 
+                                "NAME": {"S": name},
+                                "DATE_APPO": {"S": dateAppo},
+                                "PHONE": {"S": phone},
+                                "DOOR": {"S": door},
+                                "ON_BEHALF": {"N": "0"},
+                                "PEOPLE_QTY": {"N": str(guests) if str(guests) != '' else None},
+                                "DISABILITY": {"N": disability if disability != '' else None},
+                                "QRCODE": {"S": qrCode},
+                                "PURPOSE": {"S": purpose if purpose != '' else None},
+                                "TYPE": {"N": "2" if qrCode == 'VALID' else "1"},
+                                "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
+                                "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
+                                "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppo}, 
+                                "GSI2PK": {"S": 'CUS#' + customerId},
+                                "GSI2SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppo},
+                                "GSI3PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#' + dateAppointment[0:10] if qrCode != 'VALID' else None}, 
+                                "GSI3SK": {"S": 'QR#' + qrCode if qrCode != 'VALID' else None},
+                                "GSI4PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId if status == 3 else None},
+                                "GSI4SK": {"S": str(status) + "#DT#" + str(dateAppo) + "#" + appoId if status == 3 else None},
+                            },
+                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                            }
+                        }
+                    logger.info(cleanNullTerms(recordset))
+                    items.append(cleanNullTerms(recordset))
+
+                    if qrCode != 'VALID':
+                        recordset = {
+                            "Put": {
+                                "TableName": "TuCita247",
+                                "Item": {
+                                    "PKID": {"S": 'LOC#' + locationId + '#' + dateAppointment[0:10] + '#' + qrCode}, 
+                                    "SKID": {"S": 'LOC#' + locationId + '#' + dateAppointment[0:10] + '#' + qrCode}
+                                },
+                                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                                }
+                            }
+                        logger.info(recordset)
+                        items.append(recordset)
+                    
+                    if typeAppo == 1:
+                        recordset = {
+                            "Update":{
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'BUS#' + businessId}, 
+                                    "SKID": {"S": 'PLAN'}, 
+                                },
+                                "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
+                                "ExpressionAttributeValues": { 
+                                    ":increment": {"N": str(1)},
+                                    ":nocero": {"N": str(0)}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE > :nocero",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                                }
+                            }
+                    else:
+                        recordset = {
+                            "Update":{
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'BUS#' + businessId}, 
+                                    "SKID": {"S": code}, 
+                                },
+                                "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
+                                "ExpressionAttributeValues": { 
+                                    ":increment": {"N": str(1)},
+                                    ":nocero": {"N": str(0)}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE > :nocero",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                                }
+                            }
+                    
+                    logger.info(recordset)
+                    items.append(recordset)
+
+                    if existe == 1:
+                        #update
+                        recordset = {
+                            "Update":{
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'LOC#' + locationId + '#DT#' + dateAppointment[0:10]}, 
+                                    "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}, 
+                                },
+                                "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
+                                "ExpressionAttributeValues": { 
+                                    ":increment": {"N": str(1)},
+                                    ":nocero": {"N": str(0)}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE > :nocero",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                                }
+                            }
+                    else:
+                        #put
+                        recordset = {
+                        "Put": {
+                            "TableName": "TuCita247",
+                            "Item": {
+                                "PKID": {"S": 'LOC#' + locationId + '#DT#' + dateAppointment[0:10]}, 
+                                "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
+                                "AVAILABLE": {"N": str(numCustomer-1)}
+                            },
+                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                            }
+                        }
+                    logger.info(recordset)
+                    items.append(recordset)
+
+                    if status == 3:
+                        recordset = {
+                            "Update": {
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'BUS#' + businessId}, 
+                                    "SKID": {"S": 'LOC#' + locationId}, 
+                                },
+                                "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
+                                "ExpressionAttributeValues": { 
+                                    ":increment": {"N": str(guests)}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                            }
+                        }
+                        items.append(recordset)
+                    
+                    logger.info(items)
+                    response = dynamodb.transact_write_items(
+                        TransactItems = items
+                    )
+                    appoInfo = {
+                        'AppId': appoId,
+                        'ClientId': customerId,
+                        'Name': name,
+                        'Phone': phone,
+                        'OnBehalf': 0,
+                        'Guests': 0 if guests == '' else int(guests),
+                        'Door': door,
+                        'Disability': 0 if disability == '' else int(disability),
+                        'DateFull': dateAppo,
+                        'DateAppo': str(int(today.strftime("%H"))-12).rjust(2,'0') + ':00 PM' if int(today.strftime("%H")) > 12 else today.strftime("%H").rjust(2,'0') + ':00 AM'
+                    }
+
+                    statusCode = 200
+                    body = json.dumps({'Message': 'Appointment added successfully', 'Code': 200, 'Appointment': appoInfo})
         
         if statusCode == '':
             statusCode = 500
