@@ -169,7 +169,6 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
        
-  #NUEVOS
   GetProfileFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -493,6 +492,20 @@ Resources:
             Method: post
             ApiId: !Ref HttpApi
 
+  GetVersionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetVersion
+      CodeUri: getVersion/
+      Handler: getVersion.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/version
+            Method: get
+            ApiId: !Ref HttpApi
 
 # CustomMessageFunction:
 #   Type: AWS::Serverless::Function

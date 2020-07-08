@@ -64,12 +64,6 @@ def lambda_handler(event, context):
         opeHours = ''
         daysOff = []
         dateAppo = '' 
-
-        # letters = string.ascii_uppercase
-        # qrCode = ''.join(random.choice(letters) for i in range(10))
-        # qrCode = random(10,99)
-
-        # if phone == '0000000000':
         qrCode = 'VALID'
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
