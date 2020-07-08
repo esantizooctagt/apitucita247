@@ -1468,6 +1468,8 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /purpose/{businessId}
+            Path: /appointment/purpose/{businessId}
             Method: get
             ApiId: !Ref HttpApi
+
+  
