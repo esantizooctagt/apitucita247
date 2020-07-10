@@ -241,7 +241,7 @@ def lambda_handler(event, context):
                                 "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
                                 "GSI1SK": {"S": '1#DT#' + dateAppointment}, 
                                 "GSI2PK": {"S": 'CUS#' + customerId},
-                                "GSI2SK": {"S": '1#DT#' + dateAppointment},
+                                "GSI2SK": {"S": dateAppointment[0:10]},
                                 "GSI3PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#' + dateAppointment[0:10]}, 
                                 "GSI3SK": {"S": 'QR#' + qrCode}
                             },

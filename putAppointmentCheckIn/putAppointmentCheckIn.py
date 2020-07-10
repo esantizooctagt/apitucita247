@@ -77,10 +77,11 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'APPO#' + appointmentId}, 
                     "SKID": {"S": 'APPO#' + appointmentId}
                 },
-                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty" + ("" if typeAppo != 2 else ", GSI4PK = :key4, GSI4SK = :skey4"), 
+                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty" + ("" if typeAppo != 2 else ", GSI4PK = :key4, GSI4SK = :skey4"), 
                 "ExpressionAttributeValues": {
                     ":status": {"N": "3"}, 
                     ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
+                    ":key2": {"S": '#5' if str(status) == '5' else str(dateAppo)[0:10]}, 
                     ":dateOpe": {"S": str(dateOpe)},
                     ":qrCode": {"S": qrCode},
                     ":key4": {"S": None if typeAppo != 2 else "BUS#" + businessId + "#LOC#" + locationId},

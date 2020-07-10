@@ -43,7 +43,13 @@ def lambda_handler(event, context):
                 Limit = 1
             )
             for loc in json_dynamodb.loads(location['Items']):
-                locAddress = loc['ADDRESS']
+                locAddress = loc['ADDRESS'] if 'ADDRESS' in loc else ''
+
+                NameLoc = loc['NAME'] if 'NAME' in loc else ''
+                Geolocation = loc['GEOLOCATION'] if 'GEOLOCATION' in loc else ''
+                Door = loc['DOORS'] if 'DOORS' in loc else ''
+                Status = loc['STATUS'] if 'STATUS' in loc else 0
+
                 locationId = loc['SKID'].replace('LOC#','')
                 businessId = loc['PKID'].replace('BUS#','')
 
@@ -57,16 +63,27 @@ def lambda_handler(event, context):
                 },
                 Limit = 1
             )
+            recordsetDet = {}
+            recordsetDet = {
+                'LocationId': locationId,
+                'Name': NameLoc,
+                'Address': locAddress,
+                'Geolocation': Geolocation,
+                'Status': Status,
+                'Door': Door,
+                'BusinessId': businessId
+            }
             recordset = {}
             for business in json_dynamodb.loads(business['Items']):
                 recordset = {
                     'Name': business['NAME'],
                     'Imagen': business['IMGBUSINESS'],
-                    'LongDescrip': business['LONGDESCRIPTION'],
-                    'ShortDescrip': business['SHORTDESCRIPTION'],
+                    'LongDescription': business['LONGDESCRIPTION'],
+                    'ShortDescription': business['SHORTDESCRIPTION'],
                     'Location': locAddress,
                     'LocationId': locationId,
-                    'BusinessId': businessId
+                    'BusinessId': businessId,
+                    'Locations': recordsetDet
                 }
                 records.append(recordset)
 

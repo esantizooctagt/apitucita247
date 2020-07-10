@@ -40,9 +40,9 @@ def lambda_handler(event, context):
                 'PKID': 'APPO#' + appointmentId,
                 'SKID': 'APPO#' + appointmentId
             },
-            UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key01, TIMECANCEL = :dateope",
+            UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, TIMECANCEL = :dateope",
             ExpressionAttributeNames=e,
-            ExpressionAttributeValues={':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe},
+            ExpressionAttributeValues={':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': '#5' if str(status) == '5' else str(dateAppo)[0:10],  ':dateope': dateOpe},
             ReturnValues="NONE"
         )
 

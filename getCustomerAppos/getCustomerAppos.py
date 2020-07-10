@@ -31,11 +31,10 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             IndexName="TuCita247_CustAppos",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI2PK = :customerId AND GSI2SK BETWEEN :dateHoy AND :excludeCancel',
+            KeyConditionExpression='GSI2PK = :customerId AND GSI2SK >= :dateHoy',
             ExpressionAttributeValues={
                 ':customerId': {'S': 'CUS#' + customerId},
-                ':dateHoy': {'S': '1#DT#' + dateHoy},
-                ':excludeCancel': {'S': '5#'}
+                ':dateHoy': {'S': '1#DT#' + dateHoy}
             }
         )
         recordset = {}

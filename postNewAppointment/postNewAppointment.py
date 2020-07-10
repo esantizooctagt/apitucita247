@@ -7,9 +7,6 @@ import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
-# import string
-# import random
-
 from decimal import *
 
 import datetime
@@ -54,14 +51,14 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         businessId = data['BusinessId']
         locationId = data['LocationId']
-        door = data['Door']
+        door = data['Door'] if 'Door' in data else ''
         phone = data['Phone']
         name = data['Name']
-        email = data['Email']
-        dob = data['DOB']
-        gender = data['Gender']
-        preference = data['Preference']
-        disability = data['Disability']
+        email = data['Email'] if 'Email' in data else ''
+        dob = data['DOB'] if 'DOB' in data else ''
+        gender = data['Gender'] if 'Gender' in data else ''
+        preference = data['Preference'] if 'Preference' in data else ''
+        disability = data['Disability'] if 'Disability' in data else ''
         guests = data['Guests']
         customerId = str(uuid.uuid4()).replace("-","")
         status = data['Status'] if 'Status' in data else 0
@@ -77,9 +74,9 @@ def lambda_handler(event, context):
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
-        dayName = today.strftime("%A")[0:3].upper()
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
+        dayName = appoDate.strftime("%A")[0:3].upper()
         dateIni= today.strftime("%Y-%m-%d")
         dateFin = today + datetime.timedelta(days=90)
         dateFin = dateFin.strftime("%Y-%m-%d")
@@ -90,6 +87,7 @@ def lambda_handler(event, context):
         hoursData = []
         hours = []
         currHour = ''
+        statusCode = ''
 
         if appoDate.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
             currHour = today.strftime("%H:%M")
@@ -234,7 +232,7 @@ def lambda_handler(event, context):
                 #PROCEDE A GUARDAR LA CITA
                 if validAppo == 1:
                     existePhone = 0
-                    if phone != '0000000000':
+                    if phone != '00000000000':
                         # SEARCH FOR PHONE NUMBER
                         getPhone = dynamodb.query(
                             TableName = "TuCita247",
@@ -248,11 +246,11 @@ def lambda_handler(event, context):
                             existePhone = 1
                             customerId = phoneNumber['SKID'].replace('CUS#','')
                             name = (phoneNumber['NAME'] if name == "" else name)
-                            email = (phoneNumber['EMAIL'] if email == "" else email)
-                            dob = (phoneNumber['DOB'] if dob == "" else dob)
-                            gender = (phoneNumber['GENDER'] if gender == "" else gender)
-                            preference = (phoneNumber['PREFERENCES'] if preference == "" else preference)
-                            disability = (phoneNumber['DISABILITY'] if disability == "" else disability)
+                            email = (phoneNumber['EMAIL'] if 'EMAIL' in phoneNumber and email == '' else email)
+                            dob = (phoneNumber['DOB'] if 'DOB' in phoneNumber and dob == '' else dob)
+                            gender = (phoneNumber['GENDER'] if 'GENDER' in phoneNumber and gender == '' else gender)
+                            preference = (phoneNumber['PREFERENCES'] if 'PREFERENCES' in phoneNumber and preference == '' else preference)
+                            disability = (phoneNumber['DISABILITY'] if 'DISABILITY' in phoneNumber and disability == '' else disability)
 
                     recordset = {}
                     items = []
@@ -280,7 +278,7 @@ def lambda_handler(event, context):
                         logger.info(cleanNullTerms(recordset))
                         items.append(cleanNullTerms(recordset))
 
-                        if phone != '0000000000':
+                        if phone != '00000000000':
                             recordset = {
                             "Put": {
                                 "TableName": "TuCita247",
@@ -304,24 +302,24 @@ def lambda_handler(event, context):
                                 "SKID": {"S": 'APPO#'+appoId}, 
                                 "STATUS": {"N": "1" if status == 0 else str(status)}, 
                                 "NAME": {"S": name},
-                                "DATE_APPO": {"S": dateAppo},
+                                "DATE_APPO": {"S": dateAppointment},
                                 "PHONE": {"S": phone},
                                 "DOOR": {"S": door},
                                 "ON_BEHALF": {"N": "0"},
                                 "PEOPLE_QTY": {"N": str(guests) if str(guests) != '' else None},
-                                "DISABILITY": {"N": disability if disability != '' else None},
+                                "DISABILITY": {"N": str(disability) if str(disability) != '' else None},
                                 "QRCODE": {"S": qrCode},
                                 "PURPOSE": {"S": purpose if purpose != '' else None},
                                 "TYPE": {"N": "2" if qrCode == 'VALID' else "1"},
                                 "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
                                 "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-                                "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppo}, 
+                                "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment}, 
                                 "GSI2PK": {"S": 'CUS#' + customerId},
-                                "GSI2SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppo},
+                                "GSI2SK": {"S": '5#' if str(status) == '5' else dateAppointment[0:10]},
                                 "GSI3PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#' + dateAppointment[0:10] if qrCode != 'VALID' else None}, 
                                 "GSI3SK": {"S": 'QR#' + qrCode if qrCode != 'VALID' else None},
                                 "GSI4PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId if status == 3 else None},
-                                "GSI4SK": {"S": str(status) + "#DT#" + str(dateAppo) + "#" + appoId if status == 3 else None},
+                                "GSI4SK": {"S": str(status) + "#DT#" + str(dateAppointment) + "#" + appoId if status == 3 else None},
                             },
                             "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -449,7 +447,7 @@ def lambda_handler(event, context):
                         'Guests': 0 if guests == '' else int(guests),
                         'Door': door,
                         'Disability': 0 if disability == '' else int(disability),
-                        'DateFull': dateAppo,
+                        'DateFull': dateAppointment,
                         'DateAppo': str(int(today.strftime("%H"))-12).rjust(2,'0') + ':00 PM' if int(today.strftime("%H")) > 12 else today.strftime("%H").rjust(2,'0') + ':00 AM'
                     }
 

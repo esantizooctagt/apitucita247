@@ -90,10 +90,11 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'APPO#' + appo['AppointmentId']}, 
                         "SKID": {"S": 'APPO#' + appo['AppointmentId']}
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKOUT = :dateOpe REMOVE GSI4PK, GSI4SK", 
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKOUT = :dateOpe REMOVE GSI4PK, GSI4SK", 
                     "ExpressionAttributeValues": {
                         ":status": {"N": str(status)}, 
                         ":key": {"S": str(status) + '#DT#' + str(appo['DateAppo'])}, 
+                        ":key2": {"S": '#5' if str(status) == '5' else str(appo['DateAppo'])[0:10]}, 
                         ":dateOpe": {"S": str(dateOpe)}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS'},

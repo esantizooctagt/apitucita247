@@ -53,7 +53,8 @@ def lambda_handler(event, context):
                     'Name': row['NAME'],
                     'Active': 0 if roleId == '0' else 1,
                     'Icon': row['ICON'],
-                    'Route': row['ROUTE']
+                    'Route': row['ROUTE'],
+                    'OrderApp': row['ORDERAPP']
                 }
                 records.append(recordset)
         else:
@@ -84,7 +85,8 @@ def lambda_handler(event, context):
                         'ApplicationId': apps['SKID'],
                         'Name': apps['NAME'],
                         'Level_Access': '0',
-                        'Active': '0'
+                        'Active': '0',
+                        'OrderApp': apps['ORDERAPP']
                     }
                     records.append(recordset)
                     
@@ -95,7 +97,8 @@ def lambda_handler(event, context):
                         'Name': apps['NAME'],
                         'Level_Access': str(items['LEVEL_ACCESS']),
                         'Active': '1',
-                        'Route': apps['ROUTE']
+                        'Route': apps['ROUTE'],
+                        'OrderApp': apps['ORDERAPP']
                     }
                     records.append(recordset)
  

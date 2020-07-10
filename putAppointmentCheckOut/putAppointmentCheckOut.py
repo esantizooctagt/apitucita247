@@ -106,10 +106,11 @@ def lambda_handler(event, context):
                         "PKID": {"S": appointmentId}, 
                         "SKID": {"S": appointmentId}
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key, TIMECHECKOUT = :dateOpe", 
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKOUT = :dateOpe", 
                     "ExpressionAttributeValues": {
                         ":status": {"N": str(status)}, 
                         ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
+                        ":key2": {"S": '#5' if str(status) == '5' else str(dateAppo)[0:10]},
                         ":dateOpe": {"S": str(dateOpe)},
                         ":qrCode": {"S": qrCode}
                     },

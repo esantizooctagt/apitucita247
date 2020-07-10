@@ -50,16 +50,16 @@ def lambda_handler(event, context):
         table = dynamodb.Table('TuCita247')
         e = {'#s': 'STATUS'}
         if reasonId != '':
-            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':reason': reasonId, ':dateope': dateOpe}
+            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': '#5' if str(status) == '5' else str(dateAppo)[0:10], ':reason': reasonId, ':dateope': dateOpe}
         else:
-            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
+            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': '#5' if str(status) == '5' else str(dateAppo)[0:10], ':dateope': dateOpe}
         
         response = table.update_item(
             Key={
                 'PKID': 'APPO#' + appointmentId,
                 'SKID': 'APPO#' + appointmentId
             },
-            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key01" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", TIMECANCEL = :dateope" if str(status) == "5" else "") + (", REASONID = :reason" if reasonId != "" else ""),
+            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key02" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", TIMECANCEL = :dateope" if str(status) == "5" else "") + (", REASONID = :reason" if reasonId != "" else ""),
             ExpressionAttributeNames=e,
             ExpressionAttributeValues=v,
             ReturnValues="UPDATED_NEW"
