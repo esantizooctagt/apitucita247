@@ -88,13 +88,22 @@ def lambda_handler(event, context):
             userName = datos['GSI1PK'].replace('EMAIL#','')
         
         client = boto3.client('cognito-idp')
-        client.confirm_forgot_password(
-            ClientId='52k0o8239mueu31uu5fihccbbf',
-            SecretHash=get_secret_hash(userName),
-            Username=userName,
-            ConfirmationCode=code,
-            Password=passDecrypt.decode('utf-8'),
-           )
+        if int(code) != 0:
+            client.confirm_forgot_password(
+                ClientId='52k0o8239mueu31uu5fihccbbf',
+                SecretHash=get_secret_hash(userName),
+                Username=userName,
+                ConfirmationCode=code,
+                Password=passDecrypt.decode('utf-8'),
+            )
+        else:
+            response = client.admin_set_user_password(
+                UserPoolId='us-east-1_gXhBD4bsG',
+                Username=userName,
+                Password=passDecrypt.decode('utf-8'),
+                Permanent=True
+            )
+
         statusCode = 200
         body = json.dumps({"Message": "Password change successfully", "Code": 200})
            

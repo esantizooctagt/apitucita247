@@ -582,6 +582,27 @@ Resources:
             Path: /appointments/{businessId}/{locationId}/{dateAppoIni}/{dateAppoFin}/{status}/{type}/{lastItem}/{appoId}
             Method: get
             ApiId: !Ref HttpApi
+    
+  GetAppointmentsScheFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAppointmentsSche
+      CodeUri: getAppointmentsSche/
+      Handler: getAppointmentsSche.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /appointments/{businessId}/{locationId}/{dateAppoIni}
+            Method: get
+            ApiId: !Ref HttpApi
 
   PutAppointmentsHostFunction:
     Type: AWS::Serverless::Function
@@ -1493,3 +1514,22 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
   
+  PostBusinessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostBusiness
+      CodeUri: postBusiness/
+      Handler: postBusiness.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /business
+            Method: post
+            ApiId: !Ref HttpApi
