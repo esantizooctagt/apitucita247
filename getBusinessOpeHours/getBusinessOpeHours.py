@@ -34,6 +34,7 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
+        serviceId = event['pathParameters']['serviceId']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -42,10 +43,10 @@ def lambda_handler(event, context):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :location )',
+            KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
             ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId},
-                ':location': {'S': 'LOC#'}
+                ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
+                ':serviceId': {'S': 'SER#' + serviceId}
             }
         )
 

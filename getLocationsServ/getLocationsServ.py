@@ -23,37 +23,36 @@ def lambda_handler(event, context):
         cors = os.environ['prodCors']
     else:
         cors = os.environ['devCors']
-        
+
     try:
-        initDate = event['pathParameters']['initDate']
+        statusCode = ''
+        businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        serviceId = event['pathParameters']['serviceId']
-        
+
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :key01 AND begins_with( SKID , :date )',
+            KeyConditionExpression='PKID = :key01 AND begins_with( SKID , :services )',
             ExpressionAttributeValues={
-                ':key01': {'S': 'LOC#' + locationId + '#SER#' + serviceId + '#DT#' + initDate[0:7]},
-                ':date': {'S': 'DT#' + initDate[0:7]}
+                ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
+                ':services': {'S': 'SER#'}
             }
         )
-        record = []
-        for det in json_dynamodb.loads(response['Items']):
+        recordset = {}
+        services = []
+        for row in json_dynamodb.loads(response['Items']):
             recordset = {
-                'Qty': det['QTY_APPOS'],
-                'Average': det['TIME_APPO']/det['QTY_APPOS'],
-                'DateAppo': det['SKID'].replace('DT#','')
+                'ServiceId': row['SKID'].replace('SER#',''),
+                'Name': row['NAME']
             }
-            record.append(recordset)
+            services.append(recordset)
         
-        locData = {
-            'Code': 200,
-            'Data': record
-        }
-
         statusCode = 200
-        body = json.dumps(locData)
+        body = json.dumps({'Code': 200, 'Services': services})
+    
+        if statusCode == '':
+            statusCode = 500
+            body = json.dumps({'Code': 500, 'Message': 'Error on load locations by user'})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})
@@ -66,4 +65,5 @@ def lambda_handler(event, context):
         },
         'body' : body
     }
+    
     return response

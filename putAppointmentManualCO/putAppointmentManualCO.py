@@ -17,7 +17,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -31,18 +31,46 @@ def lambda_handler(event, context):
         statusCode = ''
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
+        serviceId = event['pathParameters']['serviceId']
         qty = int(event['pathParameters']['qtyGuests'])
 
-        table = dynamodb.Table('TuCita247')
-        response = table.update_item(
-            Key={
-                'PKID': 'BUS#' + businessId,
-                'SKID': 'LOC#' + locationId
-            },
-            UpdateExpression="SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
-            ExpressionAttributeValues={':increment': qty},
-            ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)",
-            ReturnValues="NONE"
+        items = []
+        recordset = {
+            "Update": {
+                "TableName": "TuCita247",
+                "Key": {
+                    "PKID": {"S": 'BUS#' + businessId}, 
+                    "SKID": {"S": 'LOC#' + locationId}, 
+                },
+                "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
+                "ExpressionAttributeValues": { 
+                    ":increment": {"N": str(qty)}
+                },
+                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+            }
+        }
+        items.append(recordset)
+
+        recordset = {
+            "Update": {
+                "TableName": "TuCita247",
+                "Key": {
+                    "PKID": {"S": 'BUS#' + businessId + '#' + locationId}, 
+                    "SKID": {"S": 'SER#' + serviceId}, 
+                },
+                "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
+                "ExpressionAttributeValues": { 
+                    ":increment": {"N": str(qty)}
+                },
+                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+            }
+        }
+        items.append(recordset)
+
+        tranAppo = dynamodb.transact_write_items(
+            TransactItems = items
         )
             
         statusCode = 200

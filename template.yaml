@@ -747,7 +747,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/opehours/{businessId}/{locationId}
+            Path: /business/opehours/{businessId}/{locationId}/{serviceId}
             Method: get
             ApiId: !Ref HttpApi
   
@@ -894,7 +894,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/open/{id}/{businessId}
+            Path: /location/open/{id}/{businessId}/{serviceId}
             Method: put
             ApiId: !Ref HttpApi
           
@@ -915,7 +915,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/closed/{id}/{businessId}
+            Path: /location/closed/{id}/{businessId}/{serviceId}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -1448,7 +1448,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /appointments/average/{locationId}/{initDate}
+            Path: /appointments/average/{locationId}/{serviceId}/{initDate}
             Method: get
             ApiId: !Ref HttpApi
   
@@ -1532,4 +1532,25 @@ Resources:
           Properties:
             Path: /business
             Method: post
+            ApiId: !Ref HttpApi
+
+  GetLocationsServFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetLocationsServ
+      CodeUri: getLocationsServ/
+      Handler: getLocationsServ.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /host/{businessId}/{locationId}
+            Method: get
             ApiId: !Ref HttpApi

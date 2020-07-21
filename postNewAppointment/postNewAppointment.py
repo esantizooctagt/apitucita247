@@ -60,6 +60,7 @@ def lambda_handler(event, context):
         preference = data['Preference'] if 'Preference' in data else ''
         disability = data['Disability'] if 'Disability' in data else ''
         guests = data['Guests']
+        serviceId = data['ServiceId']
         customerId = str(uuid.uuid4()).replace("-","")
         status = data['Status'] if 'Status' in data else 0
         purpose = data['Purpose'] if 'Purpose' in data else ''
@@ -160,8 +161,8 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity = 'TOTAL',
                     KeyConditionExpression = 'PKID = :businessId and begins_with ( SKID , :key ) ',
                     ExpressionAttributeValues = {
-                        ':businessId': {'S': 'BUS#' + businessId},
-                        ':key': {'S': 'LOC#' + locationId}
+                        ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
+                        ':key': {'S': 'SER#' + serviceId}
                     },
                     Limit = 1
                 )
@@ -187,7 +188,7 @@ def lambda_handler(event, context):
                         ReturnConsumedCapacity = 'TOTAL',
                         KeyConditionExpression = 'PKID = :key',
                         ExpressionAttributeValues = {
-                            ':key': {'S': 'LOC#' + locationId + '#DT#' + appoDate.strftime("%Y-%m-%d")}
+                            ':key': {'S': 'LOC#' + locationId + '#SER#' + serviceId + '#DT#' + appoDate.strftime("%Y-%m-%d")}
                         }
                     )
                     for row in json_dynamodb.loads(getCurrHours['Items']):
@@ -312,7 +313,7 @@ def lambda_handler(event, context):
                                 "PURPOSE": {"S": purpose if purpose != '' else None},
                                 "TYPE": {"N": "2" if qrCode == 'VALID' else "1"},
                                 "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
-                                "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
+                                "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId}, 
                                 "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment}, 
                                 "GSI2PK": {"S": 'CUS#' + customerId},
                                 "GSI2SK": {"S": '5#' if str(status) == '5' else dateAppointment[0:10]},
@@ -387,7 +388,7 @@ def lambda_handler(event, context):
                             "Update":{
                                 "TableName": "TuCita247",
                                 "Key": {
-                                    "PKID": {"S": 'LOC#' + locationId + '#DT#' + dateAppointment[0:10]}, 
+                                    "PKID": {"S": 'LOC#' + locationId + '#SER#' + serviceId + '#DT#' + dateAppointment[0:10]}, 
                                     "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}, 
                                 },
                                 "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
@@ -405,7 +406,7 @@ def lambda_handler(event, context):
                         "Put": {
                             "TableName": "TuCita247",
                             "Item": {
-                                "PKID": {"S": 'LOC#' + locationId + '#DT#' + dateAppointment[0:10]}, 
+                                "PKID": {"S": 'LOC#' + locationId + '#SER#' + serviceId + '#DT#' + dateAppointment[0:10]}, 
                                 "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
                                 "AVAILABLE": {"N": str(numCustomer-1)}
                             },
@@ -423,6 +424,23 @@ def lambda_handler(event, context):
                                 "Key": {
                                     "PKID": {"S": 'BUS#' + businessId}, 
                                     "SKID": {"S": 'LOC#' + locationId}, 
+                                },
+                                "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
+                                "ExpressionAttributeValues": { 
+                                    ":increment": {"N": str(guests)}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                            }
+                        }
+                        items.append(recordset)
+
+                        recordset = {
+                            "Update": {
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'BUS#' + businessId + '#' + locationId}, 
+                                    "SKID": {"S": 'SER#' + serviceId}, 
                                 },
                                 "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
                                 "ExpressionAttributeValues": { 

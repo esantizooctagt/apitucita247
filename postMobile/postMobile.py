@@ -53,7 +53,7 @@ def lambda_handler(event, context):
                 'DOB': item['DOB'] if 'DOB' in item else '',
                 'Mobile': to_number
             }
-            if item['SKID'] != '':
+            if item['SKID'] != '' and playerId != '':
                 dynamodb.update_item(
                     TableName='TuCita247',
                     Key={

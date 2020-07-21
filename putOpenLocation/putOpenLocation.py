@@ -33,6 +33,7 @@ def lambda_handler(event, context):
         statusCode = ''
         locationId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
+        serviceId = event['pathParameters']['serviceId']
         
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -41,8 +42,8 @@ def lambda_handler(event, context):
         table = dynamodb.Table('TuCita247')
         response = table.update_item(
             Key={
-                'PKID': 'BUS#' + businessId,
-                'SKID': 'LOC#' + locationId
+                'PKID': 'BUS#' + businessId + '#' + locationId,
+                'SKID': 'SER#' + serviceId
             },
             UpdateExpression="SET OPEN_DATE = :actualDate, PEOPLE_CHECK_IN = :qty, #o = :open", #, CLOSED_DATE = :closed
             ExpressionAttributeValues= {':actualDate': dateOpe, ':qty': 0, ':open': 1, ':initVal': 0}, #, ':open': 1, ':closed': '',
@@ -52,7 +53,7 @@ def lambda_handler(event, context):
         )
 
         statusCode = 200
-        body = json.dumps({'Message': 'Location opened successfully', 'Code': 200, 'Business': json_dynamodb.loads(response['Attributes'])})
+        body = json.dumps({'Message': 'Service opened successfully', 'Code': 200, 'Business': json_dynamodb.loads(response['Attributes'])})
 
         logger.info(response)
         if statusCode == '':

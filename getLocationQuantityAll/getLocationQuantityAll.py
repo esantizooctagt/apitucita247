@@ -58,21 +58,37 @@ def lambda_handler(event, context):
 
         qtyPeople = 0
         totLocation = 0
-        item = []
-        locations = json_dynamodb.loads(response['Items'])
-        for row in locations:
-            recordset = {
-                'Quantity': row['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in row else 0,
-                'TotLocation': row['MAX_CUSTOMER'] if 'MAX_CUSTOMER' in row else 0,
-                'PerLocation': ((row['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in row else 0)/(row['MAX_CUSTOMER'] if 'MAX_CUSTOMER' in row else 0))*100,
+        data = []
+        for row in json_dynamodb.loads(response['Items']):
+            items = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :key01',
+                ExpressionAttributeValues={
+                    ':key01': {'S': 'BUS#' + businessId + '#' + row['SKID'].replace('LOC#','')}
+                }
+            )
+            services = []
+            for item in json_dynamodb.loads(items['Items']):
+                recordset = {
+                    'Quantity': item['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in item else 0,
+                    'TotLocation': row['MAX_CUSTOMER'] if 'MAX_CUSTOMER' in row else 0,
+                    'PerLocation': ((row['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in row else 0)/(row['MAX_CUSTOMER'] if 'MAX_CUSTOMER' in row else 0))*100,
+                    'ServiceId': item['SKID'].replace('SER#',''),
+                    'Name': item['NAME']
+                }
+                services.append(recordset)
+            
+            record = {
                 'Name': row['NAME'],
-                'LocationId': row['SKID'].replace('CUS#','')
+                'LocationId': row['SKID'].replace('CUS#',''),
+                'Services': services
             }
-            item.append(recordset)
+            data.append(record)
 
         resultSet = { 
             'Code': 200,
-            'Data': item
+            'Data': data
         }
         statusCode = 200
         body = json.dumps(resultSet)
