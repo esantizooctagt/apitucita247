@@ -52,6 +52,18 @@ def lambda_handler(event, context):
             ReturnValues="UPDATED_NEW"
         )
 
+        response = table.update_item(
+            Key={
+                'PKID': 'BUS#' + businessId,
+                'SKID': 'LOC#' + locationId
+            },
+            UpdateExpression="SET PEOPLE_CHECK_IN = :qty, OPEN_DATE = :closed, #o = :open", 
+            ExpressionAttributeValues= {':qty': 0, ':closed': '', ':initVal': 1, ':open': 0},
+            ExpressionAttributeNames={'#o': 'OPEN'},
+            ConditionExpression='#o = :initVal',
+            ReturnValues="UPDATED_NEW"
+        )
+
         statusCode = 200
         body = json.dumps({'Message': 'Service closed successfully', 'Code': 200, 'Business': json_dynamodb.loads(response['Attributes'])})
 

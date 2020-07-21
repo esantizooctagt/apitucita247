@@ -28,6 +28,7 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
+        serviceId = event['pathParameters']['serviceId']
         dateAppoIni = event['pathParameters']['dateAppoIni']
         dateAppoFin = event['pathParameters']['dateAppoFin']
         status = event['pathParameters']['status']
@@ -48,7 +49,7 @@ def lambda_handler(event, context):
                     ExpressionAttributeNames=n,
                     FilterExpression=f,
                     ExpressionAttributeValues={
-                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId},
                         ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
                         ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
                         ':type': {'N': str(typeAppo)}
@@ -62,14 +63,14 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
                     ExpressionAttributeValues={
-                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId},
                         ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
                         ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
                     },
                     Limit = 30
                 )
         else:
-            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
+            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
             if typeAppo != '_':
                 n = {'#t': 'TYPE'}
                 f = '#t = :type'
@@ -82,7 +83,7 @@ def lambda_handler(event, context):
                     FilterExpression=f,
                     ExpressionAttributeNames=n,
                     ExpressionAttributeValues={
-                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId},
                         ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
                         ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
                         ':type': {'N': str(typeAppo)}
@@ -97,7 +98,7 @@ def lambda_handler(event, context):
                     ExclusiveStartKey= lastItem,
                     KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
                     ExpressionAttributeValues={
-                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId},
                         ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
                         ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
                     },
@@ -110,6 +111,7 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': businessId,
                 'LocationId': locationId,
+                'ServiceId': serviceId,
                 'AppointmentId': row['PKID'].replace('APPO#',''),
                 'ClientId': row['GSI2PK'].replace('CUS#',''),
                 'Name': row['NAME'],
