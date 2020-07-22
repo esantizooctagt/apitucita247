@@ -604,7 +604,7 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
 
-  PutAppointmentsHostFunction:
+  PutAppointmentFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: PutAppointment
@@ -614,6 +614,7 @@ Resources:
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:requests:7
       VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
@@ -925,10 +926,11 @@ Resources:
       FunctionName: PutAppointmentCheckOut
       CodeUri: putAppointmentCheckOut/
       Handler: putAppointmentCheckOut.lambda_handler
-      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Role: arn:aws:iam::821843840552:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:requests:7
       VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
@@ -977,7 +979,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointment/checkout/manual/{businessId}/{locationId}/{qtyGuests}
+            Path: /appointment/checkout/manual/{businessId}/{locationId}/{serviceId}/{qtyGuests}
             Method: put
             ApiId: !Ref HttpApi
 

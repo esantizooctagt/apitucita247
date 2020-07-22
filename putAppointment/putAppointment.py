@@ -23,7 +23,7 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 dynamodbQuery = boto3.client('dynamodb', region_name='us-east-1')
 sms = boto3.client('sns')
-email = boto3.client('ses',region_name=REGION)
+ses = boto3.client('ses',region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -50,9 +50,9 @@ def lambda_handler(event, context):
         table = dynamodb.Table('TuCita247')
         e = {'#s': 'STATUS'}
         if reasonId != '':
-            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': '#5' if str(status) == '5' else str(dateAppo)[0:10], ':reason': reasonId, ':dateope': dateOpe}
+            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': '#5', ':reason': reasonId, ':dateope': dateOpe}
         else:
-            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': '#5' if str(status) == '5' else str(dateAppo)[0:10], ':dateope': dateOpe}
+            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
         
         response = table.update_item(
             Key={
@@ -124,7 +124,7 @@ def lambda_handler(event, context):
 
                 CHARSET = "UTF-8"
 
-                response = email.send_email(
+                response = ses.send_email(
                     Destination={
                         'ToAddresses': [
                             RECIPIENT,

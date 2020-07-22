@@ -28,6 +28,7 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
+        serviceId = event['pathParameters']['serviceId']
         dateAppoIni = event['pathParameters']['dateAppoIni']
 
         response = dynamodb.query(
@@ -36,7 +37,7 @@ def lambda_handler(event, context):
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK = :gsi1sk_ini',
             ExpressionAttributeValues={
-                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId},
                 ':gsi1sk_ini': {'S': '1#DT#' + dateAppoIni}
             }
         )
@@ -47,6 +48,7 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': businessId,
                 'LocationId': locationId,
+                'ServiceId': serviceId,
                 'AppointmentId': row['PKID'].replace('APPO#',''),
                 'ClientId': row['GSI2PK'].replace('CUS#',''),
                 'Name': row['NAME'],
@@ -75,7 +77,7 @@ def lambda_handler(event, context):
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK = :gsi1sk_ini',
                 ExpressionAttributeValues={
-                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId},
                     ':gsi1sk_ini': {'S': '1#DT#' + dateAppoIni}
                 }
             )
@@ -84,6 +86,7 @@ def lambda_handler(event, context):
                 recordset = {
                     'BusinessId': businessId,
                     'LocationId': locationId,
+                    'ServiceId': serviceId,
                     'AppointmentId': row['PKID'].replace('APPO#',''),
                     'ClientId': row['GSI2PK'].replace('CUS#',''),
                     'Name': row['NAME'],
