@@ -46,9 +46,8 @@ def lambda_handler(event, context):
         )
 
         qtyPeople = 0
-        locations = json_dynamodb.loads(response['Items'])
-        for row in locations:
-            qtyPeople = row['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in row else []
+        for row in json_dynamodb.loads(response['Items']):
+            qtyPeople = row['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in row else 0
 
         resultSet = { 
             'Code': 200,

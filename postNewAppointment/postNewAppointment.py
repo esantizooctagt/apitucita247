@@ -92,7 +92,7 @@ def lambda_handler(event, context):
 
         if appoDate.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
             currHour = today.strftime("%H:%M")
-            if int(currHour.replace(':','')) > int(hourDate.replace(':','')):
+            if int(currHour.replace(':','')[0:2]) > int(hourDate.replace(':','')[0:2]):
                 statusCode = 404
                 body = json.dumps({'Message': 'Hour not available', 'Data': result, 'Code': 400})
                 response = {
@@ -159,7 +159,7 @@ def lambda_handler(event, context):
                 getCurrDate = dynamodb.query(
                     TableName = "TuCita247",
                     ReturnConsumedCapacity = 'TOTAL',
-                    KeyConditionExpression = 'PKID = :businessId and begins_with ( SKID , :key ) ',
+                    KeyConditionExpression = 'PKID = :businessId and SKID = :key',
                     ExpressionAttributeValues = {
                         ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
                         ':key': {'S': 'SER#' + serviceId}
