@@ -38,16 +38,16 @@ def lambda_handler(event, context):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
+            KeyConditionExpression='PKID = :businessId AND begins_with( SKID, :locationId)',
             ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId},
-                ':locationId': {'S': 'LOC#' + locationId}
+                ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
+                ':locationId': {'S': 'SER#'}
             }
         )
 
         qtyPeople = 0
         for row in json_dynamodb.loads(response['Items']):
-            qtyPeople = row['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in row else 0
+            qtyPeople = qtyPeople + (row['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in row else 0)
 
         resultSet = { 
             'Code': 200,
