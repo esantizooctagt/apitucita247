@@ -3,7 +3,8 @@ import logging
 import json
 
 import boto3
-import botocore.exceptions
+import botocore.exceptions 
+from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
@@ -66,12 +67,13 @@ def lambda_handler(event, context):
         purpose = data['Purpose'] if 'Purpose' in data else ''
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%Y-%m-%d') if 'AppoDate' in data else ''
         hourDate = data['AppoHour'] if 'AppoHour' in data else ''
+        typeCita = data['Type'] if 'Type' in data else ''
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
         existe = 0
         opeHours = ''
         daysOff = []
         dateAppo = '' 
-        qrCode = 'VALID' if appoDate == '' else ''.join(random.choice(letters) for i in range(6))
+        qrCode = 'VALID' if typeCita == 2 else ''.join(random.choice(letters) for i in range(6))
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -200,13 +202,20 @@ def lambda_handler(event, context):
 
                     validAppo = 0
                     existe = 0
+                    notAvailable = 0
                     for x in hoursData:
                         if x['Hour'] == hourDate and int(x['Available']) > 0:
+                            validAppo = 1
                             existe = 1
+                            break
+                        if x['Hour'] == hourDate and int(x['Available']) == 0:
+                            notAvailable = 1
                             break
 
                     for item in dateAppo:
                         if existe == 1:
+                            break
+                        if notAvailable == 1:
                             break
                         ini = Decimal(item['I'])
                         fin = Decimal(item['F'])
@@ -218,15 +227,9 @@ def lambda_handler(event, context):
                                 h = str(math.trunc(h/scale)).zfill(2) + ':30'
                             available = numCustomer
                             if int(available) > 0:
-                                if currHour != '':
-                                    if int(h.replace(':','')) > int(currHour.replace(':','')):
-                                        if hourDate == h:
-                                            validAppo = 1
-                                            break
-                                else:
-                                    if hourDate == h:
-                                        validAppo = 1
-                                        break
+                                if int(h.replace(':','')) == int(hourDate.replace(':','')):
+                                    validAppo = 1
+                                    break
                         if validAppo == 1:
                             break
                 
@@ -316,7 +319,7 @@ def lambda_handler(event, context):
                                 "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId}, 
                                 "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment}, 
                                 "GSI2PK": {"S": 'CUS#' + customerId},
-                                "GSI2SK": {"S": '5#' if str(status) == '5' else dateAppointment[0:10]},
+                                "GSI2SK": {"S": '5#' if str(status) == '5' else str(status) + '#DT#' + dateAppointment},
                                 "GSI3PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#' + dateAppointment[0:10] if qrCode != 'VALID' else None}, 
                                 "GSI3SK": {"S": 'QR#' + qrCode if qrCode != 'VALID' else None},
                                 "GSI4PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId if status == 3 else None},
@@ -456,6 +459,7 @@ def lambda_handler(event, context):
                     response = dynamodb.transact_write_items(
                         TransactItems = items
                     )
+
                     appoInfo = {
                         'AppId': appoId,
                         'ClientId': customerId,
@@ -471,10 +475,18 @@ def lambda_handler(event, context):
 
                     statusCode = 200
                     body = json.dumps({'Message': 'Appointment added successfully', 'Code': 200, 'Appointment': appoInfo})
-        
+                else:
+                    statusCode = 404
+                    body = json.dumps({'Message': 'Invalid date and time', 'Code': 400})
+
         if statusCode == '':
             statusCode = 500
             body = json.dumps({'Message': 'Error !!!', 'Code': 400})
+
+    except ClientError as error:
+        statusCode = 500
+        body = json.dumps({'Message': str(error), 'Code': 400})
+
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})

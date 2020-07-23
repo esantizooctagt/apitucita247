@@ -74,10 +74,11 @@ def lambda_handler(event, context):
         hoursData = []
         hours = []
         currHour = ''
-
+        statusCode = ''
+        
         if appoDate.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
             currHour = today.strftime("%H:%M")
-            if int(currHour.replace(':','')) > int(hourDate.replace(':','')):
+            if int(currHour.replace(':','')[0:2]) > int(hourDate.replace(':','')[0:2]):
                 statusCode = 404
                 body = json.dumps({'Message': 'Hour not available', 'Data': result, 'Code': 400})
                 response = {
@@ -185,13 +186,20 @@ def lambda_handler(event, context):
 
                     validAppo = 0
                     existe = 0
+                    notAvailable = 0
                     for x in hoursData:
                         if x['Hour'] == hourDate and int(x['Available']) > 0:
+                            validAppo = 1
                             existe = 1
+                            break
+                        if x['Hour'] == hourDate and int(x['Available']) == 0:
+                            notAvailable = 1
                             break
 
                     for item in dateAppo:
                         if existe == 1:
+                            break
+                        if notAvailable == 1:
                             break
                         ini = Decimal(item['I'])
                         fin = Decimal(item['F'])
@@ -203,15 +211,9 @@ def lambda_handler(event, context):
                                 h = str(math.trunc(h/scale)).zfill(2) + ':30'
                             available = numCustomer
                             if int(available) > 0:
-                                if currHour != '':
-                                    if int(h.replace(':','')) > int(currHour.replace(':','')):
-                                        if hourDate == h:
-                                            validAppo = 1
-                                            break
-                                else:
-                                    if hourDate == h:
-                                        validAppo = 1
-                                        break
+                                if int(h.replace(':','')) == int(hourDate.replace(':','')):
+                                    validAppo = 1
+                                    break
                         if validAppo == 1:
                             break
 

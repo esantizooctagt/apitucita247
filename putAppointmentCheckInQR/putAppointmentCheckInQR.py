@@ -51,10 +51,12 @@ def lambda_handler(event, context):
         qrCode = data['qrCode'] if 'qrCode' in data else ''
         businessId = data['BusinessId'] if 'BusinessId' in data else ''
         locationId = data['LocationId'] if 'LocationId' in data else ''
+        serviceId = data['ServiceId'] if 'ServiceId' in data else ''
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d")
+        service = ''
 
         e = {'#s': 'STATUS'}
         f = '#s <= :stat'
@@ -75,6 +77,10 @@ def lambda_handler(event, context):
             appointmentId = row['PKID'].replace('APPO#','')
             dateAppo = row['DATE_APPO']
             customerId = row['GSI2PK'].replace('CUS#','')
+            service = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#SER#')
+        
+        if service != serviceId:
+            appointmentId == ''
 
         items = []
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
@@ -107,6 +113,23 @@ def lambda_handler(event, context):
                     "Key": {
                         "PKID": {"S": 'BUS#' + businessId}, 
                         "SKID": {"S": 'LOC#' + locationId}, 
+                    },
+                    "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
+                    "ExpressionAttributeValues": { 
+                        ":increment": {"N": str(qty)}
+                    },
+                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                }
+            }
+            items.append(recordset)
+
+            recordset = {
+                "Update": {
+                    "TableName": "TuCita247",
+                    "Key": {
+                        "PKID": {"S": 'BUS#' + businessId + '#' + locationId}, 
+                        "SKID": {"S": 'SER#' + serviceId}, 
                     },
                     "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
                     "ExpressionAttributeValues": { 

@@ -76,6 +76,7 @@ def lambda_handler(event, context):
             qty = row['PEOPLE_QTY']
             customerId = row['GSI2PK'].replace('CUS#','')
             timeCheckIn = row['TIMECHECKIN'] + '-000000' if 'TIMECHECKIN' in row else ''
+            serviceId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#SER#')
 
         if appointmentId != '':
             items = []
