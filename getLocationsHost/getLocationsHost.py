@@ -39,12 +39,30 @@ def lambda_handler(event, context):
         record = []
         locations = json_dynamodb.loads(response['Items'])
         for row in locations:
+            serv = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :serviceId )',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + businessId + '#' + row['SKID'].replace('LOC#','')},
+                    ':serviceId': {'S': 'SER#'}
+                }
+            )
+            services = []
+            for item in json_dynamodb.loads(serv['Items']):
+                serviceData = {
+                    'ServiceId': row['SKID'].replace('LOC#','')+'#'+item['SKID'].replace('SER#',''),
+                    'Name': item['NAME']
+                }
+                services.append(serviceData)
+
             recordset = {
                 'BusinessId': businessId,
                 'LocationId': row['SKID'].replace('LOC#',''),
                 'Name': row['NAME'] if 'NAME' in row else '',
                 'Doors': row['DOORS'] if 'DOORS' in row else '',
-                'Status': row['STATUS'] if 'STATUS' in row else 0
+                'Status': row['STATUS'] if 'STATUS' in row else 0,
+                'Services': services
             }
             record.append(recordset)
 

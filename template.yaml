@@ -600,7 +600,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointments/{businessId}/{locationId}/{dateAppoIni}
+            Path: /appointments/{businessId}/{locationId}/{serviceId}/{dateAppoIni}
             Method: get
             ApiId: !Ref HttpApi
 
@@ -1512,7 +1512,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointment/opeHours/{businessId}/{locationId}/{initDay}
+            Path: /appointment/opeHours/{businessId}/{locationId}/{serviceId}/{initDay}
             Method: get
             ApiId: !Ref HttpApi
   
@@ -1536,6 +1536,49 @@ Resources:
             Method: post
             ApiId: !Ref HttpApi
 
+  PutCancelApposFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutCancelAppos
+      CodeUri: putCancelAppos/
+      Handler: putCancelAppos.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamoSNS
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:requests:7
+      VpcConfig: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /appointment/{businessId}/{locationId}/{serviceId}/{dateAppo}
+            Method: put
+            ApiId: !Ref HttpApi
+
+  GetDaysOffFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetDaysOff
+      CodeUri: getDaysOff/
+      Handler: getDaysOff.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers:
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /business/daysoff/{businessId}/{year}
+            Method: get
+            ApiId: !Ref HttpApi
+            
   # GetLocationsServFunction:
   #   Type: AWS::Serverless::Function
   #   Properties:
