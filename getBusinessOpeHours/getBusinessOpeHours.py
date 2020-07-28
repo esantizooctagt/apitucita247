@@ -54,7 +54,7 @@ def lambda_handler(event, context):
         recordset = {}
         locations = json_dynamodb.loads(response['Items'])
         for row in locations:
-            daysOff = row['DAYS_OFF'].split(',') if 'DAYS_OFF' in row else []
+            daysOff = row['DAYS_OFF'] if 'DAYS_OFF' in row else []
             opeHours = json.loads(row['OPERATIONHOURS']) if 'OPERATIONHOURS' in row else ''
             bucketInterval = row['BUCKET_INTERVAL'] if 'BUCKET_INTERVAL' in row else ''
         

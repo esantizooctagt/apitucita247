@@ -73,7 +73,7 @@ def lambda_handler(event, context):
                 servs = []
                 rowsServs = {}
                 for service in json_dynamodb.loads(services['Items']):
-                    daysOffServ = [datetime.strptime(date, '%Y-%m-%d') for date in service['DAYS_OFF'].split(',')] if 'DAYS_OFF' in service else []
+                    daysOffServ = [datetime.strptime(date, '%Y-%m-%d') for date in service['DAYS_OFF']] if 'DAYS_OFF' in service else []
                     daysOffServ = validDayOff(daysOffServ, start_date, end_date)
                     rowsServs = {
                         'ServiceId': service['SKID'].replace('SER#',''),
@@ -82,7 +82,7 @@ def lambda_handler(event, context):
                     }
                     servs.append(rowsServs)
 
-                daysOffLoc = [datetime.strptime(date, '%Y-%m-%d') for date in location['DAYS_OFF'].split(',')] if 'DAYS_OFF' in location else []
+                daysOffLoc = [datetime.strptime(date, '%Y-%m-%d') for date in location['DAYS_OFF']] if 'DAYS_OFF' in location else []
                 daysOffLoc = validDayOff(daysOffLoc, start_date, end_date)
                 rowsLocs = {
                     'LocationId': location['SKID'].replace('LOC#',''),
@@ -92,7 +92,7 @@ def lambda_handler(event, context):
                 }
                 locs.append(rowsLocs)
 
-            daysOffBus = [datetime.strptime(date, '%Y-%m-%d') for date in row['DAYS_OFF'].split(',')] if 'DAYS_OFF' in row else []
+            daysOffBus = [datetime.strptime(date, '%Y-%m-%d') for date in row['DAYS_OFF']] if 'DAYS_OFF' in row else []
             daysOffBus = validDayOff(daysOffBus, start_date, end_date)
             recordset = {
                 'BusinessId': row['PKID'].replace('BUS#',''),

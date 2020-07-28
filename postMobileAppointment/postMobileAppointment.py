@@ -159,7 +159,7 @@ def lambda_handler(event, context):
                     opeHours = json.loads(currDate['OPERATIONHOURS'])
                     numCustomer = currDate['CUSTOMER_PER_BUCKET']
                     bucket = currDate['BUCKET_INTERVAL']
-                    daysOff = currDate['DAYS_OFF'].split(',') if 'DAYS_OFF' in currDate else []
+                    daysOff = currDate['DAYS_OFF'] if 'DAYS_OFF' in currDate else []
                     dateAppo = opeHours[dayName] if dayName in opeHours else ''
                     if daysOff != []:
                         dayOffValid = appoDate.strftime("%Y-%m-%d") not in daysOff
