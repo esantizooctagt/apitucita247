@@ -1575,7 +1575,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/daysoff/{businessId}/{year}
+            Path: /business/daysoff/{businessId}/{locationId}/{serviceId}/{year}
             Method: get
             ApiId: !Ref HttpApi
             
@@ -1599,6 +1599,27 @@ Resources:
             Method: put
             ApiId: !Ref HttpApi
 
+  GetOpeningHoursFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetOpeningHours
+      CodeUri: getOpeningHours/
+      Handler: getOpeningHours.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers:
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /business/openinghours/{businessId}/{locationId}/{serviceId}
+            Method: get
+            ApiId: !Ref HttpApi
+  
   # GetLocationsServFunction:
   #   Type: AWS::Serverless::Function
   #   Properties:
