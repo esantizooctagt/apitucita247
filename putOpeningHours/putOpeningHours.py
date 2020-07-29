@@ -37,6 +37,7 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         opeHours = data['OpeHours']
 
+        table = dynamodbData.Table('TuCita247')
         if businessId != '_' and locationId == '_':
             response = table.update_item(
                 Key={
@@ -140,7 +141,7 @@ def lambda_handler(event, context):
             )
 
         statusCode = 200
-        body = json.dumps({'Message': 'Special day updated successfully', 'Code': 200})
+        body = json.dumps({'Message': 'Opening hours updated successfully', 'Code': 200})
 
         if statusCode == '':
             statusCode = 500
