@@ -47,7 +47,7 @@ def lambda_handler(event, context):
                     'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else ''
                 }
 
-        if serviceId == '_':
+        if serviceId == '_' and locationId != '_':
             response = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',

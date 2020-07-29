@@ -62,7 +62,7 @@ def lambda_handler(event, context):
                 }
                 record.append(recordset)
 
-        if serviceId == '_':
+        if serviceId == '_' and locationId != '_':
             locations = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
