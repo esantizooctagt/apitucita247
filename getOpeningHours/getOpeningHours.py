@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         serviceId = event['pathParameters']['serviceId']
-
+        record = []
         if locationId == '_':
             response = dynamodb.query(
                 TableName="TuCita247",
@@ -46,6 +46,7 @@ def lambda_handler(event, context):
                     'BusinessId': row['PKID'].replace('BUS#',''),
                     'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else ''
                 }
+                record.append(recordset)
 
         if serviceId == '_' and locationId != '_':
             response = dynamodb.query(
@@ -61,28 +62,50 @@ def lambda_handler(event, context):
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'LocationId': row['SKID'].replace('LOC#',''),
+                    'Name': row['NAME'],
                     'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else ''
                 }
+                record.append(recordset)
 
         if serviceId != '_':
-            response = dynamodb.query(
+            locations = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :servs )',
+                KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
                 ExpressionAttributeValues={
-                    ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
-                    ':servs': {'S': 'SER#'}
-                }
+                    ':businessId': {'S': 'BUS#' + businessId},
+                    ':metadata': {'S': 'LOC#'}
+                },
             )
-            recordset = {}
-            for row in json_dynamodb.loads(response['Items']):
-                recordset = {
-                    'ServiceId': row['SKID'].replace('SER#',''),
-                    'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else ''
+            locs = {}
+            for location in json_dynamodb.loads(locations['Items']):
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :servs )',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + businessId + '#' + location['SKID'].replace('LOC#','')},
+                        ':servs': {'S': 'SER#'}
+                    }
+                )
+                recordset = {}
+                serv = []
+                for row in json_dynamodb.loads(response['Items']):
+                    recordset = {
+                        'ServiceId': row['SKID'].replace('SER#',''),
+                        'Name': row['NAME'],
+                        'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else ''
+                    }
+                    serv.append(recordset)
+                locs = {
+                    'LocationId': location['SKID'].replace('LOC#',''),
+                    'Name': location['NAME'],
+                    'Services': serv
                 }
+                record.append(locs)
 
         statusCode = 200
-        body = json.dumps({'Code': 200, 'Data': recordset})
+        body = json.dumps({'Code': 200, 'Data': record})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message':'Error on request try again'+ str(e)})

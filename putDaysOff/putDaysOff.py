@@ -39,7 +39,6 @@ def lambda_handler(event, context):
 
         table = dynamodbData.Table('TuCita247')
         if businessId != '_' and locationId == '_' and tipo == 'add':
-            # dateOpe = {"L": [{ "S": dateSpec }]}
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId,
@@ -96,7 +95,6 @@ def lambda_handler(event, context):
                 )
 
         if locationId != '_' and serviceId == '_' and tipo == 'add':
-            # dateOpe = {"L": [{ "S": dateSpec }]}
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId,
@@ -120,7 +118,7 @@ def lambda_handler(event, context):
             for serv in json_dynamodb.loads(servs['Items']):
                 response = table.update_item(
                     Key={
-                        'PKID': 'BUS#' + businessId + '#' + locId,
+                        'PKID': 'BUS#' + businessId + '#' + locationId,
                         'SKID': serv['SKID']
                     },
                     UpdateExpression="SET DAYS_OFF = list_append(DAYS_OFF,:dateope)",
@@ -128,8 +126,7 @@ def lambda_handler(event, context):
                     ReturnValues="UPDATED_NEW"
                 )
         
-        if serviceId != '_' and locationId == '_' and tipo == 'add':
-            # dateOpe = {"L": [{ "S": dateSpec }]}
+        if serviceId != '_' and tipo == 'add':
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId + '#' + locationId,
@@ -238,8 +235,7 @@ def lambda_handler(event, context):
                     'PKID': 'BUS#' + businessId,
                     'SKID': 'LOC#' + locationId
                 },
-                UpdateExpression="REMOVE DAYS_OFF[:index]",
-                ExpressionAttributeValues={':index': index},
+                UpdateExpression="REMOVE DAYS_OFF[" + str(index) + "]",
                 ReturnValues="NONE"
             )
 
@@ -265,12 +261,11 @@ def lambda_handler(event, context):
                         'PKID': 'BUS#' + businessId + '#' + locationId,
                         'SKID': serv['SKID']
                     },
-                    UpdateExpression="REMOVE DAYS_OFF[:indexServ]",
-                    ExpressionAttributeValues={':indexServ': indexServ},
+                    UpdateExpression="REMOVE DAYS_OFF[" + str(indexServ) + "]",
                     ReturnValues="NONE"
                 )
         
-        if serviceId != '_' and locationId == '_' and tipo == 'rem':
+        if serviceId != '_' and tipo == 'rem':
             response = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -291,8 +286,7 @@ def lambda_handler(event, context):
                     'PKID': 'BUS#' + businessId + '#' + locationId,
                     'SKID': 'SER#' + serviceId
                 },
-                UpdateExpression="REMOVE DAYS_OFF[:index]",
-                ExpressionAttributeValues={':index': index},
+                UpdateExpression="REMOVE DAYS_OFF[" + str(index) + "]",
                 ReturnValues="NONE"
             )
             

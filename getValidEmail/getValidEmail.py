@@ -20,7 +20,7 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
     stage = event['headers']
-    if stage['origin'] != "http://localhost:4200":
+    if stage['origin'] != "http://127.0.0.1:8000":
         cors = os.environ['prodCors']
     else:
         cors = os.environ['devCors']
@@ -28,11 +28,11 @@ def lambda_handler(event, context):
     try:
         email = event['pathParameters']['email']
         code = 0
-        code = random.randint(100000, 999999)
+        code = str(random.randint(100000, 999999))
         #EMAIL
         SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
         RECIPIENT = email
-        SUBJECT = "Tu Cita 24/7 Check-In"
+        SUBJECT = "Tu Cita 24/7 Validation Account"
         BODY_TEXT = ("Your Cita 24/7 ID Verification Code is: " + code)
                     
         # The HTML body of the email.
@@ -70,6 +70,9 @@ def lambda_handler(event, context):
             },
             Source=SENDER
         )
+
+        statusCode = 200
+        body = json.dumps({'Message': 'Email send successfully', 'Code': 200})
 
         if statusCode == '':
             statusCode = 500

@@ -79,32 +79,53 @@ def lambda_handler(event, context):
                 daysOffLoc = validDayOff(daysOffLoc, start_date, end_date)
                 recordset = {
                     'LocationId': location['SKID'].replace('LOC#',''),
+                    'Name': location['NAME'],
                     'DaysOff': daysOffLoc,
                     'ParentDaysOff': location['PARENTDAYSOFF'] if 'PARENTDAYSOFF' in location else 0
                 }
                 record.append(recordset)
         
         if serviceId != '_':
-            services = dynamodb.query(
+            locations = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
                 ExpressionAttributeValues={
-                    ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
-                    ':metadata': {'S': 'SER#'}
+                    ':businessId': {'S': 'BUS#' + businessId},
+                    ':metadata': {'S': 'LOC#'}
                 },
             )
             record = []
-            recordset = {}
-            for service in json_dynamodb.loads(services['Items']):
-                daysOffServ = [datetime.strptime(date, '%Y-%m-%d') for date in service['DAYS_OFF']] if 'DAYS_OFF' in service else []
-                daysOffServ = validDayOff(daysOffServ, start_date, end_date)
-                recordset = {
-                    'ServiceId': service['SKID'].replace('SER#',''),
-                    'DaysOff': daysOffServ,
-                    'ParentDaysOff': service['PARENTDAYSOFF'] if 'PARENTDAYSOFF' in service else 0
+            locs = {}
+            for location in json_dynamodb.loads(locations['Items']):
+                servicesData = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + businessId + '#' + location['SKID'].replace('LOC#','')},
+                        ':metadata': {'S': 'SER#'}
+                    },
+                )
+                services = []
+                recordset = {}
+                for service in json_dynamodb.loads(servicesData['Items']):
+                    daysOffServ = [datetime.strptime(date, '%Y-%m-%d') for date in service['DAYS_OFF']] if 'DAYS_OFF' in service else []
+                    daysOffServ = validDayOff(daysOffServ, start_date, end_date)
+                    recordset = {
+                        'ServiceId': service['SKID'].replace('SER#',''),
+                        'Name': service['NAME'],
+                        'DaysOff': daysOffServ,
+                        'ParentDaysOff': service['PARENTDAYSOFF'] if 'PARENTDAYSOFF' in service else 0
+                    }
+                    services.append(recordset)
+                
+                locs = {
+                    'LocationId': location['SKID'].replace('LOC#',''),
+                    'Name': location['NAME'],
+                    'Services': services
                 }
-                record.append(recordset)
+                record.append(locs)
         
         statusCode = 200
         body = json.dumps({'Code': 200, 'Data': record})
