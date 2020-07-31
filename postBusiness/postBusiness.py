@@ -130,6 +130,19 @@ def lambda_handler(event, context):
         }
         items.append(cleanNullTerms(rows))
 
+        rows = {
+            "Put": {
+                "TableName": "TuCita247",
+                "Item": {
+                    "PKID": {"S": 'LINK#' + data['TuCitaLink']},
+                    "SKID": {"S": 'LINK#' + data['TuCitaLink']}
+                },
+                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+            },
+        }
+        items.append(cleanNullTerms(rows))
+
         for item in data['Locations']:
             locationId = str(uuid.uuid4()).replace("-","")
             locations = {

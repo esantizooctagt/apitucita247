@@ -133,7 +133,7 @@ def lambda_handler(event, context):
                     ":geolocation": {"S": data['Geolocation']},
                     ":instagram": {"S": data['Instagram']},
                     ":name": {"S": data['Name']},
-                    ":operationHours": {"S": data['OperationHours']},
+                    # ":operationHours": {"S": data['OperationHours']},
                     ":phone": {"S": data['Phone']},
                     ":twitter": {"S": data['Twitter']},
                     ":website": {"S": data['Website']},

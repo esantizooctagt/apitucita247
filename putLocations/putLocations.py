@@ -52,7 +52,7 @@ def lambda_handler(event, context):
                             "BUCKET_INTERVAL": {"N": str(locs['BucketInterval'])},
                             "CUSTOMER_PER_BUCKET": {"N": str(locs['TotalCustPerBucketInter'])},
                             "MANUAL_CHECK_OUT": {"N": str(locs['ManualCheckOut'])},
-                            "OPERATIONHOURS": {"S": str(locs['OperationHours'])},
+                            # "OPERATIONHOURS": {"S": str(locs['OperationHours'])},
                             "DOORS": {"S": str(locs['Doors'])},
                             "STATUS": {"N": str(locs['Status'])}
                         },
@@ -80,7 +80,7 @@ def lambda_handler(event, context):
                             ":maxCustomer": {"N": str(locs['MaxConcurrentCustomer'])},
                             ":bucketInterval": {"N": str(locs['BucketInterval'])},
                             ":customerPerBucket": {"N": str(locs['TotalCustPerBucketInter'])},
-                            ":operationHours": {"S": str(locs['OperationHours'])},
+                            # ":operationHours": {"S": str(locs['OperationHours'])},
                             ":manualCheckOut": {"N": str(locs['ManualCheckOut'])},
                             ":doors": {"S": str(locs['Doors'])},
                             ":status": {"N": str(locs['Status'])}
