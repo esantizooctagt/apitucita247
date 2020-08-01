@@ -105,6 +105,7 @@ def lambda_handler(event, context):
                     "ADDRESS": {"S": data['Address']},
                     "CITY": {"S": data['City']},
                     "COUNTRY": {"S": data['Country']},
+                    "CATEGORYID": {"S": data['CategoryId']},
                     "EMAIL": {"S": data['Email']},
                     "FACEBOOK": {"S": data['Facebook']},
                     "GEOLOCATION": {"S": data['Geolocation']},
@@ -119,7 +120,7 @@ def lambda_handler(event, context):
                     "GSI2SK": {"S": 'BUS#' + businessId},
                     "TAGS": {"S": data['Tags'] if data['Tags'] != '' else None},
                     "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
-                    "APPOINTMENTS_PURPOSE": {"S": data['ApposPurpose'] if data['ApposPurpose'] != '' else None},
+                    # "APPOINTMENTS_PURPOSE": {"S": data['ApposPurpose'] if data['ApposPurpose'] != '' else None},
                     "TU_CITA_LINK": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
                     "ZIPCODE": {"S": data['ZipCode']},
                     "STATUS": {"N": str(1)}
@@ -166,6 +167,64 @@ def lambda_handler(event, context):
                 },
             }
             items.append(cleanNullTerms(locations))
+
+            providerId = str(uuid.uuid4()).replace("-","")
+            provider = {
+                "Put":{
+                    "TableName":"TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'BUS#'+businessId+'#'+locationId},
+                        "SKID": {"S": 'PRO#'+providerId},
+                        "GSI1PK": {"S": 'BUS#'+businessId},
+                        "GSI1SK": {"S": 'PRO#'+providerId},
+                        "NAME": {"S": str(item['Name'])},
+                        "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
+                        # "DAYS_OFF": {"L": []},
+                        "OPEN": {"N": str(0)},
+                        "PEOPLE_CHECK_IN": {"N": str(0)},
+                        "PARENTDAYSOFF": {"N": str(1)},
+                        "PARENTHOURS": {"N": str(1)},
+                        "STATUS": {"N": str(1)}
+                    },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                },
+            }
+            items.append(cleanNullTerms(provider))
+
+            serviceId = str(uuid.uuid4()).replace("-","")
+            service = {
+                "Put":{
+                    "TableName":"TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'BUS#'+businessId},
+                        "SKID": {"S": 'SER#'+serviceId},
+                        "NAME": {"S": data['CategoryName']},
+                        "TIME_SERVICE": {"N": str(1)},
+                        "CUSTOMER_PER_TIME": {"N": str(1)},
+                        "STATUS": {"N": str(1)}
+                    },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                },
+            }
+            items.append(cleanNullTerms(service))
+
+            serviceProv = {
+                "Put":{
+                    "TableName":"TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'BUS#'+businessId+'#SER#'+serviceId},
+                        "SKID": {"S": 'PRO#'+providerId},
+                        "GSI1PK": {"S": 'BUS#'+businessId+'#PRO#'+providerId},
+                        "GSI1SK": {"S": 'SER#'+serviceId}
+                    },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                },
+            }
+            items.append(cleanNullTerms(serviceProv))
+
 
         logger.info(items)
         response = dynamodb.transact_write_items(

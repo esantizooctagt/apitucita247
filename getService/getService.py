@@ -42,8 +42,8 @@ def lambda_handler(event, context):
             recordset = {
                 'ServiceId': item['SKID'].replace('SER#',''),
                 'Name': item['NAME'],
-                'TimeService': row['TIME_SERVICE'],
-                'CustomerPerTime': row['CUSTOMER_PER_TIME'],
+                'TimeService': item['TIME_SERVICE'],
+                'CustomerPerTime': item['CUSTOMER_PER_TIME'],
                 'Status': int(item['STATUS'])
             }
     

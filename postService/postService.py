@@ -71,8 +71,8 @@ def lambda_handler(event, context):
                     "UpdateExpression": "SET #n = :name, TIME_SERVICE = :timeService, CUSTOMER_PER_TIME = :customerPerTime, #s = :status",
                     "ExpressionAttributeValues": {
                         ':name': {'S': data['Name']},
-                        ':timeService': {'S': data['TimeService']},
-                        ':customerPerTime': {'S': data['CustomerPerTime']},
+                        ':timeService': {'N': str(data['TimeService'])},
+                        ':customerPerTime': {'N': str(data['CustomerPerTime'])},
                         ':status': {'N': str(data['Status'])}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS','#n': 'NAME'},
