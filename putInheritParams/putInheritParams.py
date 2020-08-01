@@ -30,13 +30,13 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         value = event['pathParameters']['value']
         tipo = event['pathParameters']['tipo']
 
         table = dynamodb.Table('TuCita247')
         if tipo == 1:
-            if serviceId == '_':
+            if providerId == '_':
                 response = table.update_item(
                     Key={
                         'PKID': 'BUS#' + businessId,
@@ -50,14 +50,14 @@ def lambda_handler(event, context):
                 response = table.update_item(
                     Key={
                         'PKID': 'BUS#' + businessId + '#' + locationId,
-                        'SKID': 'PRO#' + serviceId
+                        'SKID': 'PRO#' + providerId
                     },
                     UpdateExpression="SET PARENTDAYSOFF = :value",
                     ExpressionAttributeValues={':value': value},
                     ReturnValues="UPDATED_NEW"
                 )
         else:
-            if serviceId == '_':
+            if providerId == '_':
                 response = table.update_item(
                     Key={
                         'PKID': 'BUS#' + businessId,
@@ -71,7 +71,7 @@ def lambda_handler(event, context):
                 response = table.update_item(
                     Key={
                         'PKID': 'BUS#' + businessId + '#' + locationId,
-                        'SKID': 'PRO#' + serviceId
+                        'SKID': 'PRO#' + providerId
                     },
                     UpdateExpression="SET PARENTHOURS = :value",
                     ExpressionAttributeValues={':value': value},

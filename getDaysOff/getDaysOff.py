@@ -36,7 +36,7 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         year = str(event['pathParameters']['year'])
 
         start_date = datetime.strptime(year+'-01-01', '%Y-%m-%d')
@@ -62,7 +62,7 @@ def lambda_handler(event, context):
                 }
                 record.append(recordset)
 
-        if serviceId == '_' and locationId != '_':
+        if providerId == '_' and locationId != '_':
             locations = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -85,7 +85,7 @@ def lambda_handler(event, context):
                 }
                 record.append(recordset)
         
-        if serviceId != '_':
+        if providerId != '_':
             locations = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -113,7 +113,7 @@ def lambda_handler(event, context):
                     daysOffServ = [datetime.strptime(date, '%Y-%m-%d') for date in service['DAYS_OFF']] if 'DAYS_OFF' in service else []
                     daysOffServ = validDayOff(daysOffServ, start_date, end_date)
                     recordset = {
-                        'ServiceId': service['SKID'].replace('PRO#',''),
+                        'ProviderId': service['SKID'].replace('PRO#',''),
                         'Name': service['NAME'],
                         'DaysOff': daysOffServ,
                         'ParentDaysOff': service['PARENTDAYSOFF'] if 'PARENTDAYSOFF' in service else 0

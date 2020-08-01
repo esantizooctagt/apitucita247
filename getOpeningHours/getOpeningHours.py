@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         record = []
         if locationId == '_':
             response = dynamodb.query(
@@ -48,7 +48,7 @@ def lambda_handler(event, context):
                 }
                 record.append(recordset)
 
-        if serviceId == '_' and locationId != '_':
+        if providerId == '_' and locationId != '_':
             response = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -68,7 +68,7 @@ def lambda_handler(event, context):
                 }
                 record.append(recordset)
 
-        if serviceId != '_':
+        if providerId != '_':
             locations = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -93,7 +93,7 @@ def lambda_handler(event, context):
                 serv = []
                 for row in json_dynamodb.loads(response['Items']):
                     recordset = {
-                        'ServiceId': row['SKID'].replace('PRO#',''),
+                        'ProviderId': row['SKID'].replace('PRO#',''),
                         'Name': row['NAME'],
                         'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else '',
                         'ParentHours': row['PARENTHOURS'] if 'PARENTHOURS' in row else 0

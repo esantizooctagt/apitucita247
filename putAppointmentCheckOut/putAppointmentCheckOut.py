@@ -44,7 +44,7 @@ def lambda_handler(event, context):
         qrCode = data['qrCode']
         businessId = data['BusinessId']
         locationId = data['LocationId']
-        serviceId = data['ServiceId']
+        providerId = data['ProviderId']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -76,7 +76,7 @@ def lambda_handler(event, context):
             qty = row['PEOPLE_QTY']
             customerId = row['GSI2PK'].replace('CUS#','')
             timeCheckIn = row['TIMECHECKIN'] + '-000000' if 'TIMECHECKIN' in row else ''
-            serviceId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#SER#')
+            providerId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#SER#')
 
         if appointmentId != '':
             items = []
@@ -145,7 +145,7 @@ def lambda_handler(event, context):
                     "TableName": "TuCita247",
                     "Key": {
                         "PKID": {"S": 'BUS#' + businessId + '#' + locationId}, 
-                        "SKID": {"S": 'PRO#' + serviceId}, 
+                        "SKID": {"S": 'PRO#' + providerId}, 
                     },
                     "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
                     "ExpressionAttributeValues": { 

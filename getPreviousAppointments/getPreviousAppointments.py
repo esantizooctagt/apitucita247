@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         dateAppo = event['pathParameters']['dateAppo']
         status = event['pathParameters']['status']
 
@@ -43,7 +43,7 @@ def lambda_handler(event, context):
             ExpressionAttributeNames=n,
             FilterExpression=f,
             ExpressionAttributeValues={
-                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId},
+                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + providerId},
                 ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
                 ':initDate': {'S': str(status) +'#DT#' + initDate},
                 ':type': {'N': str(1)}
@@ -56,7 +56,7 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': businessId,
                 'LocationId': locationId,
-                'ServiceId': serviceId,
+                'ProviderId': providerId,
                 'AppointmentId': row['PKID'].replace('APPO#',''),
                 'ClientId': row['GSI2PK'].replace('CUS#',''),
                 'Name': row['NAME'],
@@ -81,7 +81,7 @@ def lambda_handler(event, context):
             if lastItem:
                 appoId = lastItem['PKID'].replace('APPO#','')
                 lastItem = lastItem['GSI1SK']
-                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId},'GSI1SK': {'S': lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
+                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + providerId},'GSI1SK': {'S': lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
 
             response = dynamodb.query(
                 TableName="TuCita247",
@@ -92,7 +92,7 @@ def lambda_handler(event, context):
                 FilterExpression=f,
                 ExpressionAttributeNames=n,
                 ExpressionAttributeValues={
-                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId},
+                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + providerId},
                     ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
                     ':initDate': {'S': str(status) +'#DT#' + initDate},
                     ':type': {'N': str(1)}
@@ -104,7 +104,7 @@ def lambda_handler(event, context):
                 recordset = {
                     'BusinessId': businessId,
                     'LocationId': locationId,
-                    'ServiceId': serviceId,
+                    'ProviderId': providerId,
                     'AppointmentId': row['PKID'].replace('APPO#',''),
                     'ClientId': row['GSI2PK'].replace('CUS#',''),
                     'Name': row['NAME'],

@@ -33,7 +33,7 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         data = json.loads(event['body'])
         opeHours = data['OpeHours']
 
@@ -67,11 +67,11 @@ def lambda_handler(event, context):
                 servs = dynamodb.query(
                     TableName='TuCita247',
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serviceId)',
+                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                     FilterExpression='PARENTHOURS = :parentHours',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#' + locId},
-                        ':serviceId': {'S': 'PRO#'},
+                        ':providerId': {'S': 'PRO#'},
                         ':parentHours': {'N': str(1)}
                     },
                 )
@@ -95,7 +95,7 @@ def lambda_handler(event, context):
                     ReturnValues="UPDATED_NEW"
                 )
 
-        if locationId != '_' and serviceId == '_':
+        if locationId != '_' and providerId == '_':
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId,
@@ -110,11 +110,11 @@ def lambda_handler(event, context):
             servs = dynamodb.query(
                 TableName='TuCita247',
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serviceId)',
+                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                 FilterExpression='PARENTHOURS = :parentHours',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
-                    ':serviceId': {'S': 'PRO#'},
+                    ':providerId': {'S': 'PRO#'},
                     ':parentHours': {'N': str(1)}
                 },
             )
@@ -129,11 +129,11 @@ def lambda_handler(event, context):
                     ReturnValues="UPDATED_NEW"
                 )
 
-        if serviceId != '_':
+        if providerId != '_':
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId + '#' + locationId,
-                    'SKID': 'PRO#' + serviceId
+                    'SKID': 'PRO#' + providerId
                 },
                 UpdateExpression="SET OPERATIONHOURS = :opeHours",
                 ExpressionAttributeValues={':opeHours': opeHours},

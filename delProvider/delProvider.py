@@ -28,7 +28,7 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         
@@ -36,7 +36,7 @@ def lambda_handler(event, context):
         response = table.update_item(
             Key={
                 'PKID': 'BUS#' + businessId + '#' + locationId,
-                'SKID': 'PRO#' + serviceId
+                'SKID': 'PRO#' + providerId
             },
             UpdateExpression="SET #s = :status",
             ExpressionAttributeNames={'#s': 'STATUS'},

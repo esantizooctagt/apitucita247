@@ -33,7 +33,7 @@ def lambda_handler(event, context):
         statusCode = ''
         locationId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -43,7 +43,7 @@ def lambda_handler(event, context):
         response = table.update_item(
             Key={
                 'PKID': 'BUS#' + businessId + '#' + locationId,
-                'SKID': 'PRO#' + serviceId
+                'SKID': 'PRO#' + providerId
             },
             UpdateExpression="SET PEOPLE_CHECK_IN = :qty, OPEN_DATE = :closed, #o = :open", 
             ExpressionAttributeValues= {':qty': 0, ':closed': '', ':initVal': 1, ':open': 0},

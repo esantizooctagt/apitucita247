@@ -33,7 +33,7 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         dateSpec = event['pathParameters']['dateOpe']
         tipo = event['pathParameters']['tipo']
 
@@ -66,11 +66,11 @@ def lambda_handler(event, context):
                 servs = dynamodb.query(
                     TableName='TuCita247',
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serviceId)',
+                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                     FilterExpression='PARENTDAYSOFF = :parentDays',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#' + locId},
-                        ':serviceId': {'S': 'PRO#'},
+                        ':providerId': {'S': 'PRO#'},
                         ':parentDays': {'N': str(1)}
                     },
                 )
@@ -94,7 +94,7 @@ def lambda_handler(event, context):
                     ReturnValues="UPDATED_NEW"
                 )
 
-        if locationId != '_' and serviceId == '_' and tipo == 'add':
+        if locationId != '_' and providerId == '_' and tipo == 'add':
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId,
@@ -107,11 +107,11 @@ def lambda_handler(event, context):
             servs = dynamodb.query(
                 TableName='TuCita247',
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serviceId)',
+                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                 FilterExpression='PARENTDAYSOFF = :parentDays',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
-                    ':serviceId': {'S': 'PRO#'},
+                    ':providerId': {'S': 'PRO#'},
                     ':parentDays': {'N': str(1)}
                 },
             )
@@ -126,11 +126,11 @@ def lambda_handler(event, context):
                     ReturnValues="UPDATED_NEW"
                 )
         
-        if serviceId != '_' and tipo == 'add':
+        if providerId != '_' and tipo == 'add':
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId + '#' + locationId,
-                    'SKID': 'PRO#' + serviceId
+                    'SKID': 'PRO#' + providerId
                 },
                 UpdateExpression="SET DAYS_OFF = list_append(DAYS_OFF,:dateope)",
                 ExpressionAttributeValues={':dateope': [dateSpec]},
@@ -191,11 +191,11 @@ def lambda_handler(event, context):
                 servs = dynamodb.query(
                     TableName='TuCita247',
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serviceId)',
+                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                     FilterExpression='PARENTDAYSOFF = :parentDays',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#' + loc['SKID'].replace('LOC#','')},
-                        ':serviceId': {'S': 'PRO#'},
+                        ':providerId': {'S': 'PRO#'},
                         ':parentDays': {'N': str(1)}
                     },
                 )
@@ -214,7 +214,7 @@ def lambda_handler(event, context):
                         ReturnValues="NONE"
                     )        
         
-        if locationId != '_' and serviceId == '_' and tipo == 'rem':
+        if locationId != '_' and providerId == '_' and tipo == 'rem':
             response = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -242,11 +242,11 @@ def lambda_handler(event, context):
             servs = dynamodb.query(
                 TableName='TuCita247',
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serviceId)',
+                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                 FilterExpression='PARENTDAYSOFF = :parentDays',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
-                    ':serviceId': {'S': 'PRO#'},
+                    ':providerId': {'S': 'PRO#'},
                     ':parentDays': {'N': str(1)}
                 },
             )
@@ -265,14 +265,14 @@ def lambda_handler(event, context):
                     ReturnValues="NONE"
                 )
         
-        if serviceId != '_' and tipo == 'rem':
+        if providerId != '_' and tipo == 'rem':
             response = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
+                KeyConditionExpression='PKID = :businessId AND SKID = :providerId',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#'+businessId+'#'+locationId},
-                    ':serviceId': {'S': 'PRO#'+serviceId}
+                    ':providerId': {'S': 'PRO#'+providerId}
                 }
             )
             getIndex = ''
@@ -284,7 +284,7 @@ def lambda_handler(event, context):
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId + '#' + locationId,
-                    'SKID': 'PRO#' + serviceId
+                    'SKID': 'PRO#' + providerId
                 },
                 UpdateExpression="REMOVE DAYS_OFF[" + str(index) + "]",
                 ReturnValues="NONE"

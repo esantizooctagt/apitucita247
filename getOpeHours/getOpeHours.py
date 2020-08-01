@@ -41,16 +41,16 @@ def lambda_handler(event, context):
         statusCode = ''
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         monday = datetime.datetime.strptime(event['pathParameters']['initDay'], '%Y-%m-%d')
 
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
+            KeyConditionExpression='PKID = :businessId AND SKID = :providerId',
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#'+businessId+'#'+locationId},
-                ':serviceId': {'S': 'PRO#'+serviceId}
+                ':providerId': {'S': 'PRO#'+providerId}
             },
             Limit = 1
         )

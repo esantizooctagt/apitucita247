@@ -29,12 +29,12 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
-        serviceId = str(uuid.uuid4()).replace("-","")
+        providerId = str(uuid.uuid4()).replace("-","")
         data = json.loads(event['body'])
 
         items = []
         recordset = {}
-        if data['ServiceId'] == '':
+        if data['ProviderId'] == '':
             response = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -57,9 +57,9 @@ def lambda_handler(event, context):
                     "TableName": "TuCita247",
                     "Item": {
                         "PKID": {"S": 'BUS#' + data['BusinessId'] + '#' + data['LocationId']},
-                        "SKID": {"S": 'PRO#' + serviceId},
+                        "SKID": {"S": 'PRO#' + providerId},
                         "GSI1PK": {"S": 'BUS#' + data['BusinessId']},
-                        "GSI1SK": {"S": 'PRO#' + serviceId},
+                        "GSI1SK": {"S": 'PRO#' + providerId},
                         "NAME": {"S": data['Name']},
                         "CUSTOMER_PER_BUCKET": {"S": data['CustomerPerBucket']},
                         "OPERATIONHOURS": {"S": opeHours},
@@ -74,13 +74,13 @@ def lambda_handler(event, context):
                 },
             }
         else:
-            serviceId = data['ServiceId']
+            providerId = data['ProviderId']
             recordset = {
                 "Update": {
                     "TableName": "TuCita247",
                     "Key": {
                         "PKID": {"S": 'BUS#' + data['BusinessId'] + '#' + data['LocationId']},
-                        "SKID": {"S": 'PRO#' + serviceId}
+                        "SKID": {"S": 'PRO#' + providerId}
                     },
                     "UpdateExpression": "SET #n = :name, CUSTOMER_PER_BUCKET = :customerperbucket, #s = :status",
                     "ExpressionAttributeValues": {
@@ -100,7 +100,7 @@ def lambda_handler(event, context):
             TransactItems = items
         )
         statusCode = 200
-        body = json.dumps({'Message': 'Service provider added successfully', 'ServiceId': serviceId, 'Code': 200})
+        body = json.dumps({'Message': 'Service provider added successfully', 'ProviderId': providerId, 'Code': 200})
 
         if statusCode == '':
             statusCode = 500

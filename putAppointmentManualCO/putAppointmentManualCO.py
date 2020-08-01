@@ -31,7 +31,7 @@ def lambda_handler(event, context):
         statusCode = ''
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         qty = int(event['pathParameters']['qtyGuests'])
 
         items = []
@@ -57,7 +57,7 @@ def lambda_handler(event, context):
                 "TableName": "TuCita247",
                 "Key": {
                     "PKID": {"S": 'BUS#' + businessId + '#' + locationId}, 
-                    "SKID": {"S": 'PRO#' + serviceId}, 
+                    "SKID": {"S": 'PRO#' + providerId}, 
                 },
                 "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
                 "ExpressionAttributeValues": { 

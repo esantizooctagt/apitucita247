@@ -25,23 +25,23 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
 
     try:
-        serviceId = event['pathParameters']['serviceId']
+        providerId = event['pathParameters']['providerId']
         businessId = event['pathParameters']['businessId']
 
         provider = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :businessId AND GSI1SK = :serviceId',
+            KeyConditionExpression='GSI1PK = :businessId AND GSI1SK = :providerId',
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
-                ':serviceId': {'S': 'PRO#' + serviceId}
+                ':providerId': {'S': 'PRO#' + providerId}
             },
             Limit =1
         )
         for item in json_dynamodb.loads(provider['Items']):
             recordset = {
-                'ServiceId': item['SKID'].replace('PRO#',''),
+                'ProviderId': item['SKID'].replace('PRO#',''),
                 'Name': item['NAME'],
                 'LocationId': item['PKID'].replace('BUS#' + businessId + '#', ''),
                 'Status': int(item['STATUS']),

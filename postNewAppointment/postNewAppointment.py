@@ -61,7 +61,7 @@ def lambda_handler(event, context):
         preference = data['Preference'] if 'Preference' in data else ''
         disability = data['Disability'] if 'Disability' in data else ''
         guests = data['Guests']
-        serviceId = data['ServiceId']
+        providerId = data['ProviderId']
         customerId = str(uuid.uuid4()).replace("-","")
         status = data['Status'] if 'Status' in data else 0
         purpose = data['Purpose'] if 'Purpose' in data else ''
@@ -164,7 +164,7 @@ def lambda_handler(event, context):
                     KeyConditionExpression = 'PKID = :businessId and SKID = :key',
                     ExpressionAttributeValues = {
                         ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
-                        ':key': {'S': 'PRO#' + serviceId}
+                        ':key': {'S': 'PRO#' + providerId}
                     },
                     Limit = 1
                 )
@@ -190,7 +190,7 @@ def lambda_handler(event, context):
                         ReturnConsumedCapacity = 'TOTAL',
                         KeyConditionExpression = 'PKID = :key',
                         ExpressionAttributeValues = {
-                            ':key': {'S': 'LOC#' + locationId + '#SER#' + serviceId + '#DT#' + appoDate.strftime("%Y-%m-%d")}
+                            ':key': {'S': 'LOC#' + locationId + '#SER#' + providerId + '#DT#' + appoDate.strftime("%Y-%m-%d")}
                         }
                     )
                     for row in json_dynamodb.loads(getCurrHours['Items']):
@@ -316,7 +316,7 @@ def lambda_handler(event, context):
                                 "PURPOSE": {"S": purpose if purpose != '' else None},
                                 "TYPE": {"N": "2" if qrCode == 'VALID' else "1"},
                                 "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
-                                "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + serviceId}, 
+                                "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + providerId}, 
                                 "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment}, 
                                 "GSI2PK": {"S": 'CUS#' + customerId},
                                 "GSI2SK": {"S": '5#' if str(status) == '5' else str(status) + '#DT#' + dateAppointment},
@@ -391,7 +391,7 @@ def lambda_handler(event, context):
                             "Update":{
                                 "TableName": "TuCita247",
                                 "Key": {
-                                    "PKID": {"S": 'LOC#' + locationId + '#SER#' + serviceId + '#DT#' + dateAppointment[0:10]}, 
+                                    "PKID": {"S": 'LOC#' + locationId + '#SER#' + providerId + '#DT#' + dateAppointment[0:10]}, 
                                     "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}, 
                                 },
                                 "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
@@ -409,7 +409,7 @@ def lambda_handler(event, context):
                         "Put": {
                             "TableName": "TuCita247",
                             "Item": {
-                                "PKID": {"S": 'LOC#' + locationId + '#SER#' + serviceId + '#DT#' + dateAppointment[0:10]}, 
+                                "PKID": {"S": 'LOC#' + locationId + '#SER#' + providerId + '#DT#' + dateAppointment[0:10]}, 
                                 "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
                                 "AVAILABLE": {"N": str(numCustomer-1)}
                             },
@@ -443,7 +443,7 @@ def lambda_handler(event, context):
                                 "TableName": "TuCita247",
                                 "Key": {
                                     "PKID": {"S": 'BUS#' + businessId + '#' + locationId}, 
-                                    "SKID": {"S": 'PRO#' + serviceId}, 
+                                    "SKID": {"S": 'PRO#' + providerId}, 
                                 },
                                 "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
                                 "ExpressionAttributeValues": { 

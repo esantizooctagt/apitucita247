@@ -580,7 +580,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointments/{businessId}/{locationId}/{serviceId}/{dateAppoIni}/{dateAppoFin}/{status}/{type}/{lastItem}/{appoId}
+            Path: /appointments/{businessId}/{locationId}/{providerId}/{dateAppoIni}/{dateAppoFin}/{status}/{type}/{lastItem}/{appoId}
             Method: get
             ApiId: !Ref HttpApi
     
@@ -601,7 +601,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointments/{businessId}/{locationId}/{serviceId}/{dateAppoIni}
+            Path: /appointments/{businessId}/{locationId}/{providerId}/{dateAppoIni}
             Method: get
             ApiId: !Ref HttpApi
 
@@ -749,7 +749,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/opehours/{businessId}/{locationId}/{serviceId}
+            Path: /business/opehours/{businessId}/{locationId}/{providerId}
             Method: get
             ApiId: !Ref HttpApi
   
@@ -854,7 +854,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointments/previous/{businessId}/{locationId}/{serviceId}/{dateAppo}/{status}
+            Path: /appointments/previous/{businessId}/{locationId}/{providerId}/{dateAppo}/{status}
             Method: get
             ApiId: !Ref HttpApi
     
@@ -896,7 +896,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/open/{id}/{businessId}/{serviceId}
+            Path: /location/open/{id}/{businessId}/{providerId}
             Method: put
             ApiId: !Ref HttpApi
           
@@ -917,7 +917,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/closed/{id}/{businessId}/{serviceId}
+            Path: /location/closed/{id}/{businessId}/{providerId}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -980,7 +980,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointment/checkout/manual/{businessId}/{locationId}/{serviceId}/{qtyGuests}
+            Path: /appointment/checkout/manual/{businessId}/{locationId}/{providerId}/{qtyGuests}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -1451,7 +1451,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /appointments/average/{locationId}/{serviceId}/{initDate}
+            Path: /appointments/average/{locationId}/{providerId}/{initDate}
             Method: get
             ApiId: !Ref HttpApi
   
@@ -1513,7 +1513,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointment/opeHours/{businessId}/{locationId}/{serviceId}/{initDay}
+            Path: /appointment/opeHours/{businessId}/{locationId}/{providerId}/{initDay}
             Method: get
             ApiId: !Ref HttpApi
   
@@ -1555,7 +1555,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointment/{businessId}/{locationId}/{serviceId}/{dateAppo}
+            Path: /appointment/{businessId}/{locationId}/{providerId}/{dateAppo}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -1576,7 +1576,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/daysoff/{businessId}/{locationId}/{serviceId}/{year}
+            Path: /business/daysoff/{businessId}/{locationId}/{providerId}/{year}
             Method: get
             ApiId: !Ref HttpApi
             
@@ -1596,7 +1596,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/daysoff/{businessId}/{locationId}/{serviceId}/{dateOpe}/{tipo}
+            Path: /business/daysoff/{businessId}/{locationId}/{providerId}/{dateOpe}/{tipo}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -1617,7 +1617,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/openinghours/{businessId}/{locationId}/{serviceId}
+            Path: /business/openinghours/{businessId}/{locationId}/{providerId}
             Method: get
             ApiId: !Ref HttpApi
 
@@ -1638,7 +1638,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/openinghours/{businessId}/{locationId}/{serviceId}
+            Path: /business/openinghours/{businessId}/{locationId}/{providerId}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -1739,7 +1739,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /provider/{businessId}/{serviceId}
+            Path: /provider/{businessId}/{providerId}
             Method: get
             ApiId: !Ref HttpApi
 
@@ -1779,7 +1779,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /provider/{businessId}/{locationId}/{serviceId}
+            Path: /provider/{businessId}/{locationId}/{providerId}
             Method: delete
             ApiId: !Ref HttpApi
 
@@ -1800,7 +1800,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/params/{businessId}/{locationId}/{serviceId}/{value}/{tipo}
+            Path: /business/params/{businessId}/{locationId}/{providerId}/{value}/{tipo}
             Method: put
             ApiId: !Ref HttpApi
   

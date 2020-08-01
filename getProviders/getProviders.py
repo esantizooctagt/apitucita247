@@ -76,7 +76,7 @@ def lambda_handler(event, context):
             recordset ={}
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
-                    'ServiceId': row['SKID'].replace('PRO#',''),
+                    'ProviderId': row['SKID'].replace('PRO#',''),
                     'Name': row['NAME'],
                     'LocationId': row['PKID'].replace('BUS#' + businessId + '#',''),
                     'Status': row['STATUS']
@@ -89,7 +89,7 @@ def lambda_handler(event, context):
 
             resultSet = { 
                 'lastItem': lastItem,
-                'services': records
+                'providers': records
             }
         
             statusCode = 200
