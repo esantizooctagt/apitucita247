@@ -158,6 +158,7 @@ def lambda_handler(event, context):
                         "GEOLOCATION": {"S": str(item['Geolocation'])},
                         "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
                         "PARENT_LOCATION": {"N": str(0)},
+                        "MANUAL_CHECK_OUT": {"N": str(0)},
                         "STATUS": {"N": str(1)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",

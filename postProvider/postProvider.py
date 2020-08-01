@@ -5,6 +5,7 @@ import json
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
+from dynamodb_json import json_util as json_dynamodb
 
 import base64
 
@@ -34,6 +35,23 @@ def lambda_handler(event, context):
         items = []
         recordset = {}
         if data['ServiceId'] == '':
+            response = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + data['BusinessId']},
+                    ':locationId': {'S': 'LOC#' + data['LocationId']}
+                }
+            )
+            for row in json_dynamodb.loads(response['Items']):
+                opeHours = row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else ''
+                daysOff = row['DAYS_OFF'] if 'DAYS_OFF' in row else []
+
+            resDays = []
+            for day in daysOff:
+                resDays.append(json.loads('{"S": "' + day + '"}'))
+
             recordset = {
                 "Put": {
                     "TableName": "TuCita247",
@@ -44,6 +62,8 @@ def lambda_handler(event, context):
                         "GSI1SK": {"S": 'SER#' + serviceId},
                         "NAME": {"S": data['Name']},
                         "CUSTOMER_PER_BUCKET": {"S": data['CustomerPerBucket']},
+                        "OPERATIONHOURS": {"S": opeHours},
+                        "DAYS_OFF": {"L": resDays},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
                         "BUCKET_INTERVAL": {"N": str(1)},

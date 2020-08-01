@@ -74,7 +74,7 @@ def lambda_handler(event, context):
                 'MaxConcurrentCustomer': row['MAX_CUSTOMER'] if 'MAX_CUSTOMER' in row else 0,
                 'BucketInterval': row['BUCKET_INTERVAL'] if 'BUCKET_INTERVAL' in row else 0,
                 'TotalCustPerBucketInter': row['CUSTOMER_PER_BUCKET'] if 'CUSTOMER_PER_BUCKET' in row else 0,
-                'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else '',
+                # 'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else '',
                 'Doors': row['DOORS'] if 'DOORS' in row else '',
                 'Status': row['STATUS'] if 'STATUS' in row else 0,
                 'ManualCheckOut': row['MANUAL_CHECK_OUT'] if 'MANUAL_CHECK_OUT' in row else 0,

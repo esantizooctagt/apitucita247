@@ -43,7 +43,7 @@ def lambda_handler(event, context):
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
-        response = dynamodb.query(
+        response = dynamodbQuery.query(
             TableName="TuCita247",
             IndexName="TuCita247_Index",
             ReturnConsumedCapacity='TOTAL',

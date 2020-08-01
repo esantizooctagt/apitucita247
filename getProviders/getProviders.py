@@ -79,7 +79,6 @@ def lambda_handler(event, context):
                     'ServiceId': row['SKID'].replace('SER#',''),
                     'Name': row['NAME'],
                     'LocationId': row['PKID'].replace('BUS#' + businessId + '#',''),
-                    'CustomerPerBucket': row['CUSTOMER_PER_BUCKET'],
                     'Status': row['STATUS']
                 }
                 records.append(recordset)
