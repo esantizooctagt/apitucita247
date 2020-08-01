@@ -49,7 +49,7 @@ def lambda_handler(event, context):
             else:
                 response = table.update_item(
                     Key={
-                        'PKID': 'BUS#' + businessId + '#' + locationId,
+                        'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
                         'SKID': 'PRO#' + providerId
                     },
                     UpdateExpression="SET PARENTDAYSOFF = :value",
@@ -70,7 +70,7 @@ def lambda_handler(event, context):
             else:
                 response = table.update_item(
                     Key={
-                        'PKID': 'BUS#' + businessId + '#' + locationId,
+                        'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
                         'SKID': 'PRO#' + providerId
                     },
                     UpdateExpression="SET PARENTHOURS = :value",

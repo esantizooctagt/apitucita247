@@ -35,7 +35,7 @@ def lambda_handler(event, context):
         table = dynamodb.Table('TuCita247')
         response = table.update_item(
             Key={
-                'PKID': 'BUS#' + businessId + '#' + locationId,
+                'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
                 'SKID': 'PRO#' + providerId
             },
             UpdateExpression="SET #s = :status",

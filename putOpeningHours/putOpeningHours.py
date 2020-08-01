@@ -70,7 +70,7 @@ def lambda_handler(event, context):
                     KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                     FilterExpression='PARENTHOURS = :parentHours',
                     ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#' + businessId + '#' + locId},
+                        ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locId},
                         ':providerId': {'S': 'PRO#'},
                         ':parentHours': {'N': str(1)}
                     },
@@ -113,7 +113,7 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                 FilterExpression='PARENTHOURS = :parentHours',
                 ExpressionAttributeValues={
-                    ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
+                    ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':providerId': {'S': 'PRO#'},
                     ':parentHours': {'N': str(1)}
                 },
@@ -132,7 +132,7 @@ def lambda_handler(event, context):
         if providerId != '_':
             response = table.update_item(
                 Key={
-                    'PKID': 'BUS#' + businessId + '#' + locationId,
+                    'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
                     'SKID': 'PRO#' + providerId
                 },
                 UpdateExpression="SET OPERATIONHOURS = :opeHours",

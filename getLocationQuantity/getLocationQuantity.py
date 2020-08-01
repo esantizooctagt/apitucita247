@@ -40,7 +40,7 @@ def lambda_handler(event, context):
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='PKID = :businessId AND begins_with( SKID, :locationId)',
             ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
+                ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                 ':locationId': {'S': 'PRO#'}
             }
         )

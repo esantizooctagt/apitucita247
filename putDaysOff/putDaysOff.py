@@ -69,7 +69,7 @@ def lambda_handler(event, context):
                     KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                     FilterExpression='PARENTDAYSOFF = :parentDays',
                     ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#' + businessId + '#' + locId},
+                        ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locId},
                         ':providerId': {'S': 'PRO#'},
                         ':parentDays': {'N': str(1)}
                     },
@@ -110,7 +110,7 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                 FilterExpression='PARENTDAYSOFF = :parentDays',
                 ExpressionAttributeValues={
-                    ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
+                    ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':providerId': {'S': 'PRO#'},
                     ':parentDays': {'N': str(1)}
                 },
@@ -129,7 +129,7 @@ def lambda_handler(event, context):
         if providerId != '_' and tipo == 'add':
             response = table.update_item(
                 Key={
-                    'PKID': 'BUS#' + businessId + '#' + locationId,
+                    'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
                     'SKID': 'PRO#' + providerId
                 },
                 UpdateExpression="SET DAYS_OFF = list_append(DAYS_OFF,:dateope)",
@@ -194,7 +194,7 @@ def lambda_handler(event, context):
                     KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                     FilterExpression='PARENTDAYSOFF = :parentDays',
                     ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#' + businessId + '#' + loc['SKID'].replace('LOC#','')},
+                        ':businessId': {'S': 'BUS#' + businessId + '#' + loc['SKID']},
                         ':providerId': {'S': 'PRO#'},
                         ':parentDays': {'N': str(1)}
                     },
@@ -207,7 +207,7 @@ def lambda_handler(event, context):
                     indexServ = getIndexServ.index(dateSpec)
                     response = table.update_item(
                         Key={
-                            'PKID': 'BUS#' + businessId + '#' + loc['SKID'].replace('LOC#',''),
+                            'PKID': 'BUS#' + businessId + '#' + loc['SKID'],
                             'SKID': serv['SKID']
                         },
                         UpdateExpression="REMOVE DAYS_OFF[" + str(indexServ) + "]",
@@ -245,7 +245,7 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
                 FilterExpression='PARENTDAYSOFF = :parentDays',
                 ExpressionAttributeValues={
-                    ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
+                    ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':providerId': {'S': 'PRO#'},
                     ':parentDays': {'N': str(1)}
                 },
@@ -271,7 +271,7 @@ def lambda_handler(event, context):
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND SKID = :providerId',
                 ExpressionAttributeValues={
-                    ':businessId': {'S': 'BUS#'+businessId+'#'+locationId},
+                    ':businessId': {'S': 'BUS#'+businessId+'#LOC#'+locationId},
                     ':providerId': {'S': 'PRO#'+providerId}
                 }
             )
@@ -283,7 +283,7 @@ def lambda_handler(event, context):
             index = getIndex.index(dateSpec)
             response = table.update_item(
                 Key={
-                    'PKID': 'BUS#' + businessId + '#' + locationId,
+                    'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
                     'SKID': 'PRO#' + providerId
                 },
                 UpdateExpression="REMOVE DAYS_OFF[" + str(index) + "]",

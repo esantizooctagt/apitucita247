@@ -56,7 +56,7 @@ def lambda_handler(event, context):
                 "Put": {
                     "TableName": "TuCita247",
                     "Item": {
-                        "PKID": {"S": 'BUS#' + data['BusinessId'] + '#' + data['LocationId']},
+                        "PKID": {"S": 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
                         "SKID": {"S": 'PRO#' + providerId},
                         "GSI1PK": {"S": 'BUS#' + data['BusinessId']},
                         "GSI1SK": {"S": 'PRO#' + providerId},
@@ -77,7 +77,7 @@ def lambda_handler(event, context):
                 "Update": {
                     "TableName": "TuCita247",
                     "Key": {
-                        "PKID": {"S": 'BUS#' + data['BusinessId'] + '#' + data['LocationId']},
+                        "PKID": {"S": 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
                         "SKID": {"S": 'PRO#' + providerId}
                     },
                     "UpdateExpression": "SET #n = :name,  #s = :status",

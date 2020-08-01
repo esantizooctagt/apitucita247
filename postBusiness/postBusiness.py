@@ -173,7 +173,7 @@ def lambda_handler(event, context):
                 "Put":{
                     "TableName":"TuCita247",
                     "Item": {
-                        "PKID": {"S": 'BUS#'+businessId+'#'+locationId},
+                        "PKID": {"S": 'BUS#'+businessId+'#LOC#'+locationId},
                         "SKID": {"S": 'PRO#'+providerId},
                         "GSI1PK": {"S": 'BUS#'+businessId},
                         "GSI1SK": {"S": 'PRO#'+providerId},

@@ -43,7 +43,7 @@ def lambda_handler(event, context):
             recordset = {
                 'ProviderId': item['SKID'].replace('PRO#',''),
                 'Name': item['NAME'],
-                'LocationId': item['PKID'].replace('BUS#' + businessId + '#', ''),
+                'LocationId': item['PKID'].replace('BUS#' + businessId + '#LOC#', ''),
                 'Status': int(item['STATUS'])
             }
     

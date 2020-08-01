@@ -59,7 +59,7 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :key01',
                     ExpressionAttributeValues={
-                        ':key01': {'S': 'BUS#' + businessId + '#' + locationId}
+                        ':key01': {'S': 'BUS#' + businessId + '#LOC#' + locationId}
                     }
                 )
                 for result in json_dynamodb.loads(serv['Items']):

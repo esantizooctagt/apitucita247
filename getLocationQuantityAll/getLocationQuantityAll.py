@@ -65,7 +65,7 @@ def lambda_handler(event, context):
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :key01',
                 ExpressionAttributeValues={
-                    ':key01': {'S': 'BUS#' + businessId + '#' + row['SKID'].replace('LOC#','')}
+                    ':key01': {'S': 'BUS#' + businessId + '#' + row['SKID']}
                 }
             )
             services = []
