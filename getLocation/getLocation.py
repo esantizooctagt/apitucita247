@@ -28,6 +28,7 @@ def lambda_handler(event, context):
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         country = event['pathParameters']['country']
+        language = event['pathParameters']['language']
 
         response = dynamodb.query(
             TableName="TuCita247",
@@ -73,10 +74,9 @@ def lambda_handler(event, context):
                 'ManualCheckOut': row['MANUAL_CHECK_OUT'] if 'MANUAL_CHECK_OUT' in row else 0,
                 'Sectors': items
             }
-            records.append(recordset)
             
         statusCode = 200
-        body = json.dumps({'Code': 200, 'Data': records})
+        body = json.dumps({'Code': 200, 'Data': recordset})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message':'Error on request try again'+ str(e)})

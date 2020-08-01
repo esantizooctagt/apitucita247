@@ -1943,7 +1943,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /locations/{queryStr}
+            Path: /locations/{businessId}/{items}/{search}/{lastItem}
             Method: get
             ApiId: !Ref HttpApi
 
@@ -1964,7 +1964,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/data/{businessId}/{locationId}/{country}
+            Path: /location/data/{businessId}/{locationId}/{country}/{language}
             Method: get
             ApiId: !Ref HttpApi
 
