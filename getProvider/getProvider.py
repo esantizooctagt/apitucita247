@@ -44,8 +44,7 @@ def lambda_handler(event, context):
                 'ProviderId': item['SKID'].replace('PRO#',''),
                 'Name': item['NAME'],
                 'LocationId': item['PKID'].replace('BUS#' + businessId + '#', ''),
-                'Status': int(item['STATUS']),
-                'CustomerPerBucket': item['CUSTOMER_PER_BUCKET']
+                'Status': int(item['STATUS'])
             }
     
         statusCode = 200

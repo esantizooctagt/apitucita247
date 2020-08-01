@@ -41,7 +41,7 @@ def lambda_handler(event, context):
             UpdateExpression="SET #s = :status",
             ExpressionAttributeNames={'#s': 'STATUS'},
             ExpressionAttributeValues={
-                ':status': str(2)
+                ':status': 2
             },
             ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)",
             ReturnValues="NONE"

@@ -61,12 +61,10 @@ def lambda_handler(event, context):
                         "GSI1PK": {"S": 'BUS#' + data['BusinessId']},
                         "GSI1SK": {"S": 'PRO#' + providerId},
                         "NAME": {"S": data['Name']},
-                        "CUSTOMER_PER_BUCKET": {"S": data['CustomerPerBucket']},
                         "OPERATIONHOURS": {"S": opeHours},
                         "DAYS_OFF": {"L": resDays},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
-                        "BUCKET_INTERVAL": {"N": str(1)},
                         "STATUS": {"N": str(data['Status'])}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
@@ -82,10 +80,9 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'BUS#' + data['BusinessId'] + '#' + data['LocationId']},
                         "SKID": {"S": 'PRO#' + providerId}
                     },
-                    "UpdateExpression": "SET #n = :name, CUSTOMER_PER_BUCKET = :customerperbucket, #s = :status",
+                    "UpdateExpression": "SET #n = :name,  #s = :status",
                     "ExpressionAttributeValues": {
                         ':name': {'S': data['Name']},
-                        ':customerperbucket': {'S': data['CustomerPerBucket']},
                         ':status': {'N': str(data['Status'])}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS','#n': 'NAME'},
