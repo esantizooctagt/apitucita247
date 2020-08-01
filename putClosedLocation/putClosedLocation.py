@@ -43,7 +43,7 @@ def lambda_handler(event, context):
         response = table.update_item(
             Key={
                 'PKID': 'BUS#' + businessId + '#' + locationId,
-                'SKID': 'SER#' + serviceId
+                'SKID': 'PRO#' + serviceId
             },
             UpdateExpression="SET PEOPLE_CHECK_IN = :qty, OPEN_DATE = :closed, #o = :open", 
             ExpressionAttributeValues= {':qty': 0, ':closed': '', ':initVal': 1, ':open': 0},

@@ -71,7 +71,7 @@ def lambda_handler(event, context):
                     FilterExpression='PARENTHOURS = :parentHours',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#' + locId},
-                        ':serviceId': {'S': 'SER#'},
+                        ':serviceId': {'S': 'PRO#'},
                         ':parentHours': {'N': str(1)}
                     },
                 )
@@ -114,7 +114,7 @@ def lambda_handler(event, context):
                 FilterExpression='PARENTHOURS = :parentHours',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
-                    ':serviceId': {'S': 'SER#'},
+                    ':serviceId': {'S': 'PRO#'},
                     ':parentHours': {'N': str(1)}
                 },
             )
@@ -133,7 +133,7 @@ def lambda_handler(event, context):
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId + '#' + locationId,
-                    'SKID': 'SER#' + serviceId
+                    'SKID': 'PRO#' + serviceId
                 },
                 UpdateExpression="SET OPERATIONHOURS = :opeHours",
                 ExpressionAttributeValues={':opeHours': opeHours},

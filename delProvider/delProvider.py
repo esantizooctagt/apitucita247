@@ -36,7 +36,7 @@ def lambda_handler(event, context):
         response = table.update_item(
             Key={
                 'PKID': 'BUS#' + businessId + '#' + locationId,
-                'SKID': 'SER#' + serviceId
+                'SKID': 'PRO#' + serviceId
             },
             UpdateExpression="SET #s = :status",
             ExpressionAttributeNames={'#s': 'STATUS'},

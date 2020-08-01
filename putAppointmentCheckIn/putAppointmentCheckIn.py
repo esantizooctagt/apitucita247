@@ -131,7 +131,7 @@ def lambda_handler(event, context):
                 "TableName": "TuCita247",
                 "Key": {
                     "PKID": {"S": 'BUS#' + businessId + '#' + locationId}, 
-                    "SKID": {"S": 'SER#' + serviceId}, 
+                    "SKID": {"S": 'PRO#' + serviceId}, 
                 },
                 "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
                 "ExpressionAttributeValues": { 

@@ -75,7 +75,7 @@ def lambda_handler(event, context):
                         closed = 0
 
                     recordset = {
-                        'ServiceId': result['SKID'].replace('SER#',''),
+                        'ServiceId': result['SKID'].replace('PRO#',''),
                         'Name': result['NAME'],
                         'Open': open,
                         'Closed': closed

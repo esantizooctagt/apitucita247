@@ -45,13 +45,13 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :serviceId )',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId + '#' + row['SKID'].replace('LOC#','')},
-                    ':serviceId': {'S': 'SER#'}
+                    ':serviceId': {'S': 'PRO#'}
                 }
             )
             services = []
             for item in json_dynamodb.loads(serv['Items']):
                 serviceData = {
-                    'ServiceId': row['SKID'].replace('LOC#','')+'#'+item['SKID'].replace('SER#',''),
+                    'ServiceId': row['SKID'].replace('LOC#','')+'#'+item['SKID'].replace('PRO#',''),
                     'Name': item['NAME']
                 }
                 services.append(serviceData)

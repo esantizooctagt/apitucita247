@@ -104,7 +104,7 @@ def lambda_handler(event, context):
                     KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#' + location['SKID'].replace('LOC#','')},
-                        ':metadata': {'S': 'SER#'}
+                        ':metadata': {'S': 'PRO#'}
                     },
                 )
                 services = []
@@ -113,7 +113,7 @@ def lambda_handler(event, context):
                     daysOffServ = [datetime.strptime(date, '%Y-%m-%d') for date in service['DAYS_OFF']] if 'DAYS_OFF' in service else []
                     daysOffServ = validDayOff(daysOffServ, start_date, end_date)
                     recordset = {
-                        'ServiceId': service['SKID'].replace('SER#',''),
+                        'ServiceId': service['SKID'].replace('PRO#',''),
                         'Name': service['NAME'],
                         'DaysOff': daysOffServ,
                         'ParentDaysOff': service['PARENTDAYSOFF'] if 'PARENTDAYSOFF' in service else 0

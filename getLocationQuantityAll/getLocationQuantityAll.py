@@ -74,7 +74,7 @@ def lambda_handler(event, context):
                     'Quantity': item['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in item else 0,
                     'TotLocation': row['MAX_CUSTOMER'] if 'MAX_CUSTOMER' in row else 0,
                     'PerLocation': ((row['PEOPLE_CHECK_IN'] if 'PEOPLE_CHECK_IN' in row else 0)/(row['MAX_CUSTOMER'] if 'MAX_CUSTOMER' in row else 0))*100,
-                    'ServiceId': item['SKID'].replace('SER#',''),
+                    'ServiceId': item['SKID'].replace('PRO#',''),
                     'Name': item['NAME']
                 }
                 services.append(recordset)

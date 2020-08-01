@@ -57,9 +57,9 @@ def lambda_handler(event, context):
                     "TableName": "TuCita247",
                     "Item": {
                         "PKID": {"S": 'BUS#' + data['BusinessId'] + '#' + data['LocationId']},
-                        "SKID": {"S": 'SER#' + serviceId},
+                        "SKID": {"S": 'PRO#' + serviceId},
                         "GSI1PK": {"S": 'BUS#' + data['BusinessId']},
-                        "GSI1SK": {"S": 'SER#' + serviceId},
+                        "GSI1SK": {"S": 'PRO#' + serviceId},
                         "NAME": {"S": data['Name']},
                         "CUSTOMER_PER_BUCKET": {"S": data['CustomerPerBucket']},
                         "OPERATIONHOURS": {"S": opeHours},
@@ -80,7 +80,7 @@ def lambda_handler(event, context):
                     "TableName": "TuCita247",
                     "Key": {
                         "PKID": {"S": 'BUS#' + data['BusinessId'] + '#' + data['LocationId']},
-                        "SKID": {"S": 'SER#' + serviceId}
+                        "SKID": {"S": 'PRO#' + serviceId}
                     },
                     "UpdateExpression": "SET #n = :name, CUSTOMER_PER_BUCKET = :customerperbucket, #s = :status",
                     "ExpressionAttributeValues": {

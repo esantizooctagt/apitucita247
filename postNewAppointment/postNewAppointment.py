@@ -164,7 +164,7 @@ def lambda_handler(event, context):
                     KeyConditionExpression = 'PKID = :businessId and SKID = :key',
                     ExpressionAttributeValues = {
                         ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
-                        ':key': {'S': 'SER#' + serviceId}
+                        ':key': {'S': 'PRO#' + serviceId}
                     },
                     Limit = 1
                 )
@@ -443,7 +443,7 @@ def lambda_handler(event, context):
                                 "TableName": "TuCita247",
                                 "Key": {
                                     "PKID": {"S": 'BUS#' + businessId + '#' + locationId}, 
-                                    "SKID": {"S": 'SER#' + serviceId}, 
+                                    "SKID": {"S": 'PRO#' + serviceId}, 
                                 },
                                 "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
                                 "ExpressionAttributeValues": { 

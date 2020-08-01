@@ -50,7 +50,7 @@ def lambda_handler(event, context):
             KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#'+businessId+'#'+locationId},
-                ':serviceId': {'S': 'SER#'+serviceId}
+                ':serviceId': {'S': 'PRO#'+serviceId}
             },
             Limit = 1
         )

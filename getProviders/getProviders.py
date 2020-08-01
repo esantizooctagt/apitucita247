@@ -33,12 +33,12 @@ def lambda_handler(event, context):
         salir = 0
 
         e = {'#s': 'STATUS'}
-        a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':services': {'S':'SER#'}}
+        a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':services': {'S':'PRO#'}}
         f = '#s < :stat'
         if search != '_':
             e = {'#s': 'STATUS', '#n': 'NAME'}
             f = '#s < :stat and begins_with (#n , :search)'
-            a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':services': {'S':'SER#'}, ':search': {'S': search}}
+            a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':services': {'S':'PRO#'}, ':search': {'S': search}}
 
         if lastItem == '_':
             lastItem = ''
@@ -46,7 +46,7 @@ def lambda_handler(event, context):
             if lastItem == '':
                 salir = 1
             else:
-                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId },'GSI1SK': {'S': 'SER#' + lastItem }}
+                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId },'GSI1SK': {'S': 'PRO#' + lastItem }}
 
         if salir == 0:
             if lastItem == '':
@@ -76,7 +76,7 @@ def lambda_handler(event, context):
             recordset ={}
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
-                    'ServiceId': row['SKID'].replace('SER#',''),
+                    'ServiceId': row['SKID'].replace('PRO#',''),
                     'Name': row['NAME'],
                     'LocationId': row['PKID'].replace('BUS#' + businessId + '#',''),
                     'Status': row['STATUS']
@@ -85,7 +85,7 @@ def lambda_handler(event, context):
 
             if 'LastEvaluatedKey' in response:
                 lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
-                lastItem = lastItem['SKID'].replace('SER#','')
+                lastItem = lastItem['SKID'].replace('PRO#','')
 
             resultSet = { 
                 'lastItem': lastItem,

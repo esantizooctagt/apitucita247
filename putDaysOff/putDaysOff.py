@@ -70,7 +70,7 @@ def lambda_handler(event, context):
                     FilterExpression='PARENTDAYSOFF = :parentDays',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#' + locId},
-                        ':serviceId': {'S': 'SER#'},
+                        ':serviceId': {'S': 'PRO#'},
                         ':parentDays': {'N': str(1)}
                     },
                 )
@@ -111,7 +111,7 @@ def lambda_handler(event, context):
                 FilterExpression='PARENTDAYSOFF = :parentDays',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
-                    ':serviceId': {'S': 'SER#'},
+                    ':serviceId': {'S': 'PRO#'},
                     ':parentDays': {'N': str(1)}
                 },
             )
@@ -130,7 +130,7 @@ def lambda_handler(event, context):
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId + '#' + locationId,
-                    'SKID': 'SER#' + serviceId
+                    'SKID': 'PRO#' + serviceId
                 },
                 UpdateExpression="SET DAYS_OFF = list_append(DAYS_OFF,:dateope)",
                 ExpressionAttributeValues={':dateope': [dateSpec]},
@@ -195,7 +195,7 @@ def lambda_handler(event, context):
                     FilterExpression='PARENTDAYSOFF = :parentDays',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#' + loc['SKID'].replace('LOC#','')},
-                        ':serviceId': {'S': 'SER#'},
+                        ':serviceId': {'S': 'PRO#'},
                         ':parentDays': {'N': str(1)}
                     },
                 )
@@ -246,7 +246,7 @@ def lambda_handler(event, context):
                 FilterExpression='PARENTDAYSOFF = :parentDays',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId + '#' + locationId},
-                    ':serviceId': {'S': 'SER#'},
+                    ':serviceId': {'S': 'PRO#'},
                     ':parentDays': {'N': str(1)}
                 },
             )
@@ -272,7 +272,7 @@ def lambda_handler(event, context):
                 KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#'+businessId+'#'+locationId},
-                    ':serviceId': {'S': 'SER#'+serviceId}
+                    ':serviceId': {'S': 'PRO#'+serviceId}
                 }
             )
             getIndex = ''
@@ -284,7 +284,7 @@ def lambda_handler(event, context):
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId + '#' + locationId,
-                    'SKID': 'SER#' + serviceId
+                    'SKID': 'PRO#' + serviceId
                 },
                 UpdateExpression="REMOVE DAYS_OFF[" + str(index) + "]",
                 ReturnValues="NONE"

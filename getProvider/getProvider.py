@@ -35,13 +35,13 @@ def lambda_handler(event, context):
             KeyConditionExpression='GSI1PK = :businessId AND GSI1SK = :serviceId',
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
-                ':serviceId': {'S': 'SER#' + serviceId}
+                ':serviceId': {'S': 'PRO#' + serviceId}
             },
             Limit =1
         )
         for item in json_dynamodb.loads(provider['Items']):
             recordset = {
-                'ServiceId': item['SKID'].replace('SER#',''),
+                'ServiceId': item['SKID'].replace('PRO#',''),
                 'Name': item['NAME'],
                 'LocationId': item['PKID'].replace('BUS#' + businessId + '#', ''),
                 'Status': int(item['STATUS']),
