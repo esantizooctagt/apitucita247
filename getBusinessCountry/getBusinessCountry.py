@@ -38,7 +38,7 @@ def lambda_handler(event, context):
         )
         country = ''
         for row in json_dynamodb.loads(response['Items']):
-            country: row['COUNTRY']
+            country = row['COUNTRY']
                         
         statusCode = 200
         body = json.dumps({'Code': 200, 'CountryId': country})

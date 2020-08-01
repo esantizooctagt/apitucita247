@@ -48,7 +48,7 @@ def lambda_handler(event, context):
             }
     
         statusCode = 200
-        body = json.dumps(recordset)
+        body = json.dumps({'Code':200, 'Data': recordset})
 
         if statusCode == '':
             statusCode = 404

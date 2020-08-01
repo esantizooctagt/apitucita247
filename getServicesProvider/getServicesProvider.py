@@ -40,35 +40,37 @@ def lambda_handler(event, context):
 
         recordset ={}
         for row in json_dynamodb.loads(response['Items']):
-            response = dynamodb.query(
+            selected = 0
+            providers = dynamodb.query(
                 TableName="TuCita247",
                 IndexName="TuCita247_Index",
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :businessId AND begins_with ( SKID, :provider )',
-                ExpressionAttributeValues={':businessId': {'S': 'BUS#' + businessId}, ':provider': {'S':'PRO#'}}
+                KeyConditionExpression='GSI1PK = :businessId AND GSI1SK = :serviceId',
+                ExpressionAttributeValues={':businessId': {'S': 'BUS#' + businessId + '#PRO#' + providerId}, ':serviceId': {'S': row['SKID']}}
             )
+            for item in json_dynamodb.loads(providers['Items']):
+                if item['GSI1SK'] == row['SKID']:
+                    selected = 1
+
             recordset = {
                 'ServiceId': row['SKID'].replace('SER#',''),
                 'Name': row['NAME'],
                 'TimeService': row['TIME_SERVICE'],
-                'Status': row['STATUS']
+                'Selected': selected
             }
             records.append(recordset)
 
-            if 'LastEvaluatedKey' in response:
-                lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
-                lastItem = lastItem['SKID'].replace('SER#','')
 
             resultSet = { 
-                'lastItem': lastItem,
                 'services': records
             }
         
-            statusCode = 200
-            body = json.dumps(resultSet)
-        else:
-            statusCode = 404
-            body = json.dumps({"Message": "No more rows", "Code": 404})
+        statusCode = 200
+        body = json.dumps(resultSet)
+
+        if statusCode == '':
+            statusCode = 500
+            body = json.dumps({"Message": "Error on request try again", "Code": 500})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' +str(e)})

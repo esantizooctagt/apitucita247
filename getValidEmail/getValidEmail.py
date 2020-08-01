@@ -3,6 +3,8 @@ import logging
 import random
 import json
 
+import hashlib
+
 import boto3
 import botocore.exceptions
 from botocore.exceptions import ClientError
@@ -72,7 +74,7 @@ def lambda_handler(event, context):
         )
 
         statusCode = 200
-        body = json.dumps({'Message': 'Email send successfully', 'Code': 200})
+        body = json.dumps({'Message': 'Email send successfully', 'VerificationCode': hashlib.md5(code.encode("utf")).hexdigest(), 'Code': 200})
 
         if statusCode == '':
             statusCode = 500
