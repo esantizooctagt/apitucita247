@@ -19,7 +19,18 @@ logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
-    
+
+def cleanNullTerms(d):
+   clean = {}
+   for k, v in d.items():
+      if isinstance(v, dict):
+         nested = cleanNullTerms(v)
+         if len(nested.keys()) > 0:
+            clean[k] = nested
+      elif v is not None:
+         clean[k] = v
+   return clean
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -62,7 +73,7 @@ def lambda_handler(event, context):
                         "GSI1SK": {"S": 'PRO#' + providerId},
                         "NAME": {"S": data['Name']},
                         "OPERATIONHOURS": {"S": opeHours},
-                        "DAYS_OFF": {"L": resDays},
+                        "DAYS_OFF": {"L": resDays if resDays != [] else None},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
                         "STATUS": {"N": str(data['Status'])}
@@ -90,7 +101,7 @@ def lambda_handler(event, context):
                     "ReturnValuesOnConditionCheckFailure": "NONE"
                 },
             }
-        items.append(recordset)
+        items.append(cleanNullTerms(recordset))
         
         logger.info(items)
         response = dynamodb.transact_write_items(

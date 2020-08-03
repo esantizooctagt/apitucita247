@@ -19,7 +19,18 @@ logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
-    
+
+def cleanNullTerms(d):
+   clean = {}
+   for k, v in d.items():
+      if isinstance(v, dict):
+         nested = cleanNullTerms(v)
+         if len(nested.keys()) > 0:
+            clean[k] = nested
+      elif v is not None:
+         clean[k] = v
+   return clean
+   
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -35,6 +46,26 @@ def lambda_handler(event, context):
         items = []
         recordset = {}
         if data['LocationId'] == '':
+            response = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#'+data['BusinessId']},
+                    ':metadata': {'S': 'METADATA'}
+                }
+            )
+            daysOff = []
+            operationHours = ''
+            index = 0
+            for row in json_dynamodb.loads(response['Items']):
+                daysOff = row['DAYS_OFF'] if 'DAYS_OFF' in row else []
+                operationHours = row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else ''
+            
+            resDays = []
+            for day in daysOff:
+                resDays.append(json.loads('{"S": "' + day + '"}'))
+
             recordset = {
                 "Put": {
                     "TableName": "TuCita247",
@@ -51,6 +82,11 @@ def lambda_handler(event, context):
                         "BUCKET_INTERVAL": {"N": str(data['BucketInterval'])},
                         "CUSTOMER_PER_BUCKET": {"N": str(data['TotalCustPerBucketInter'])},
                         "MANUAL_CHECK_OUT": {"N": str(data['ManualCheckOut'])},
+                        "PARENTDAYSOFF": {"N": str(1)},
+                        "PARENTHOURS": {"N": str(1)},
+                        "DAYS_OFF": {"L": resDays if resDays != [] else None},
+                        "OPERATIONHOURS": {"S": operationHours},
+                        "OPEN": {"N": str(0)},
                         "DOORS": {"S": str(data['Doors'])},
                         "STATUS": {"N": str(data['Status'])}
                     },
@@ -88,7 +124,7 @@ def lambda_handler(event, context):
                     "ReturnValuesOnConditionCheckFailure": "NONE"
                 },
             }
-        items.append(recordset)
+        items.append(cleanNullTerms(recordset))
         
         logger.info(items)
         response = dynamodb.transact_write_items(

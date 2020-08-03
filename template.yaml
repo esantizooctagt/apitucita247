@@ -1511,7 +1511,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointment/opeHours/{businessId}/{locationId}/{providerId}/{initDay}
+            Path: /appointment/opeHours/{businessId}/{locationId}/{providerId}/{serviceId}/{initDay}
             Method: get
             ApiId: !Ref HttpApi
   

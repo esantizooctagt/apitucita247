@@ -6,7 +6,7 @@ from decimal import *
 import math
 import datetime
 import dateutil.tz
-from datetime import timezone
+from datetime import timezone, timedelta
 
 import boto3
 import botocore.exceptions
@@ -23,10 +23,15 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
-def findHours(time, hours):
+def findHours(time, interval, hours):
     for item in hours:
         if item['Time'] == time:
             return item
+        if int(item['TimeService']) < interval:
+            newTime = datetime.datetime.strptime(time, '%H:%M') + timedelta(hours=interval)
+            newTime = newTime.strftime("%H:%M")
+            if item['Time'] >= time and item['Time'] <= newTime:
+                return {'Time': time, 'TimeService': item['TimeService'], 'Bucket': 0, 'Available': 0, 'Used': 0}
     item = ''
     return item
 
@@ -39,11 +44,44 @@ def lambda_handler(event, context):
 
     try:
         statusCode = ''
+        interval = 0
+        bucket = 0
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         providerId = event['pathParameters']['providerId']
+        serviceId = event['pathParameters']['serviceId']
         monday = datetime.datetime.strptime(event['pathParameters']['initDay'], '%Y-%m-%d')
+        #GET SERVICES FROM THIS PROVIDER
+        # services = dynamodb.query(
+        #     TableName="TuCita247",
+        #     IndexName="TuCita247_Index",
+        #     ReturnConsumedCapacity='TOTAL',
+        #     KeyConditionExpression='GSI1PK = :businessId',
+        #     ExpressionAttributeValues={
+        #         ':businessId': {'S': 'BUS#'+businessId+'#PRO#'+providerId},
+        #     }
+        # )
+        # items = []
+        # recordset = {}
+        # for item in json_dynamodb.loads(services['Items']):
+        service = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#'+businessId},
+                ':serviceId': {'S': 'SER#'+serviceId}
+            }
+        )
+        for serv in json_dynamodb.loads(service['Items']):
+            interval = serv['TIME_SERVICE']
+            bucket = serv['CUSTOMER_PER_TIME']
 
+        if interval == 0:
+            statusCode = 500
+            body = json.dumps({'Message': 'No data for this service provider', 'Code': 500})
+            return
+        #GET OPERATION HOURS
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -63,9 +101,9 @@ def lambda_handler(event, context):
         Saturday = []
         Sunday = []
         for row in json_dynamodb.loads(response['Items']):
-            bucket = row['CUSTOMER_PER_BUCKET'] if 'CUSTOMER_PER_BUCKET' in row else 0
+            # bucket = row['CUSTOMER_PER_BUCKET'] if 'CUSTOMER_PER_BUCKET' in row else 0
             daysOff = row['DAYS_OFF'] if 'DAYS_OFF' in row else []
-            interval = row['BUCKET_INTERVAL'] if 'BUCKET_INTERVAL' in row else 0 
+            # interval = row['BUCKET_INTERVAL'] if 'BUCKET_INTERVAL' in row else 0 
             opeHours = json.loads(row['OPERATIONHOURS'])
 
             x = range(0,7)
@@ -73,9 +111,13 @@ def lambda_handler(event, context):
             maxVal = 0
             for n in x:
                 dayOffValid = True
+                #DIA DE OPERACION
                 nextDate = monday + datetime.timedelta(days=n)
+                #NOMBRE DEL DIA
                 dayName = nextDate.strftime("%A")[0:3].upper()
+                #HORAS DE TRABAJO DEL PROVEEDOR
                 dayHours = opeHours[dayName] if dayName in opeHours else ''
+                #VALIDA SI ES DIA DE DESCANSO PARA EL PROVEEDOR SI ES SALE DEL PROCESO Y VA AL SIGUIENTE DIA SINO SIGUE
                 if daysOff != []:
                     dayOffValid = nextDate.strftime("%Y-%m-%d") not in daysOff
 
@@ -85,19 +127,34 @@ def lambda_handler(event, context):
                         ReturnConsumedCapacity='TOTAL',
                         KeyConditionExpression='PKID = :usedData',
                         ExpressionAttributeValues={
-                            ':usedData': {'S': 'LOC#'+locationId+'#DT#'+nextDate.strftime("%Y-%m-%d")}
+                            ':usedData': {'S': 'LOC#'+locationId+'#PRO#'+providerId+'#DT#'+nextDate.strftime("%Y-%m-%d")}
                         }
                     )
                     hoursData = []
                     for item in json_dynamodb.loads(getAvailability['Items']):
-                        recordset = {
-                            'Time': item['SKID'].replace('HR#','').replace('-',':'),
-                            'Bucket': bucket,
-                            'Available': item['AVAILABLE'],
-                            'Used': +bucket-int(item['AVAILABLE'])
-                        }
-                        hoursData.append(recordset)
-
+                        if (int(item['TIME_SERVICE']) > 1):
+                            times = range(0, item['TIME_SERVICE'])
+                            for hr in times:
+                                newTime = str(int(item['SKID'].replace('HR#','')[0:2])+hr)
+                                newTime = newTime.rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
+                                recordset = {
+                                    'Time': newTime,
+                                    'TimeService': item['TIME_SERVICE'],
+                                    'Bucket': bucket,
+                                    'Available': item['AVAILABLE'],
+                                    'Used': +bucket-int(item['AVAILABLE'])
+                                }
+                                hoursData.append(recordset)
+                        else:
+                            recordset = {
+                                'Time': item['SKID'].replace('HR#','').replace('-',':'),
+                                'TimeService': item['TIME_SERVICE'],
+                                'Bucket': bucket,
+                                'Available': item['AVAILABLE'],
+                                'Used': +bucket-int(item['AVAILABLE'])
+                            }
+                            hoursData.append(recordset)
+                    
                     ini = 0
                     fin = 0
                     for dt in dayHours:
@@ -113,8 +170,8 @@ def lambda_handler(event, context):
                                 h = str(math.trunc(h/scale)).zfill(2) + ':00' 
                             else:
                                 h = str(math.trunc(h/scale)).zfill(2) + ':30'
-                             
-                            if findHours(h, hoursData) == '':
+                            
+                            if findHours(h, interval, hoursData) == '':
                                 if int(h[0:2]) > 12:
                                     h = str(int(h[0:2])-12) + h[2:5] + ' PM'
                                 else:
@@ -126,18 +183,26 @@ def lambda_handler(event, context):
                                     'Used': 0
                                 }
                             else:
-                                record = findHours(h, hoursData)
+                                record = findHours(h, interval, hoursData)
                                 h = record['Time']
                                 if int(h[0:2]) > 12:
                                     h = str(int(h[0:2])-12) + h[2:5] + ' PM'
                                 else:
                                     h = h + ' AM'
-                                recordset = {
-                                    'Time': h,
-                                    'Bucket': record['Bucket'],
-                                    'Available': record['Available'],
-                                    'Used': record['Used']
-                                }
+                                if record['TimeService'] == interval:
+                                    recordset = {
+                                        'Time': h,
+                                        'Bucket': bucket, #record['Bucket'],
+                                        'Available': record['Available'],
+                                        'Used': record['Used']
+                                    }
+                                else:
+                                    recordset = {
+                                        'Time': h,
+                                        'Bucket': bucket,
+                                        'Available': 0,
+                                        'Used': 0
+                                    }
                             
                             if n == 0:
                                 Monday.append(recordset)
@@ -178,7 +243,7 @@ def lambda_handler(event, context):
 
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Message': 'Error on get purpose', 'Code': 500})
+            body = json.dumps({'Message': 'No data for this service provider', 'Code': 500})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e), 'Code': 500})
