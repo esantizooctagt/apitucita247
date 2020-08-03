@@ -56,7 +56,6 @@ def lambda_handler(event, context):
         for row in locations:
             daysOff = row['DAYS_OFF'] if 'DAYS_OFF' in row else []
             opeHours = json.loads(row['OPERATIONHOURS']) if 'OPERATIONHOURS' in row else ''
-            bucketInterval = row['BUCKET_INTERVAL'] if 'BUCKET_INTERVAL' in row else ''
         
         if daysOff != []:
             dayOffValid = today.strftime("%Y-%m-%d") not in daysOff
@@ -76,7 +75,6 @@ def lambda_handler(event, context):
 
         resultSet = { 
             'Code': 200,
-            'BucketInterval': str(bucketInterval),
             'CurrHour': currHour,
             'Hours': record
         }

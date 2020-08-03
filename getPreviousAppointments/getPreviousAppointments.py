@@ -43,7 +43,7 @@ def lambda_handler(event, context):
             ExpressionAttributeNames=n,
             FilterExpression=f,
             ExpressionAttributeValues={
-                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + providerId},
+                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
                 ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
                 ':initDate': {'S': str(status) +'#DT#' + initDate},
                 ':type': {'N': str(1)}
@@ -81,7 +81,7 @@ def lambda_handler(event, context):
             if lastItem:
                 appoId = lastItem['PKID'].replace('APPO#','')
                 lastItem = lastItem['GSI1SK']
-                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + providerId},'GSI1SK': {'S': lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
+                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},'GSI1SK': {'S': lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
 
             response = dynamodb.query(
                 TableName="TuCita247",
@@ -92,7 +92,7 @@ def lambda_handler(event, context):
                 FilterExpression=f,
                 ExpressionAttributeNames=n,
                 ExpressionAttributeValues={
-                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + providerId},
+                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
                     ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
                     ':initDate': {'S': str(status) +'#DT#' + initDate},
                     ':type': {'N': str(1)}

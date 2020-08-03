@@ -52,6 +52,7 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         businessId = data['BusinessId']
         locationId = data['LocationId']
+        serviceId = data['ServiceId']
         door = data['Door'] if 'Door' in data else ''
         phone = data['Phone']
         name = data['Name']
@@ -86,6 +87,7 @@ def lambda_handler(event, context):
 
         statusPlan = 0
         numberAppos = 0
+        bucket = 0
         result = {}
         hoursData = []
         hours = []
@@ -156,6 +158,25 @@ def lambda_handler(event, context):
                 statusCode = 404
                 body = json.dumps({'Message': 'No appointments available', 'Data': result, 'Code': 400})
             else:
+                #GET SERVICES 
+                service = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#'+businessId},
+                        ':serviceId': {'S': 'SER#'+serviceId}
+                    }
+                )
+                for serv in json_dynamodb.loads(service['Items']):
+                    bucket = serv['TIME_SERVICE']
+                    numCustomer = serv['CUSTOMER_PER_TIME']
+
+                if bucket == 0:
+                    statusCode = 500
+                    body = json.dumps({'Message': 'No data for this service provider', 'Code': 500})
+                    return
+
                 #ENTRA SI HAY CITAS DISPONIBLES YA SEA DE PLAN O PAQUETE VIGENTE
                 #GET OPERATION HOURS FROM SPECIFIC LOCATION
                 getCurrDate = dynamodb.query(
@@ -173,8 +194,8 @@ def lambda_handler(event, context):
                     dayOffValid = True
 
                     opeHours = json.loads(currDate['OPERATIONHOURS'])
-                    numCustomer = currDate['CUSTOMER_PER_BUCKET']
-                    bucket = currDate['BUCKET_INTERVAL']
+                    # numCustomer = currDate['CUSTOMER_PER_BUCKET']
+                    # bucket = currDate['BUCKET_INTERVAL']
                     daysOff = currDate['DAYS_OFF'] if 'DAYS_OFF' in currDate else []
                     dateAppo = opeHours[dayName] if dayName in opeHours else ''
                     if daysOff != []:
@@ -190,21 +211,39 @@ def lambda_handler(event, context):
                         ReturnConsumedCapacity = 'TOTAL',
                         KeyConditionExpression = 'PKID = :key',
                         ExpressionAttributeValues = {
-                            ':key': {'S': 'LOC#' + locationId + '#SER#' + providerId + '#DT#' + appoDate.strftime("%Y-%m-%d")}
+                            ':key': {'S': 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + appoDate.strftime("%Y-%m-%d")}
                         }
                     )
                     for row in json_dynamodb.loads(getCurrHours['Items']):
-                        recordset = {
-                            'Hour': row['SKID'].replace('HR#','').replace('-',':'),
-                            'Available': row['AVAILABLE']
-                        }
-                        hoursData.append(recordset)
+                        if (int(row['TIME_SERVICE']) > 1):
+                            times = range(0, row['TIME_SERVICE'])
+                            for hr in times:
+                                newTime = str(int(row['SKID'].replace('HR#','')[0:2])+hr)
+                                newTime = newTime.rjust(2,'0')+':'+row['SKID'].replace('HR#','')[3:5]
+                                recordset = {
+                                    'Hour': newTime,
+                                    'TimeService': row['TIME_SERVICE'],
+                                    'Available': row['AVAILABLE']
+                                }
+                                hoursData.append(recordset)
+                        else:
+                            recordset = {
+                                'Hour': row['SKID'].replace('HR#','').replace('-',':'),
+                                'TimeService': row['TIME_SERVICE'],
+                                'Available': row['AVAILABLE']
+                            }
+                            hoursData.append(recordset)
+                        # recordset = {
+                        #     'Hour': row['SKID'].replace('HR#','').replace('-',':'),
+                        #     'Available': row['AVAILABLE']
+                        # }
+                        # hoursData.append(recordset)
 
                     validAppo = 0
                     existe = 0
                     notAvailable = 0
                     for x in hoursData:
-                        if x['Hour'] == hourDate and int(x['Available']) > 0:
+                        if x['Hour'] == hourDate and int(x['Available']) > 0 and bucket == x['TimeService']:
                             validAppo = 1
                             existe = 1
                             break
@@ -313,10 +352,11 @@ def lambda_handler(event, context):
                                 "PEOPLE_QTY": {"N": str(guests) if str(guests) != '' else None},
                                 "DISABILITY": {"N": str(disability) if str(disability) != '' else None},
                                 "QRCODE": {"S": qrCode},
-                                "PURPOSE": {"S": purpose if purpose != '' else None},
+                                # "PURPOSE": {"S": purpose if purpose != '' else None},
                                 "TYPE": {"N": "2" if qrCode == 'VALID' else "1"},
                                 "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
-                                "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + providerId}, 
+                                "SERVICEID": {"S": serviceId},
+                                "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId}, 
                                 "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment}, 
                                 "GSI2PK": {"S": 'CUS#' + customerId},
                                 "GSI2SK": {"S": '5#' if str(status) == '5' else str(status) + '#DT#' + dateAppointment},
@@ -391,8 +431,10 @@ def lambda_handler(event, context):
                             "Update":{
                                 "TableName": "TuCita247",
                                 "Key": {
-                                    "PKID": {"S": 'LOC#' + locationId + '#SER#' + providerId + '#DT#' + dateAppointment[0:10]}, 
+                                    "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
                                     "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}, 
+                                    "TIME_SERVICE": {"N": str(bucket)},
+                                    "SERVICEID": {"S": serviceId}
                                 },
                                 "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
                                 "ExpressionAttributeValues": { 
@@ -409,8 +451,10 @@ def lambda_handler(event, context):
                         "Put": {
                             "TableName": "TuCita247",
                             "Item": {
-                                "PKID": {"S": 'LOC#' + locationId + '#SER#' + providerId + '#DT#' + dateAppointment[0:10]}, 
+                                "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
                                 "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
+                                "TIME_SERVICE": {"N": str(bucket)},
+                                "SERVICEID": {"S": serviceId},
                                 "AVAILABLE": {"N": str(numCustomer-1)}
                             },
                             "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",

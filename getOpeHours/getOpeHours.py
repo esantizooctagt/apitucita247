@@ -51,19 +51,8 @@ def lambda_handler(event, context):
         providerId = event['pathParameters']['providerId']
         serviceId = event['pathParameters']['serviceId']
         monday = datetime.datetime.strptime(event['pathParameters']['initDay'], '%Y-%m-%d')
-        #GET SERVICES FROM THIS PROVIDER
-        # services = dynamodb.query(
-        #     TableName="TuCita247",
-        #     IndexName="TuCita247_Index",
-        #     ReturnConsumedCapacity='TOTAL',
-        #     KeyConditionExpression='GSI1PK = :businessId',
-        #     ExpressionAttributeValues={
-        #         ':businessId': {'S': 'BUS#'+businessId+'#PRO#'+providerId},
-        #     }
-        # )
-        # items = []
-        # recordset = {}
-        # for item in json_dynamodb.loads(services['Items']):
+        
+        #GET SERVICES 
         service = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',

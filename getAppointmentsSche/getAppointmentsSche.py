@@ -37,7 +37,7 @@ def lambda_handler(event, context):
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK = :gsi1sk_ini',
             ExpressionAttributeValues={
-                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + providerId},
+                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
                 ':gsi1sk_ini': {'S': '1#DT#' + dateAppoIni}
             }
         )
@@ -77,7 +77,7 @@ def lambda_handler(event, context):
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK = :gsi1sk_ini',
                 ExpressionAttributeValues={
-                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#SER#' + providerId},
+                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
                     ':gsi1sk_ini': {'S': '1#DT#' + dateAppoIni}
                 }
             )

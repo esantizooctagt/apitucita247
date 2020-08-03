@@ -49,7 +49,7 @@ def lambda_handler(event, context):
         recordset = {}
         locationId = ''
         door = '' 
-        services = []
+        providers = []
         for row in json_dynamodb.loads(response['Items']):
             locationId = row['LOCATIONID'] if 'LOCATIONID' in row else ''
             door = row['DOOR'] if 'DOOR' in row else ''
@@ -80,7 +80,7 @@ def lambda_handler(event, context):
                         'Open': open,
                         'Closed': closed
                     }
-                    services.append(recordset)
+                    providers.append(recordset)
         
                 locs = dynamodb.query(
                     TableName="TuCita247",
@@ -94,7 +94,7 @@ def lambda_handler(event, context):
                 for item in json_dynamodb.loads(locs['Items']):
                     recordset = {
                         'LocationId': locationId,
-                        'Services': services,
+                        'Providers': providers,
                         'Door': door,
                         'MaxCustomers': item['MAX_CUSTOMER'],
                         'ManualCheckOut': item['MANUAL_CHECK_OUT']
