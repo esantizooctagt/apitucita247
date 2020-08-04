@@ -35,21 +35,6 @@ def lambda_handler(event, context):
         appos = event['pathParameters']['appos']
         order = event['pathParameters']['order']
         
-        # table = dynamodbData.Table('TuCita247')
-        # response = table.update_item(
-        #     Key={
-        #         'PKID': 'BUS#' + businessId,
-        #         'SKID': 'PLAN'
-        #     },
-        #     UpdateExpression="SET #n = :name, APPOINTMENTS = :appos, #o = :order",
-        #     ExpressionAttributeValues={
-        #         ':name': plan,
-        #         ':appos': appos,
-        #         ':order': order
-        #     },
-        #     ExpressionAttributeNames={'#n': 'NAME','#o': 'ORDER'},
-        #     ReturnValues="UPDATED_NEW"
-        # )
         items = []
         rows = {}
         rows = {

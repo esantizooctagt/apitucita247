@@ -21,6 +21,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodbData = boto3.resource('dynamodb', region_name='us-east-1')
 search = boto3.client('cloudsearchdomain', endpoint_url="https://search-tucita247-djl3mvkaapbmo5zjxat7pcnepu.us-east-1.cloudsearch.amazonaws.com")
 
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
@@ -85,6 +86,16 @@ def lambda_handler(event, context):
                     }
                 }
             record.append(recordset)
+
+            table = dynamodbData.Table('TuCita247')
+            response = table.update_item(
+                Key={
+                    'PKID': 'BUS#' + businessId,
+                    'SKID': 'METADATA'
+                },
+                UpdateExpression="REMOVE GSI4PK, GSI4SK",
+                ReturnValues="NONE"
+            )
         
         response = search.upload_documents(
             documents=json.dumps(record),
