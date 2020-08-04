@@ -76,6 +76,7 @@ Resources:
           - http://localhost:4200
           - http://127.0.0.1:8000
           - https://console.tucita247.com
+          - https://tucita247.ws
         AllowHeaders:
           - content-type
           - authorization
@@ -1986,4 +1987,45 @@ Resources:
             Path: /location
             Method: post
             ApiId: !Ref HttpApi
+  
+  PutBusinessPlanFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutBusinessPlan
+      CodeUri: putBusinessPlan/
+      Handler: putBusinessPlan.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /business/plan/{businessId}/{plan}/{appos}/{order}
+            Method: put
+            ApiId: !Ref HttpApi
+
+  PutBusinessSearchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutBusinessSearch
+      CodeUri: putBusinessSearch/
+      Handler: putBusinessSearch.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamoSearch
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /business/search
+            Method: put
+            ApiId: !Ref HttpApi
+      
   

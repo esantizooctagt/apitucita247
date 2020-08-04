@@ -7,6 +7,10 @@ import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import hmac
 import hashlib
 import base64
@@ -59,6 +63,11 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         businessId = str(uuid.uuid4()).replace("-","")
         userId = str(uuid.uuid4()).replace("-","")
+
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
+        dueDate = (today + datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+
         items = []
         rows = {
             "Put": {
@@ -114,16 +123,20 @@ def lambda_handler(event, context):
                     "PHONE": {"S": data['Phone']},
                     "TWITTER": {"S": data['Twitter']},
                     "WEBSITE": {"S": data['Website']},
+                    "TAGS": {"S": data['Tags'] if data['Tags'] != '' else None},
+                    "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
+                    "TU_CITA_LINK": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
+                    "ZIPCODE": {"S": data['ZipCode']},
+                    "STATUS": {"N": str(1)},
+                    "PARENTBUSINESS": {"N": str(0)},
                     "GSI1PK": {"S": 'PARENT#BUS'},
                     "GSI1SK": {"S": data['Name']+'#'+businessId},
                     "GSI2PK": {"S": 'PLAN#' + data['Plan']},
                     "GSI2SK": {"S": 'BUS#' + businessId},
-                    "TAGS": {"S": data['Tags'] if data['Tags'] != '' else None},
-                    "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
-                    # "APPOINTMENTS_PURPOSE": {"S": data['ApposPurpose'] if data['ApposPurpose'] != '' else None},
-                    "TU_CITA_LINK": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
-                    "ZIPCODE": {"S": data['ZipCode']},
-                    "STATUS": {"N": str(1)}
+                    "GSI3PK": {"S": 'LINK#' + data['TuCitaLink']},
+                    "GSI3SK": {"S": 'BUS#' + businessId},
+                    "GSI4PK": {"S": 'SEARCH'},
+                    "GSI4SK": {"S": 'SEARCH'}
                 },
                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -154,12 +167,17 @@ def lambda_handler(event, context):
                         "SKID": {"S": 'LOC#'+locationId},
                         "NAME": {"S": str(item['Name'])},
                         "CITY": {"S": str(item['City'])},
-                        "SECTOR": {"S": str(item['Sector'])},
+                        # "SECTOR": {"S": str(item['Sector'])},
                         "ADDRESS": {"S": str(item['Address'])},
+                        "DOORS": {"S": 'MAIN DOOR'},
                         "GEOLOCATION": {"S": str(item['Geolocation'])},
                         "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
                         "PARENT_LOCATION": {"N": str(0)},
                         "MANUAL_CHECK_OUT": {"N": str(0)},
+                        "PARENTDAYSOFF": {"N": str(1)},
+                        "PARENTHOURS": {"N": str(1)},
+                        "MAX_CUSTOMER": {"N": str(1)},
+                        "PEOPLE_CHECK_IN": {"N": str(0)},
                         "STATUS": {"N": str(1)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
@@ -175,8 +193,6 @@ def lambda_handler(event, context):
                     "Item": {
                         "PKID": {"S": 'BUS#'+businessId+'#LOC#'+locationId},
                         "SKID": {"S": 'PRO#'+providerId},
-                        "GSI1PK": {"S": 'BUS#'+businessId},
-                        "GSI1SK": {"S": 'PRO#'+providerId},
                         "NAME": {"S": str(item['Name'])},
                         "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
                         # "DAYS_OFF": {"L": []},
@@ -184,7 +200,9 @@ def lambda_handler(event, context):
                         "PEOPLE_CHECK_IN": {"N": str(0)},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
-                        "STATUS": {"N": str(1)}
+                        "STATUS": {"N": str(1)},
+                        "GSI1PK": {"S": 'BUS#'+businessId},
+                        "GSI1SK": {"S": 'PRO#'+providerId}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -224,6 +242,28 @@ def lambda_handler(event, context):
                 },
             }
             items.append(cleanNullTerms(serviceProv))
+
+            plan = {
+                "Put":{
+                    "TableName":"TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'BUS#'+businessId},
+                        "SKID": {"S": 'PLAN'},
+                        "NAME": {"S": 'FREE'},
+                        "ORDER": {"S": str(0)},
+                        "PREMIUM": {"N": str(0)},
+                        "DUE_DATE": {"S": dueDate},
+                        "AVAILABLE": {"N": str(20)},
+                        "APPOINTMENTS": {"N": str(20)},
+                        "STATUS": {"N": str(1)},
+                        "GSI1PK": {"S": dueDate},
+                        "GSI1SK": {"S": 'BUS#'+businessId}
+                    },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                },
+            }
+            items.append(cleanNullTerms(plan))
 
 
         logger.info(items)
@@ -293,7 +333,7 @@ def lambda_handler(event, context):
 
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Message': 'Error on update business', 'Code': 500})
+            body = json.dumps({'Message': 'Error on update business', 'BusinessId': businessId, 'Code': 500})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})

@@ -21,11 +21,13 @@ def lambda_handler(event, context):
     body = ''
     cors = ''
     stage = event['headers']
-    if stage['origin'] != "http://localhost:4200" and stage['origin'] != "http://127.0.0.1:8000":
+    if stage['origin'] != 'http://localhost:4200' and stage['origin'] != "http://127.0.0.1:8000" and stage['origin'] != 'https://tucita247.ws':
         cors = os.environ['prodCors']
     else:
         if stage['origin'] == "http://127.0.0.1:8000":
             cors = "http://127.0.0.1:8000"
+        if stage['origin'] == "https://tucita247.ws":
+            cors = 'https://tucita247.ws'
         else:
             cors = os.environ['devCors']
 
