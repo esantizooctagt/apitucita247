@@ -84,7 +84,7 @@ def lambda_handler(event, context):
                     "PHONE": {"S": data['User_Phone'] if data['User_Phone'] != '' else None},
                     "IS_ADMIN": {"N": str(1)},
                     "USERID": {"S": userId },
-                    "STATUS": {"N": "3"}
+                    "STATUS": {"N": "1"}
                 },
                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -281,6 +281,7 @@ def lambda_handler(event, context):
                 UserPoolId='us-east-1_gXhBD4bsG',
                 Username=data['Email'],
                 TemporaryPassword=passDecrypt,
+                # MessageAction='SUPPRESS',
                 UserAttributes=[
                     {
                         'Name': 'email',
@@ -301,6 +302,7 @@ def lambda_handler(event, context):
                 ]
             )
             logger.info(response)
+
             statusCode = 200
             body = json.dumps({'Message': 'Business created successfully', 'Code': 200})
 

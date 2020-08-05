@@ -88,15 +88,15 @@ def lambda_handler(event, context):
             record.append(recordset)
 
             table = dynamodbData.Table('TuCita247')
-            response = table.update_item(
+            updateBusiness = table.update_item(
                 Key={
-                    'PKID': 'BUS#' + businessId,
+                    'PKID': row['PKID'],
                     'SKID': 'METADATA'
                 },
                 UpdateExpression="REMOVE GSI4PK, GSI4SK",
                 ReturnValues="NONE"
             )
-        
+
         response = search.upload_documents(
             documents=json.dumps(record),
             contentType='application/json'
