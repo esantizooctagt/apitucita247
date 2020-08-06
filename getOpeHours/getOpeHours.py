@@ -135,9 +135,9 @@ def lambda_handler(event, context):
                                     'Time': newTime,
                                     'TimeService': item['TIME_SERVICE'],
                                     'ServiceId': item['SERVICEID'],
-                                    'Bucket': bucket,
+                                    'Bucket': item['CUSTOMER_PER_TIME'],
                                     'Available': item['AVAILABLE'],
-                                    'Used': +bucket-int(item['AVAILABLE'])
+                                    'Used': +item['CUSTOMER_PER_TIME']-int(item['AVAILABLE'])
                                 }
                                 hoursData.append(recordset)
                         else:
@@ -145,15 +145,16 @@ def lambda_handler(event, context):
                                 'Time': item['SKID'].replace('HR#','').replace('-',':'),
                                 'TimeService': item['TIME_SERVICE'],
                                 'ServiceId': item['SERVICEID'],
-                                'Bucket': bucket,
+                                'Bucket': item['CUSTOMER_PER_TIME'],
                                 'Available': item['AVAILABLE'],
-                                'Used': +bucket-int(item['AVAILABLE'])
+                                'Used': +item['CUSTOMER_PER_TIME']-int(item['AVAILABLE'])
                             }
                             hoursData.append(recordset)
                     
                     ini = 0
                     fin = 0
                     interval = 1
+                    bucket = 1
                     for dt in dayHours:
                         ini = Decimal(dt['I'])
                         fin = Decimal(dt['F'])
@@ -175,7 +176,7 @@ def lambda_handler(event, context):
                                     h = h + ' AM'
                                 recordset = {
                                     'Time': h,
-                                    # 'Bucket': 1,
+                                    'Bucket': 1,
                                     'Available': 1,
                                     'Used': 0
                                 }
@@ -186,20 +187,13 @@ def lambda_handler(event, context):
                                     h = str(int(h[0:2])-12) + h[2:5] + ' PM'
                                 else:
                                     h = h + ' AM'
-                                # if record['TimeService'] == interval:
+
                                 recordset = {
                                     'Time': h,
-                                    # 'Bucket': bucket, #record['Bucket'],
+                                    'Bucket': record['Bucket'],
                                     'Available': record['Available'],
                                     'Used': record['Used']
                                 }
-                                # else:
-                                #     recordset = {
-                                #         'Time': h,
-                                #         # 'Bucket': bucket,
-                                #         'Available': 0,
-                                #         'Used': 0
-                                #     }
                             
                             if n == 0:
                                 Monday.append(recordset)

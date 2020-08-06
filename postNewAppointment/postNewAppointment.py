@@ -434,6 +434,7 @@ def lambda_handler(event, context):
                                     "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
                                     "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}, 
                                     "TIME_SERVICE": {"N": str(bucket)},
+                                    "CUSTOMER_PER_TIME": {"N": str(numCustomer)},
                                     "SERVICEID": {"S": serviceId}
                                 },
                                 "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
@@ -454,6 +455,7 @@ def lambda_handler(event, context):
                                 "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
                                 "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
                                 "TIME_SERVICE": {"N": str(bucket)},
+                                "CUSTOMER_PER_TIME": {"N": str(numCustomer)},
                                 "SERVICEID": {"S": serviceId},
                                 "AVAILABLE": {"N": str(numCustomer-1)}
                             },
