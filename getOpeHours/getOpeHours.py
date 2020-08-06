@@ -23,15 +23,15 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
-def findHours(time, interval, hours):
+def findHours(time, hours):
     for item in hours:
         if item['Time'] == time:
             return item
-        if int(item['TimeService']) < interval:
-            newTime = datetime.datetime.strptime(time, '%H:%M') + timedelta(hours=interval)
-            newTime = newTime.strftime("%H:%M")
-            if item['Time'] >= time and item['Time'] <= newTime:
-                return {'Time': time, 'TimeService': item['TimeService'], 'Bucket': 0, 'Available': 0, 'Used': 0}
+        # if int(item['TimeService']) < interval:
+        #     newTime = datetime.datetime.strptime(time, '%H:%M') + timedelta(hours=interval)
+        #     newTime = newTime.strftime("%H:%M")
+        #     if item['Time'] >= time and item['Time'] <= newTime:
+        #         return {'Time': time, 'TimeService': item['TimeService'], 'Bucket': 0, 'Available': 0, 'Used': 0}
     item = ''
     return item
 
@@ -44,32 +44,37 @@ def lambda_handler(event, context):
 
     try:
         statusCode = ''
-        interval = 0
+        # interval = 0
         bucket = 0
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         providerId = event['pathParameters']['providerId']
-        serviceId = event['pathParameters']['serviceId']
+        # serviceId = event['pathParameters']['serviceId']
         monday = datetime.datetime.strptime(event['pathParameters']['initDay'], '%Y-%m-%d')
         
-        #GET SERVICES 
-        service = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
-            ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#'+businessId},
-                ':serviceId': {'S': 'SER#'+serviceId}
-            }
-        )
-        for serv in json_dynamodb.loads(service['Items']):
-            interval = serv['TIME_SERVICE']
-            bucket = serv['CUSTOMER_PER_TIME']
+        # #GET SERVICES 
+        # service = dynamodb.query(
+        #     TableName="TuCita247",
+        #     ReturnConsumedCapacity='TOTAL',
+        #     KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serviceId)',
+        #     ExpressionAttributeValues={
+        #         ':businessId': {'S': 'BUS#'+businessId},
+        #         ':serviceId': {'S': 'SER#'}
+        #     }
+        # )
+        # services = []
+        # serv = {}
+        # for serv in json_dynamodb.loads(service['Items']):
+        #     serv = { 
+        #         'interval': serv['TIME_SERVICE'],
+        #         'bucket': serv['CUSTOMER_PER_TIME']
+        #     }
+        #     services.append(serv)
 
-        if interval == 0:
-            statusCode = 500
-            body = json.dumps({'Message': 'No data for this service provider', 'Code': 500})
-            return
+        # if interval == 0:
+        #     statusCode = 500
+        #     body = json.dumps({'Message': 'No data for this service provider', 'Code': 500})
+        #     return
         #GET OPERATION HOURS
         response = dynamodb.query(
             TableName="TuCita247",
@@ -129,6 +134,7 @@ def lambda_handler(event, context):
                                 recordset = {
                                     'Time': newTime,
                                     'TimeService': item['TIME_SERVICE'],
+                                    'ServiceId': item['SERVICEID'],
                                     'Bucket': bucket,
                                     'Available': item['AVAILABLE'],
                                     'Used': +bucket-int(item['AVAILABLE'])
@@ -138,6 +144,7 @@ def lambda_handler(event, context):
                             recordset = {
                                 'Time': item['SKID'].replace('HR#','').replace('-',':'),
                                 'TimeService': item['TIME_SERVICE'],
+                                'ServiceId': item['SERVICEID'],
                                 'Bucket': bucket,
                                 'Available': item['AVAILABLE'],
                                 'Used': +bucket-int(item['AVAILABLE'])
@@ -146,6 +153,7 @@ def lambda_handler(event, context):
                     
                     ini = 0
                     fin = 0
+                    interval = 1
                     for dt in dayHours:
                         ini = Decimal(dt['I'])
                         fin = Decimal(dt['F'])
@@ -160,38 +168,38 @@ def lambda_handler(event, context):
                             else:
                                 h = str(math.trunc(h/scale)).zfill(2) + ':30'
                             
-                            if findHours(h, interval, hoursData) == '':
+                            if findHours(h, hoursData) == '':
                                 if int(h[0:2]) > 12:
                                     h = str(int(h[0:2])-12) + h[2:5] + ' PM'
                                 else:
                                     h = h + ' AM'
                                 recordset = {
                                     'Time': h,
-                                    'Bucket': bucket,
-                                    'Available': bucket,
+                                    # 'Bucket': 1,
+                                    'Available': 1,
                                     'Used': 0
                                 }
                             else:
-                                record = findHours(h, interval, hoursData)
+                                record = findHours(h, hoursData)
                                 h = record['Time']
                                 if int(h[0:2]) > 12:
                                     h = str(int(h[0:2])-12) + h[2:5] + ' PM'
                                 else:
                                     h = h + ' AM'
-                                if record['TimeService'] == interval:
-                                    recordset = {
-                                        'Time': h,
-                                        'Bucket': bucket, #record['Bucket'],
-                                        'Available': record['Available'],
-                                        'Used': record['Used']
-                                    }
-                                else:
-                                    recordset = {
-                                        'Time': h,
-                                        'Bucket': bucket,
-                                        'Available': 0,
-                                        'Used': 0
-                                    }
+                                # if record['TimeService'] == interval:
+                                recordset = {
+                                    'Time': h,
+                                    # 'Bucket': bucket, #record['Bucket'],
+                                    'Available': record['Available'],
+                                    'Used': record['Used']
+                                }
+                                # else:
+                                #     recordset = {
+                                #         'Time': h,
+                                #         # 'Bucket': bucket,
+                                #         'Available': 0,
+                                #         'Used': 0
+                                #     }
                             
                             if n == 0:
                                 Monday.append(recordset)

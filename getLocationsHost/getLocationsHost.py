@@ -48,13 +48,13 @@ def lambda_handler(event, context):
                     ':providerId': {'S': 'PRO#'}
                 }
             )
-            services = []
+            providers = []
             for item in json_dynamodb.loads(serv['Items']):
                 serviceData = {
                     'ProviderId': row['SKID'].replace('LOC#','')+'#'+item['SKID'].replace('PRO#',''),
                     'Name': item['NAME']
                 }
-                services.append(serviceData)
+                providers.append(serviceData)
 
             recordset = {
                 'BusinessId': businessId,
@@ -62,7 +62,7 @@ def lambda_handler(event, context):
                 'Name': row['NAME'] if 'NAME' in row else '',
                 'Doors': row['DOORS'] if 'DOORS' in row else '',
                 'Status': row['STATUS'] if 'STATUS' in row else 0,
-                'Services': services
+                'Providers': providers
             }
             record.append(recordset)
 

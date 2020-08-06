@@ -75,8 +75,10 @@ Resources:
         AllowOrigins:
           - http://localhost:4200
           - http://127.0.0.1:8000
-          - https://console.tucita247.com
           - https://tucita247.ws
+          - https://console.tucita247.com
+          - https://tucita247.com
+          - http://tucita247.com
         AllowHeaders:
           - content-type
           - authorization
