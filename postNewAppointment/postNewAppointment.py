@@ -9,7 +9,6 @@ from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
 from decimal import *
-
 import datetime
 import dateutil.tz
 from datetime import timezone
@@ -40,6 +39,13 @@ def cleanNullTerms(d):
          clean[k] = v
    return clean
 
+def findHours(time, hours, serviceId):
+    for item in hours:
+        if item['Hour'] == time and item['ServiceId'] == serviceId and item['Available'] > 0:
+            return item, item['Start']
+    item = ''
+    return item, 0
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -52,6 +58,7 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         businessId = data['BusinessId']
         locationId = data['LocationId']
+        providerId = data['ProviderId']
         serviceId = data['ServiceId']
         door = data['Door'] if 'Door' in data else ''
         phone = data['Phone']
@@ -62,10 +69,8 @@ def lambda_handler(event, context):
         preference = data['Preference'] if 'Preference' in data else ''
         disability = data['Disability'] if 'Disability' in data else ''
         guests = data['Guests']
-        providerId = data['ProviderId']
         customerId = str(uuid.uuid4()).replace("-","")
         status = data['Status'] if 'Status' in data else 0
-        purpose = data['Purpose'] if 'Purpose' in data else ''
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%Y-%m-%d') if 'AppoDate' in data else ''
         hourDate = data['AppoHour'] if 'AppoHour' in data else ''
         typeCita = data['Type'] if 'Type' in data else ''
@@ -158,6 +163,7 @@ def lambda_handler(event, context):
                 statusCode = 404
                 body = json.dumps({'Message': 'No appointments available', 'Data': result, 'Code': 400})
             else:
+                #ENTRA SI HAY CITAS DISPONIBLES YA SEA DE PLAN O PAQUETE VIGENTE
                 #GET SERVICES 
                 service = dynamodb.query(
                     TableName="TuCita247",
@@ -177,7 +183,6 @@ def lambda_handler(event, context):
                     body = json.dumps({'Message': 'No data for this service provider', 'Code': 500})
                     return
 
-                #ENTRA SI HAY CITAS DISPONIBLES YA SEA DE PLAN O PAQUETE VIGENTE
                 #GET OPERATION HOURS FROM SPECIFIC LOCATION
                 getCurrDate = dynamodb.query(
                     TableName = "TuCita247",
@@ -205,7 +210,7 @@ def lambda_handler(event, context):
                             body = json.dumps({'Message': 'Day Off', 'Data': [], 'Code': 400})
                             break
                     
-                    #GET OPERATION HOURS FROM SPECIFIC LOCATION
+                    #GET SUMMARIZE APPOINTMENTS FROM A SPECIFIC LOCATION AND PROVIDER FOR SPECIFIC DATE
                     getCurrHours = dynamodb.query(
                         TableName = "TuCita247",
                         ReturnConsumedCapacity = 'TOTAL',
@@ -219,37 +224,50 @@ def lambda_handler(event, context):
                             times = range(0, row['TIME_SERVICE'])
                             for hr in times:
                                 newTime = str(int(row['SKID'].replace('HR#','')[0:2])+hr)
-                                newTime = newTime.rjust(2,'0')+':'+row['SKID'].replace('HR#','')[3:5]
+                                newTime = str(newTime.zfill(2))+':'+row['SKID'].replace('HR#','')[3:5]
                                 recordset = {
                                     'Hour': newTime,
                                     'TimeService': row['TIME_SERVICE'],
-                                    'Available': row['AVAILABLE']
+                                    'Available': row['AVAILABLE'],
+                                    'ServiceId': row['SERVICEID'],
+                                    'Start': 1 if hr == 0 else 0
                                 }
                                 hoursData.append(recordset)
                         else:
                             recordset = {
                                 'Hour': row['SKID'].replace('HR#','').replace('-',':'),
                                 'TimeService': row['TIME_SERVICE'],
-                                'Available': row['AVAILABLE']
+                                'Available': row['AVAILABLE'],
+                                'ServiceId': row['SERVICEID'],
+                                'Start': 1
                             }
                             hoursData.append(recordset)
-                        # recordset = {
-                        #     'Hour': row['SKID'].replace('HR#','').replace('-',':'),
-                        #     'Available': row['AVAILABLE']
-                        # }
-                        # hoursData.append(recordset)
 
                     validAppo = 0
                     existe = 0
                     notAvailable = 0
-                    for x in hoursData:
-                        if x['Hour'] == hourDate and int(x['Available']) > 0 and bucket == x['TimeService']:
+
+                    y = range(0, bucket)
+                    for z in y:
+                        locTime = str(int(hourDate[0:2])+z).zfill(2)+':'+str(hourDate[3:5])
+                        hrArr, start = findHours(locTime, hoursData, serviceId)
+                        if hrArr != '':
                             validAppo = 1
-                            existe = 1
-                            break
-                        if x['Hour'] == hourDate and int(x['Available']) == 0:
+                            existe = 1 if start == 1 else 0
+                        else:
+                            validAppo = 0
+                            existe = 0
                             notAvailable = 1
                             break
+
+                    # for x in hoursData:
+                    #     if x['Hour'] == hourDate and int(x['Available']) > 0 and bucket == x['TimeService']:
+                    #         validAppo = 1
+                    #         existe = 1
+                    #         break
+                    #     if x['Hour'] == hourDate and int(x['Available']) == 0:
+                    #         notAvailable = 1
+                    #         break
 
                     for item in dateAppo:
                         if existe == 1:

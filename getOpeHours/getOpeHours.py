@@ -27,11 +27,6 @@ def findHours(time, hours):
     for item in hours:
         if item['Time'] == time:
             return item
-        # if int(item['TimeService']) < interval:
-        #     newTime = datetime.datetime.strptime(time, '%H:%M') + timedelta(hours=interval)
-        #     newTime = newTime.strftime("%H:%M")
-        #     if item['Time'] >= time and item['Time'] <= newTime:
-        #         return {'Time': time, 'TimeService': item['TimeService'], 'Bucket': 0, 'Available': 0, 'Used': 0}
     item = ''
     return item
 
@@ -44,37 +39,12 @@ def lambda_handler(event, context):
 
     try:
         statusCode = ''
-        # interval = 0
         bucket = 0
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         providerId = event['pathParameters']['providerId']
-        # serviceId = event['pathParameters']['serviceId']
         monday = datetime.datetime.strptime(event['pathParameters']['initDay'], '%Y-%m-%d')
         
-        # #GET SERVICES 
-        # service = dynamodb.query(
-        #     TableName="TuCita247",
-        #     ReturnConsumedCapacity='TOTAL',
-        #     KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serviceId)',
-        #     ExpressionAttributeValues={
-        #         ':businessId': {'S': 'BUS#'+businessId},
-        #         ':serviceId': {'S': 'SER#'}
-        #     }
-        # )
-        # services = []
-        # serv = {}
-        # for serv in json_dynamodb.loads(service['Items']):
-        #     serv = { 
-        #         'interval': serv['TIME_SERVICE'],
-        #         'bucket': serv['CUSTOMER_PER_TIME']
-        #     }
-        #     services.append(serv)
-
-        # if interval == 0:
-        #     statusCode = 500
-        #     body = json.dumps({'Message': 'No data for this service provider', 'Code': 500})
-        #     return
         #GET OPERATION HOURS
         response = dynamodb.query(
             TableName="TuCita247",
@@ -171,20 +141,21 @@ def lambda_handler(event, context):
                             
                             if findHours(h, hoursData) == '':
                                 if int(h[0:2]) > 12:
-                                    h = str(int(h[0:2])-12) + h[2:5] + ' PM'
+                                    h = str(int(h[0:2])-12).zfill(2) + h[2:5] + ' PM'
                                 else:
                                     h = h + ' AM'
                                 recordset = {
                                     'Time': h,
                                     'Bucket': 1,
                                     'Available': 1,
+                                    'ServiceId': '',
                                     'Used': 0
                                 }
                             else:
                                 record = findHours(h, hoursData)
                                 h = record['Time']
                                 if int(h[0:2]) > 12:
-                                    h = str(int(h[0:2])-12) + h[2:5] + ' PM'
+                                    h = str(int(h[0:2])-12).zfill(2) + h[2:5] + ' PM'
                                 else:
                                     h = h + ' AM'
 
@@ -192,6 +163,7 @@ def lambda_handler(event, context):
                                     'Time': h,
                                     'Bucket': record['Bucket'],
                                     'Available': record['Available'],
+                                    'ServiceId': record['ServiceId'],
                                     'Used': record['Used']
                                 }
                             
@@ -219,7 +191,7 @@ def lambda_handler(event, context):
                     h24 = str(math.trunc(val/scale)).zfill(2) + ':30'
                 
                 if int(h24[0:2]) > 12:
-                    h = str(int(h24[0:2])-12) + h24[2:5] + ' PM'
+                    h = str(int(h24[0:2])-12).zfill(2) + h24[2:5] + ' PM'
                 else:
                     h = h24 + ' AM'
                 recordset = {
