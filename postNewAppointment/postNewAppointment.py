@@ -46,6 +46,13 @@ def findHours(time, hours):
     item = ''
     return item, 0, 0, ''
 
+def searchHours(time, hours):
+    for item in hours:
+        if item['Hour'] == time:
+            return item
+    item = ''
+    return item
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -232,7 +239,22 @@ def lambda_handler(event, context):
                                     'ServiceId': row['SERVICEID'],
                                     'Start': 1 if hr == 0 else 0
                                 }
-                                hoursData.append(recordset)
+                                # hoursData.append(recordset)
+                                #estas lineas se agregaron para consolidar appos
+                                timeExists = searchHours(newTime, hoursData)
+                                if timeExists == '':
+                                    hoursData.append(recordset)
+                                else:
+                                    recordset = {
+                                        'Time': newTime,
+                                        'TimeService': item['TIME_SERVICE'],
+                                        'ServiceId': item['SERVICEID'],
+                                        'Bucket': item['CUSTOMER_PER_TIME'],
+                                        'Available': item['AVAILABLE']-(timeExists['Bucket']-timeExists['Available']),
+                                        'Used': +item['CUSTOMER_PER_TIME']-(int(item['AVAILABLE'])-(timeExists['Bucket']-timeExists['Available']))
+                                    }
+                                    hoursData.remove(timeExists)
+                                    hoursData.append(recordset)
                         else:
                             recordset = {
                                 'Hour': row['SKID'].replace('HR#','').replace('-',':'),

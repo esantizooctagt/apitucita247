@@ -109,7 +109,20 @@ def lambda_handler(event, context):
                                     'Available': item['AVAILABLE'],
                                     'Used': +item['CUSTOMER_PER_TIME']-int(item['AVAILABLE'])
                                 }
-                                hoursData.append(recordset)
+                                timeExists = findHours(newTime, hoursData)
+                                if timeExists == '':
+                                    hoursData.append(recordset)
+                                else:
+                                    recordset = {
+                                        'Time': newTime,
+                                        'TimeService': item['TIME_SERVICE'],
+                                        'ServiceId': item['SERVICEID'],
+                                        'Bucket': item['CUSTOMER_PER_TIME'],
+                                        'Available': item['AVAILABLE']-(timeExists['Bucket']-timeExists['Available']),
+                                        'Used': +item['CUSTOMER_PER_TIME']-(int(item['AVAILABLE'])-(timeExists['Bucket']-timeExists['Available']))
+                                    }
+                                    hoursData.remove(timeExists)
+                                    hoursData.append(recordset)
                         else:
                             recordset = {
                                 'Time': item['SKID'].replace('HR#','').replace('-',':'),
