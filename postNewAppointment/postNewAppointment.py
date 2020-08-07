@@ -39,12 +39,12 @@ def cleanNullTerms(d):
          clean[k] = v
    return clean
 
-def findHours(time, hours, serviceId):
+def findHours(time, hours):
     for item in hours:
-        if item['Hour'] == time and item['ServiceId'] == serviceId and item['Available'] > 0:
-            return item, item['Start']
+        if item['Hour'] == time:
+            return item, item['Start'], item['Available'], item['ServiceId']
     item = ''
-    return item, 0
+    return item, 0, 0, ''
 
 def lambda_handler(event, context):
     stage = event['headers']
@@ -113,7 +113,7 @@ def lambda_handler(event, context):
                     'body' : body
                 }
                 return response
-        
+
         #STATUS DEL PAQUETE ADQUIRIDO 1 ACTIVO Y TRAE TOTAL DE NUMERO DE CITAS
         statPlan = dynamodb.query(
             TableName = "TuCita247",
@@ -246,50 +246,40 @@ def lambda_handler(event, context):
                     validAppo = 0
                     existe = 0
                     notAvailable = 0
-
                     y = range(0, bucket)
                     for z in y:
                         locTime = str(int(hourDate[0:2])+z).zfill(2)+':'+str(hourDate[3:5])
-                        hrArr, start = findHours(locTime, hoursData, serviceId)
+                        hrArr, start, available, ser = findHours(locTime, hoursData)
                         if hrArr != '':
-                            validAppo = 1
-                            existe = 1 if start == 1 else 0
+                            if ser == serviceId or ser == '':
+                                validAppo = 1
+                                if z == 0:
+                                    existe = start
+                                notAvailable = 0 if available > 0 else 1
+                                if notAvailable == 1:
+                                    break
+                            else:
+                                validAppo = 0
+                                notAvailable = 1
+                                break
                         else:
                             validAppo = 0
-                            existe = 0
-                            notAvailable = 1
-                            break
+                            for item in dateAppo:
+                                ini = Decimal(item['I'])
+                                fin = Decimal(item['F'])
+                                if int(locTime[0:2]) >= ini and int(locTime[0:2]) < fin:
+                                    if numCustomer > 0:
+                                        validAppo = 1
+                                        if z == 0:
+                                            existe = 0
+                                        break
+                                    else:
+                                        notAvailable = 1
+                                        validAppo = 0
+                                        break
+                            if validAppo == 0:
+                                break
 
-                    # for x in hoursData:
-                    #     if x['Hour'] == hourDate and int(x['Available']) > 0 and bucket == x['TimeService']:
-                    #         validAppo = 1
-                    #         existe = 1
-                    #         break
-                    #     if x['Hour'] == hourDate and int(x['Available']) == 0:
-                    #         notAvailable = 1
-                    #         break
-
-                    for item in dateAppo:
-                        if existe == 1:
-                            break
-                        if notAvailable == 1:
-                            break
-                        ini = Decimal(item['I'])
-                        fin = Decimal(item['F'])
-                        scale = 10
-                        for h in range(int(scale*ini), int(scale*fin), int(scale*bucket)):
-                            if (h/scale).is_integer():
-                                h = str(math.trunc(h/scale)).zfill(2) + ':00' 
-                            else:
-                                h = str(math.trunc(h/scale)).zfill(2) + ':30'
-                            available = numCustomer
-                            if int(available) > 0:
-                                if int(h.replace(':','')) == int(hourDate.replace(':','')):
-                                    validAppo = 1
-                                    break
-                        if validAppo == 1:
-                            break
-                
                 #PROCEDE A GUARDAR LA CITA
                 if validAppo == 1:
                     existePhone = 0
@@ -336,7 +326,7 @@ def lambda_handler(event, context):
                                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
                                 }
                             }
-                        logger.info(cleanNullTerms(recordset))
+                        # logger.info(cleanNullTerms(recordset))
                         items.append(cleanNullTerms(recordset))
 
                         if phone != '00000000000':
@@ -387,7 +377,7 @@ def lambda_handler(event, context):
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                             }
                         }
-                    logger.info(cleanNullTerms(recordset))
+                    # logger.info(cleanNullTerms(recordset))
                     items.append(cleanNullTerms(recordset))
 
                     if qrCode != 'VALID':
@@ -402,7 +392,7 @@ def lambda_handler(event, context):
                                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                                 }
                             }
-                        logger.info(recordset)
+                        # logger.info(recordset)
                         items.append(recordset)
                     
                     if typeAppo == 1:
@@ -440,7 +430,7 @@ def lambda_handler(event, context):
                                 }
                             }
                     
-                    logger.info(recordset)
+                    # logger.info(recordset)
                     items.append(recordset)
 
                     if existe == 1:
@@ -481,7 +471,7 @@ def lambda_handler(event, context):
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                             }
                         }
-                    logger.info(recordset)
+                    # logger.info(recordset)
                     items.append(recordset)
 
                     if status == 3:
