@@ -88,6 +88,22 @@ def lambda_handler(event, context):
                     },
                 }
             items.append(locations)
+
+            business = {
+                "Update":{
+                    "TableName":"TuCita247",
+                    "Key":{
+                        "PKID": {"S": 'BUS#'+businessId},
+                        "SKID": {"S": 'METADATA'}
+                    },
+                    "UpdateExpression": "SET GSI4PK = :search, GSI4PK = :search",
+                    "ExpressionAttributeValues": {
+                        ":search": {"S": "SEARCH"}
+                    },
+                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                }
+            }
             
         logger.info(items)
         response = dynamodb.transact_write_items(

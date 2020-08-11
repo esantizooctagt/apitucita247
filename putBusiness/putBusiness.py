@@ -120,7 +120,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA' }
                 },
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
+                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, GSI4PK = :search, GSI4SK = :search" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
                 "ExpressionAttributeNames": { '#n': 'NAME' },
                 "ExpressionAttributeValues": { 
                     ":longDescrip": {"S": data['LongDescription']},
@@ -141,7 +141,8 @@ def lambda_handler(event, context):
                     ":tucitalink": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
                     ":key1": {"S": "PARENT#BUS" if parentBusiness == 1 else None},
                     ":skey1": {"S": data['Name'] + "#" + businessId if parentBusiness == 1 else None},
-                    ":zipcode": {"S": data['ZipCode']}
+                    ":zipcode": {"S": data['ZipCode']},
+                    ":search": {"S": "SEARCH"}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },

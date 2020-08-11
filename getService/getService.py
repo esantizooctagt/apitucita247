@@ -44,6 +44,7 @@ def lambda_handler(event, context):
                 'Name': item['NAME'],
                 'TimeService': item['TIME_SERVICE'],
                 'CustomerPerTime': item['CUSTOMER_PER_TIME'],
+                'Color': item['COLOR'],
                 'Status': int(item['STATUS'])
             }
     

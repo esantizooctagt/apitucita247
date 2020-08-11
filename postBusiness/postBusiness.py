@@ -47,9 +47,18 @@ def get_secret_hash(username):
     return d2
 
 def get_random_string():
-    letters = string.ascii_uppercase + string.digits + string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for i in range(8))
-    return result_str
+    random_source = string.ascii_letters + string.digits
+    password = random.choices(string.ascii_lowercase, k=2)
+    password += random.choices(string.ascii_uppercase, k=2)
+    password += random.choices(string.digits, k=2)
+
+    for i in range(1):
+        password += random.choices(random_source, k=2)
+
+    password_list = list(password)
+    random.SystemRandom().shuffle(password_list)
+    password = ''.join(password_list)
+    return password
 
 def lambda_handler(event, context):
     stage = event['headers']
@@ -118,14 +127,14 @@ def lambda_handler(event, context):
                     "COUNTRY": {"S": data['Country']},
                     "CATEGORYID": {"S": data['CategoryId']},
                     "EMAIL": {"S": data['Email']},
-                    "FACEBOOK": {"S": data['Facebook']},
+                    # "FACEBOOK": {"S": data['Facebook']},
                     "GEOLOCATION": {"S": data['Geolocation']},
-                    "INSTAGRAM": {"S": data['Instagram']},
+                    # "INSTAGRAM": {"S": data['Instagram']},
                     "NAME": {"S": data['Name']},
                     "PHONE": {"S": data['Phone']},
-                    "TWITTER": {"S": data['Twitter']},
-                    "WEBSITE": {"S": data['Website']},
-                    "TAGS": {"S": data['Tags'] if data['Tags'] != '' else None},
+                    # "TWITTER": {"S": data['Twitter']},
+                    # "WEBSITE": {"S": data['Website']},
+                    # "TAGS": {"S": data['Tags'] if data['Tags'] != '' else None},
                     "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
                     "TU_CITA_LINK": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
                     "ZIPCODE": {"S": data['ZipCode']},
@@ -222,6 +231,7 @@ def lambda_handler(event, context):
                         "NAME": {"S": data['CategoryName']},
                         "TIME_SERVICE": {"N": str(1)},
                         "CUSTOMER_PER_TIME": {"N": str(1)},
+                        "COLOR": {"S": str('#D9E1F2')},
                         "STATUS": {"N": str(1)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
@@ -306,7 +316,7 @@ def lambda_handler(event, context):
             logger.info(response)
 
             statusCode = 200
-            body = json.dumps({'Message': 'Business created successfully', 'Code': 200})
+            body = json.dumps({'Message': 'Business created successfully', 'BusinessId': businessId, 'Code': 200})
 
         except client.exceptions.UsernameExistsException as e:
             statusCode = 404

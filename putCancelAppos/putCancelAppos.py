@@ -68,6 +68,16 @@ def lambda_handler(event, context):
                 ReturnValues="UPDATED_NEW"
             )
 
+            response = table.update_item(
+                Key={
+                    'PKID': 'LOC#'+locationId+'#PRO#'+providerId+'#DT#'+dateAppo[0:10],
+                    'SKID': 'HR#'+dateAppo[-5:]
+                },
+                UpdateExpression="SET AVAILABLE = :available",
+                ExpressionAttributeValues={':available': 0},
+                ReturnValues="UPDATED_NEW"
+            )
+
             # GET USER PREFERENCE NOTIFICATION
             response = dynamodbQuery.query(
                 TableName="TuCita247",

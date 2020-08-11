@@ -53,6 +53,7 @@ def lambda_handler(event, context):
                         "NAME": {"S": data['Name']},
                         "TIME_SERVICE": {"N": str(data['TimeService'])},
                         "CUSTOMER_PER_TIME": {"N": data['CustomerPerTime']},
+                        "COLOR": {"S": data['Color']},
                         "STATUS": {"N": str(data['Status'])}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
@@ -68,12 +69,13 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'BUS#' + data['BusinessId']},
                         "SKID": {"S": 'SER#' + serviceId}
                     },
-                    "UpdateExpression": "SET #n = :name, TIME_SERVICE = :timeService, CUSTOMER_PER_TIME = :customerPerTime, #s = :status",
+                    "UpdateExpression": "SET #n = :name, TIME_SERVICE = :timeService, CUSTOMER_PER_TIME = :customerPerTime, #s = :status, COLOR = :color",
                     "ExpressionAttributeValues": {
                         ':name': {'S': data['Name']},
                         ':timeService': {'N': str(data['TimeService'])},
                         ':customerPerTime': {'N': str(data['CustomerPerTime'])},
-                        ':status': {'N': str(data['Status'])}
+                        ':status': {'N': str(data['Status'])},
+                        ':color': {'S': data['Color']}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS','#n': 'NAME'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
