@@ -157,7 +157,7 @@ def lambda_handler(event, context):
                 )
 
         statusCode = 200
-        body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200, 'Appo': json_dynamodb.loads(response['Attributes'])})
+        body = json.dumps({'Message': 'Citas deleted successfully', 'Code': 200})
 
         if statusCode == '':
             statusCode = 500

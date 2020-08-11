@@ -1672,6 +1672,7 @@ Resources:
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
       VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
