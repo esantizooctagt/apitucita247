@@ -20,8 +20,8 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-dynamodbQuery = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
+dynamodbQuery = boto3.client('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
 ses = boto3.client('ses',region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
@@ -35,6 +35,12 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
+        dataId = ''
+        appoData = ''
+        businessId = ''
+        locationId = ''
+        providerId = ''
+
         data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
         
@@ -47,19 +53,39 @@ def lambda_handler(event, context):
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
+        response = dynamodbQuery.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :appointmentId AND SKID = :appointmentId',
+            ExpressionAttributeValues={
+                ':appointmentId': {'S': 'APPO#' + appointmentId}
+            }
+        )
+        for row in json_dynamodb.loads(response['Items']):
+            dataId = row['GSI1PK']
+            appoData = str(row['DATE_APPO'])[0:10]+'#APPO#'+appointmentId
+            if dataId != '':
+                businessId = 'BUS#'+data.split('#')[1]+'#5'
+                locationId = 'BUS#'+data.split('#')[1]+'#LOC#'+data.split('#')[3]+'#5'
+                providerId = 'BUS#'+data.split('#')[1]+'#LOC#'+data.split('#')[3]+'#PRO#'+data.split('#')[5]+'#5'
+
         table = dynamodb.Table('TuCita247')
         e = {'#s': 'STATUS'}
         if reasonId != '':
-            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': '#5', ':reason': reasonId, ':dateope': dateOpe}
+            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': '#5', ':reason': reasonId, ':dateope': dateOpe, ':pkey05': businessId, ':skey05': appoData, ':pkey06': locationId, ':skey06': appoData, ':pkey07': providerId, ':skey07': appoData}
         else:
             v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
         
+        cancelStr = ''
+        if str(status) == "5":
+            cancelStr = ', GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, TIMECANCEL = :dateope'
+
         response = table.update_item(
             Key={
                 'PKID': 'APPO#' + appointmentId,
                 'SKID': 'APPO#' + appointmentId
             },
-            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key02" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", TIMECANCEL = :dateope" if str(status) == "5" else "") + (", REASONID = :reason" if reasonId != "" else ""),
+            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key02" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", REASONID = :reason" if reasonId != "" else "") + cancelStr,
             ExpressionAttributeNames=e,
             ExpressionAttributeValues=v,
             ReturnValues="UPDATED_NEW"

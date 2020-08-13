@@ -53,16 +53,20 @@ def lambda_handler(event, context):
                 ':gsi1sk_ini': {'S': '1#DT#' + dateAppo}
             }
         )
-        for row in json_dynamodb.loads(response['Items']):         
+        businessIdData = 'BUS#'+businessId+'#5'
+        locationIdData = 'BUS#'+businessId+'#LOC#'+locationId+'#5'
+        providerIdData = 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId+'#5'
+        for row in json_dynamodb.loads(response['Items']):
+            appoData = dateAppo[0:10]+'#'+row['PKID']
             table = dynamodb.Table('TuCita247')
             e = {'#s': 'STATUS'}
-            v = {':status': 5, ':key01': str(5) + '#DT#' + str(dateAppo), ':key02': '#5', ':dateope': dateOpe}
+            v = {':status': 5, ':key01': str(5) + '#DT#' + str(dateAppo), ':key02': '#5', ':dateope': dateOpe, ':pkey05': businessIdData, ':skey05': appoData, ':pkey06': locationIdData, ':skey06': appoData, ':pkey07': providerIdData, ':skey07': appoData}
             response = table.update_item(
                 Key={
                     'PKID': row['PKID'],
                     'SKID': row['PKID']
                 },
-                UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key02, TIMECANCEL = :dateope",
+                UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key02, TIMECANCEL = :dateope, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07",
                 ExpressionAttributeNames=e,
                 ExpressionAttributeValues=v,
                 ReturnValues="UPDATED_NEW"

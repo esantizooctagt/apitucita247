@@ -945,27 +945,6 @@ Resources:
             Path: /appointment/checkout
             Method: put
             ApiId: !Ref HttpApi
-          
-  # PutAppointmentCheckOutWIFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: PutAppointmentCheckOutWI
-  #     CodeUri: putAppointmentCheckOutWI/
-  #     Handler: putAppointmentCheckOutWI.lambda_handler
-  #     Role: arn:aws:iam::821843840552:role/LambdaDynamo
-  #     Layers: 
-  #       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
-  #       - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
-  #       - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
-  #     Events:
-  #       RootGet:
-  #         Type: HttpApi
-  #         Properties:
-  #           Auth:
-  #             Authorizer: CognitoAuth
-  #           Path: /appointment/checkout/walkins
-  #           Method: put
-  #           ApiId: !Ref HttpApi
 
   PutAppointmentManualCOFunction:
     Type: AWS::Serverless::Function
@@ -1475,27 +1454,6 @@ Resources:
             Path: /user/token
             Method: put
             ApiId: !Ref HttpApi
-
-  # GetPurposeBackFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     FunctionName: GetPurposeBack
-  #     CodeUri: getPurposeBack/
-  #     Handler: getPurposeBack.lambda_handler
-  #     Role: arn:aws:iam::821843840552:role/LambdaDynamo
-  #     Layers:
-  #       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
-  #       - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
-  #       - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
-  #     Events:
-  #       RootGet:
-  #         Type: HttpApi
-  #         Properties:
-  #           Auth:
-  #             Authorizer: CognitoAuth
-  #           Path: /appointment/purpose/{businessId}
-  #           Method: get
-  #           ApiId: !Ref HttpApi
 
   GetOpeHoursFunction:
     Type: AWS::Serverless::Function
@@ -2072,3 +2030,23 @@ Resources:
             Path: /services/{businessId}
             Method: get
             ApiId: !Ref HttpApi
+
+  GetProvidersLocFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetProvidersLoc
+      CodeUri: getProvidersLoc/
+      Handler: getProvidersLoc.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /providers/{businessId}/{locationId}
+            Method: get
+            ApiId: !Ref HttpApi
+  
