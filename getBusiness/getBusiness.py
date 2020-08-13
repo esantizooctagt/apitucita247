@@ -41,24 +41,24 @@ def lambda_handler(event, context):
         )
         itemsbusiness = json_dynamodb.loads(response['Items'])
        
-        response = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :category )',
-            ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId},
-                ':category': {'S': 'CAT#'}
-            }
-        )
-        items = json_dynamodb.loads(response['Items'])
-        records = []
-        recordset1 = {}
-        for row in items:
-            recordset1 = {
-                'CategoryId': row['SKID'].replace('CAT#',''),
-                'Name': row['NAME']
-            } 
-            records.append(recordset1)
+        # response = dynamodb.query(
+        #     TableName="TuCita247",
+        #     ReturnConsumedCapacity='TOTAL',
+        #     KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :category )',
+        #     ExpressionAttributeValues={
+        #         ':businessId': {'S': 'BUS#' + businessId},
+        #         ':category': {'S': 'CAT#'}
+        #     }
+        # )
+        # items = json_dynamodb.loads(response['Items'])
+        # records = []
+        # recordset1 = {}
+        # for row in items:
+        #     recordset1 = {
+        #         'CategoryId': row['SKID'].replace('CAT#',''),
+        #         'Name': row['NAME']
+        #     } 
+        #     records.append(recordset1)
         
         recordset = {}
         for row in itemsbusiness:
@@ -81,7 +81,7 @@ def lambda_handler(event, context):
                 'Instagram': row['INSTAGRAM'] if 'INSTAGRAM' in row else '',
                 'Email': row['EMAIL'] if 'EMAIL' in row else '',
                 'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else '',
-                'Categories': records,
+                'CategoryId': row['CATEGORYID'],
                 'Tags': row['TAGS'] if 'TAGS' in row else '',
                 'ApposPurpose': row['APPOINTMENTS_PURPOSE'] if 'APPOINTMENTS_PURPOSE' in row else '',
                 'ParentBusiness': row['PARENTBUSINESS'] if 'PARENTBUSINESS' in row else '',

@@ -41,62 +41,62 @@ def lambda_handler(event, context):
         businessId = event['pathParameters']['id']
         parentBusiness = data['ParentBusiness']
         # BUSINESS CATEGORIES
-        response = dynamodb.query(
-            TableName = "TuCita247",
-            ReturnConsumedCapacity = 'TOTAL',
-            KeyConditionExpression = 'PKID = :businessId AND begins_with( SKID , :cats )',
-            ExpressionAttributeValues = {
-                ':businessId': {'S': 'BUS#' + businessId},
-                ':cats': {'S': 'CAT#'}
-            }
-        )
+        # response = dynamodb.query(
+        #     TableName = "TuCita247",
+        #     ReturnConsumedCapacity = 'TOTAL',
+        #     KeyConditionExpression = 'PKID = :businessId AND begins_with( SKID , :cats )',
+        #     ExpressionAttributeValues = {
+        #         ':businessId': {'S': 'BUS#' + businessId},
+        #         ':cats': {'S': 'CAT#'}
+        #     }
+        # )
 
-        items = []
-        for cats in response['Items']:
-            row = json_dynamodb.loads(cats)
-            encontro = 0
-            for cat in data['Categories']:
-                if 'CAT#'+cat['CategoryId'] == row['SKID']:
-                    encontro =1
-                    break
-            if encontro == 0:
-                deletes = {}
-                deletes = {
-                    "Delete":{
-                        "TableName":"TuCita247",
-                        "Key": {
-                            "PKID": {"S": 'BUS#'+businessId},
-                            "SKID": {"S":row['SKID']}
-                        },
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                    },
-                }
-                items.append(deletes)
+        # items = []
+        # for cats in response['Items']:
+        #     row = json_dynamodb.loads(cats)
+        #     encontro = 0
+        #     for cat in data['Categories']:
+        #         if 'CAT#'+cat['CategoryId'] == row['SKID']:
+        #             encontro =1
+        #             break
+        #     if encontro == 0:
+        #         deletes = {}
+        #         deletes = {
+        #             "Delete":{
+        #                 "TableName":"TuCita247",
+        #                 "Key": {
+        #                     "PKID": {"S": 'BUS#'+businessId},
+        #                     "SKID": {"S":row['SKID']}
+        #                 },
+        #                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+        #             },
+        #         }
+        #         items.append(deletes)
 
-        for row in data['Categories']:
-            encontro = 0
-            for cats in response['Items']:
-                catego = json_dynamodb.loads(cats)
-                if (catego['SKID'] == 'CAT#'+row['CategoryId']):
-                    encontro = 1
-                    break
-            if encontro == 0:
-                recordset = {}
-                recordset = {
-                    "Put": {
-                        "TableName": "TuCita247",
-                        "Item": {
-                            "PKID": {"S": 'BUS#'+businessId},
-                            "SKID": {"S": 'CAT#'+row['CategoryId']},
-                            "GSI1PK": {"S": 'CAT#'+row['CategoryId'].split('#')[0]},
-                            "GSI1SK": {"S": 'SUB#'+row['CategoryId'].split('#')[1]},
-                            "NAME": {"S": str(row['Name'])}
-                        },
-                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                    }
-                }
-                items.append(recordset)
+        # for row in data['Categories']:
+        #     encontro = 0
+        #     for cats in response['Items']:
+        #         catego = json_dynamodb.loads(cats)
+        #         if (catego['SKID'] == 'CAT#'+row['CategoryId']):
+        #             encontro = 1
+        #             break
+        #     if encontro == 0:
+        #         recordset = {}
+        #         recordset = {
+        #             "Put": {
+        #                 "TableName": "TuCita247",
+        #                 "Item": {
+        #                     "PKID": {"S": 'BUS#'+businessId},
+        #                     "SKID": {"S": 'CAT#'+row['CategoryId']},
+        #                     "GSI1PK": {"S": 'CAT#'+row['CategoryId'].split('#')[0]},
+        #                     "GSI1SK": {"S": 'SUB#'+row['CategoryId'].split('#')[1]},
+        #                     "NAME": {"S": str(row['Name'])}
+        #                 },
+        #                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+        #                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+        #             }
+        #         }
+        #         items.append(recordset)
         
         rows = {}
         if data['TuCitaLink'] != '':
@@ -120,7 +120,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA' }
                 },
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, GSI4PK = :search, GSI4SK = :search" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
+                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, GSI4PK = :search, GSI4SK = :search, CATEGORYID = :categoryId" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
                 "ExpressionAttributeNames": { '#n': 'NAME' },
                 "ExpressionAttributeValues": { 
                     ":longDescrip": {"S": data['LongDescription']},
@@ -139,6 +139,7 @@ def lambda_handler(event, context):
                     ":parentBus": {"N": str(data['ParentBusiness'])},
                     ":tags": {"S": data['Tags']},
                     ":tucitalink": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
+                    ":categoryId": {"S": data['CategoryId']},
                     ":key1": {"S": "PARENT#BUS" if parentBusiness == 1 else None},
                     ":skey1": {"S": data['Name'] + "#" + businessId if parentBusiness == 1 else None},
                     ":zipcode": {"S": data['ZipCode']},

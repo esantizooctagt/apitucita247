@@ -31,11 +31,11 @@ def lambda_handler(event, context):
         else:
            lastItem = {'PKID': {'S': 'BUS#' + businessId },'SKID': {'S': 'METADATA'}}
 
-        if businessId != '_':
+        if businessId != '_' and categoryId == '_':
             response = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
+                KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
                     ':metadata': {'S': 'METADATA'}
@@ -47,8 +47,9 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='GSI1PK = :categoryId',
+                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :categoryId)',
                     ExpressionAttributeValues={
+                        ':businessId': {'S': 'PARENT#BUS'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId)}
                     }
                 )
@@ -58,8 +59,9 @@ def lambda_handler(event, context):
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
                     ExclusiveStartKey= lastItem,
-                    KeyConditionExpression='GSI1PK = :categoryId',
+                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :categoryId)',
                     ExpressionAttributeValues={
+                        ':businessId': {'S': 'PARENT#BUS'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId)}
                     }
                 )
@@ -69,10 +71,10 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='GSI1PK = :categoryId AND GSI1SK = :subcategoryId',
+                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :categoryId)',
                     ExpressionAttributeValues={
-                        ':categoryId': {'S': 'CAT#' + str(categoryId)},
-                        ':subcategoryId': {'S': 'SUB#' + str(subcategoryId)}
+                        ':businessId': {'S': 'PARENT#BUS'},
+                        ':categoryId': {'S': 'CAT#' + str(categoryId) + '#SUB#' + str(subcategoryId)}
                     }
                 )
             else:
@@ -81,10 +83,10 @@ def lambda_handler(event, context):
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
                     ExclusiveStartKey= lastItem,
-                    KeyConditionExpression='GSI1PK = :categoryId AND GSI1SK = :subcategoryId',
+                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :categoryId)',
                     ExpressionAttributeValues={
-                        ':categoryId': {'S': 'CAT#' + str(categoryId)},
-                        ':subcategoryId': {'S': 'SUB#' + str(subcategoryId)}
+                        ':businessId': {'S': 'PARENT#BUS'},
+                        ':categoryId': {'S': 'CAT#' + str(categoryId) + '#SUB#' + str(subcategoryId)}
                     }
                 )
 
@@ -92,57 +94,33 @@ def lambda_handler(event, context):
         business = []
         for row in json_dynamodb.loads(response['Items']):
             records = []
-            cats = dynamodb.query(
+            locsNumber = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :cat )',
+                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :locs)',
                 ExpressionAttributeValues={
-                    ':businessId': {'S': 'BUS#' + row['PKID'].replace('BUS#','')},
-                    ':cat': {'S': 'CAT#'}
-                }
+                    ':businessId': {'S': row['PKID']},
+                    ':locs': {'S': 'LOC#'},
+                    ':stat' : {'N': '1'}
+                },
+                FilterExpression='#s = :stat',
+                ExpressionAttributeNames={'#s': 'STATUS'}
             )
-            for cat in json_dynamodb.loads(cats['Items']):
-                item = {
-                    'CategoryId': cat['SKID'].split('#')[1],
-                    'SubCategoryId': cat['SKID'].split('#')[2]
-                }
-                records.append(item)
-            if businessId == '_':
-                buss = dynamodb.query(
-                    TableName="TuCita247",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
-                    ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#' + row['PKID'].replace('BUS#','')},
-                        ':metadata': {'S': 'METADATA'}
-                    },
-                    Limit = 1
-                )
-                for item in json_dynamodb.loads(buss['Items']):
-                    recordset = {
-                        'Business_Id': item['PKID'].replace('BUS#',''),
-                        'Name': item['NAME'],
-                        'LongDescription': item['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in item else '',
-                        'ShortDescription': item['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in item else '',
-                        'Imagen': item['IMGBUSINESS'] if 'IMGBUSINESS' in item else '',
-                        'Categories': records,
-                        'Location_No': '1', #GUARDAR Y TRAER EL NUMERO DE LOCALIDADES DEL NEGOCIO BUSCAR EL PUT PARA EDITARLO
-                        'Status': item['STATUS']
-                    }
-            else:
-                recordset = {
-                    'Business_Id': row['PKID'].replace('BUS#',''),
-                    'Name': row['NAME'],
-                    'LongDescription': row['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in row else '',
-                    'ShortDescription': row['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in row else '',
-                    'Imagen': row['IMGBUSINESS'] if 'IMGBUSINESS' in row else '',
-                    'Location_No': '1', #GUARDAR Y TRAER EL NUMERO DE LOCALIDADES DEL NEGOCIO BUSCAR EL PUT PARA EDITARLO
-                    'Categories': records,
-                    'Status': row['STATUS']
-                }
-            if not row['PKID'].replace('BUS#','') in bussList:
-                bussList.add(row['PKID'].replace('BUS#',''))
-                business.append(recordset)
+            number = 0
+            for item in json_dynamodb.loads(locsNumber['Items']):
+                number = number + 1
+
+            recordset = {
+                'Business_Id': row['PKID'].replace('BUS#',''),
+                'Name': row['NAME'],
+                'LongDescription': row['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in row else '',
+                'ShortDescription': row['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in row else '',
+                'Imagen': row['IMGBUSINESS'] if 'IMGBUSINESS' in row else '',
+                'Location_No': number,
+                'Categories': records,
+                'Status': row['STATUS']
+            }
+            business.append(recordset)
         
         if 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
