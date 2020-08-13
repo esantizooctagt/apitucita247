@@ -25,7 +25,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -382,7 +382,6 @@ def lambda_handler(event, context):
                                 "PEOPLE_QTY": {"N": str(guests) if str(guests) != '' else None},
                                 "DISABILITY": {"N": str(disability) if str(disability) != '' else None},
                                 "QRCODE": {"S": qrCode},
-                                # "PURPOSE": {"S": purpose if purpose != '' else None},
                                 "TYPE": {"N": "2" if qrCode == 'VALID' else "1"},
                                 "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
                                 "SERVICEID": {"S": serviceId},
@@ -394,6 +393,12 @@ def lambda_handler(event, context):
                                 "GSI3SK": {"S": 'QR#' + qrCode if qrCode != 'VALID' else None},
                                 "GSI4PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId if status == 3 else None},
                                 "GSI4SK": {"S": str(status) + "#DT#" + str(dateAppointment) + "#" + appoId if status == 3 else None},
+                                "GSI5PK": {"S": 'BUS#' + businessId if status == 3 else None},
+                                "GSI5SK": {"S": dateAppointment[0:10] + '#APPO#' + appoId if status == 3 else None},
+                                "GSI6PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId if status == 3 else None},
+                                "GSI6SK": {"S": dateAppointment[0:10] + '#APPO#' + appoId if status == 3 else None},
+                                "GSI7PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId if status == 3 else None},
+                                "GSI7SK": {"S": dateAppointment[0:10] + '#APPO#' + appoId if status == 3 else None},
                             },
                             "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"

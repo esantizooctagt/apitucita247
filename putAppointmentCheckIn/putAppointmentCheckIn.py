@@ -19,8 +19,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
-# dynamodbTable = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -78,16 +77,22 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'APPO#' + appointmentId}, 
                     "SKID": {"S": 'APPO#' + appointmentId}
                 },
-                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty" + ("" if typeAppo != 2 else ", GSI4PK = :key4, GSI4SK = :skey4"), 
+                "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty" + ("" if typeAppo != 2 else ", GSI4PK = :key4, GSI4SK = :skey4, GSI5PK = :key05, GSI5SK = :skey05, GSI6PK = :key06, GSI6SK = :skey06, GSI7PK = :key07, GSI7SK = :skey07"), 
                 "ExpressionAttributeValues": {
                     ":status": {"N": "3"}, 
                     ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
-                    ":key2": {"S": '#5' if str(status) == '5' else str(status) + '#DT#' + str(dateAppo)}, 
+                    ":key2": {"S": str(status) + '#DT#' + str(dateAppo)},   #'#5' if str(status) == '5' else 
                     ":dateOpe": {"S": str(dateOpe)},
                     ":qrCode": {"S": qrCode},
                     ":key4": {"S": None if typeAppo != 2 else "BUS#" + businessId + "#LOC#" + locationId},
                     ":qty": {"N": str(qty)},
-                    ":skey4": {"S": None if typeAppo != 2 else str(status) + "#DT#" + str(dateAppo) + "#" + appointmentId}
+                    ":skey4": {"S": None if typeAppo != 2 else str(status) + "#DT#" + str(dateAppo) + "#" + appointmentId},
+                    ":key05": {"S" : 'BUS#' + businessId},
+                    ":skey05": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId},
+                    ":key06": {"S" : 'BUS#' + businessId + '#LOC#' + locationId},
+                    ":skey06": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId},
+                    ":key07": {"S" : 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
+                    ":skey07": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId}
                 },
                 "ExpressionAttributeNames": {'#s': 'STATUS'},
                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND QRCODE = :qrCode",

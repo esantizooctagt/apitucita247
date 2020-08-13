@@ -92,13 +92,19 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'APPO#' + appointmentId}, 
                         "SKID": {"S": 'APPO#' + appointmentId}
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty", 
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty, GSI5PK = :key05, GSI5SK = :skey05, GSI6PK = :key06, GSI6SK = :skey06, GSI7PK = :key07, GSI7SK = :skey07", 
                     "ExpressionAttributeValues": {
                         ":status": {"N": "3"}, 
                         ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
                         ":key2": {"S": '#5' if str(status) == '5' else str(dateAppo)[0:10]}, 
                         ":qty": {"N": str(qty)},
-                        ":dateOpe": {"S": str(dateOpe)}
+                        ":dateOpe": {"S": str(dateOpe)},
+                        ":key05": {"S" : 'BUS#' + businessId},
+                        ":skey05": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId},
+                        ":key06": {"S" : 'BUS#' + businessId + '#LOC#' + locationId},
+                        ":skey06": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId},
+                        ":key07": {"S" : 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
+                        ":skey07": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
