@@ -38,13 +38,13 @@ def lambda_handler(event, context):
             FilterExpression=f,
             ExpressionAttributeValues={
                 ':key': {'S': 'CAT#'},
-                ':categories': {'S': 'CAT#SUB#'},
+                ':categories': {'S': 'CAT#'},
                 ':stat' : {'N': '1'}
             },
         )
         for row in json_dynamodb.loads(response['Items']):
             recordset = {
-                'CategoryId': row['PKID'].replace('CAT#','')+'#'+row['SKID'],
+                'CategoryId': row['PKID']+'#'+row['SKID'] if row['PKID'] != row['SKID'] else row['PKID'],
                 'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
             }
             records.append(recordset)

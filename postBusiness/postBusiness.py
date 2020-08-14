@@ -25,7 +25,8 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
+ses = boto3.client('ses',region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -127,6 +128,7 @@ def lambda_handler(event, context):
                     "COUNTRY": {"S": data['Country']},
                     "CATEGORYID": {"S": data['CategoryId']},
                     "EMAIL": {"S": data['Email']},
+                    "LONGDESCRIPTION": {"S": str(data['Description'])},
                     # "FACEBOOK": {"S": data['Facebook']},
                     "GEOLOCATION": {"S": data['Geolocation']},
                     # "INSTAGRAM": {"S": data['Instagram']},
@@ -141,7 +143,7 @@ def lambda_handler(event, context):
                     "STATUS": {"N": str(1)},
                     "PARENTBUSINESS": {"N": str(0)},
                     "GSI1PK": {"S": 'PARENT#BUS'},
-                    "GSI1SK": {"S": data['Name']+'#'+businessId},
+                    "GSI1SK": {"S": str(data['CategoryId'])+'#'+businessId},
                     "GSI2PK": {"S": 'PLAN#' + data['Plan']},
                     "GSI2SK": {"S": 'BUS#' + businessId},
                     "GSI3PK": {"S": 'LINK#' + data['TuCitaLink']},
@@ -187,7 +189,7 @@ def lambda_handler(event, context):
                         "MANUAL_CHECK_OUT": {"N": str(0)},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
-                        "MAX_CUSTOMER": {"N": str(1)},
+                        "MAX_CUSTOMER": {"N": str(item['MaxCustomer'])},
                         "PEOPLE_CHECK_IN": {"N": str(0)},
                         "STATUS": {"N": str(1)}
                     },
@@ -204,7 +206,7 @@ def lambda_handler(event, context):
                     "Item": {
                         "PKID": {"S": 'BUS#'+businessId+'#LOC#'+locationId},
                         "SKID": {"S": 'PRO#'+providerId},
-                        "NAME": {"S": str(item['Name'])},
+                        "NAME": {"S": str(data['Provider'])},
                         "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
                         # "DAYS_OFF": {"L": []},
                         "OPEN": {"N": str(0)},
@@ -293,7 +295,7 @@ def lambda_handler(event, context):
                 UserPoolId='us-east-1_gXhBD4bsG',
                 Username=data['Email'],
                 TemporaryPassword=passDecrypt,
-                # MessageAction='SUPPRESS',
+                MessageAction='SUPPRESS',
                 UserAttributes=[
                     {
                         'Name': 'email',
@@ -314,6 +316,48 @@ def lambda_handler(event, context):
                 ]
             )
             logger.info(response)
+
+            #EMAIL
+            SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+            RECIPIENT = data['Email']
+            SUBJECT = "Tu Cita 24/7 - Welcome Email"
+            BODY_TEXT = ("Your Cita 24/7 account is already created, click the link to activate it https://console.tucita247.com/en/verification/" + userId + "/0 your temp password is: " + passDecrypt)
+                        
+            # The HTML body of the email.
+            BODY_HTML = """<html>
+            <head></head>
+            <body>
+            <h1>Tu Cita 24/7</h1>
+            <p>Your Cita 24/7 account is already created, click the link to activate it https://console.tucita247.com/en/verification/""" + userId + """/0 your temp password is: """ + passDecrypt + """</p>
+            </body>
+            </html>"""
+
+            CHARSET = "UTF-8"
+
+            response = ses.send_email(
+                Destination={
+                    'ToAddresses': [
+                        RECIPIENT,
+                    ],
+                },
+                Message={
+                    'Body': {
+                        'Html': {
+                            'Charset': CHARSET,
+                            'Data': BODY_HTML,
+                        },
+                        'Text': {
+                            'Charset': CHARSET,
+                            'Data': BODY_TEXT,
+                        },
+                    },
+                    'Subject': {
+                        'Charset': CHARSET,
+                        'Data': SUBJECT,
+                    },
+                },
+                Source=SENDER
+            )
 
             statusCode = 200
             body = json.dumps({'Message': 'Business created successfully', 'BusinessId': businessId, 'Code': 200})
