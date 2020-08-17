@@ -78,7 +78,7 @@ def lambda_handler(event, context):
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
-        dueDate = (today + datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+        dueDate = (today + datetime.timedelta(days=31)).strftime("%Y-%m-%d")
 
         items = []
         rows = {

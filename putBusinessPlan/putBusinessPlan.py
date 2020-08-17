@@ -46,7 +46,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'PLAN' }
                 },
-                "UpdateExpression":"SET #n = :name, APPOINTMENTS = :appos, #o = :order",
+                "UpdateExpression":"SET #n = :name, APPOINTMENTS = :appos, AVAILABLE = :appos, #o = :order",
                 "ExpressionAttributeNames":{'#n': 'NAME','#o': 'ORDER'},
                 "ExpressionAttributeValues": { 
                     ":name": {"S": plan},
