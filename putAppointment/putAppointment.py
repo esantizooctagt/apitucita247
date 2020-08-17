@@ -65,9 +65,9 @@ def lambda_handler(event, context):
             dataId = row['GSI1PK']
             appoData = str(row['DATE_APPO'])[0:10]+'#APPO#'+appointmentId
             if dataId != '':
-                businessId = 'BUS#'+data.split('#')[1]+'#5'
-                locationId = 'BUS#'+data.split('#')[1]+'#LOC#'+data.split('#')[3]+'#5'
-                providerId = 'BUS#'+data.split('#')[1]+'#LOC#'+data.split('#')[3]+'#PRO#'+data.split('#')[5]+'#5'
+                businessId = 'BUS#'+dataId.split('#')[1]+'#5'
+                locationId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#5'
+                providerId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#5'
 
         table = dynamodb.Table('TuCita247')
         e = {'#s': 'STATUS'}

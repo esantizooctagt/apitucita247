@@ -98,31 +98,83 @@ def lambda_handler(event, context):
                     for item in json_dynamodb.loads(getAvailability['Items']):
                         if (int(item['TIME_SERVICE']) > 1):
                             times = range(0, item['TIME_SERVICE'])
+                            availableAppo = 1
+                            count = 0
                             for hr in times:
                                 newTime = str(int(item['SKID'].replace('HR#','')[0:2])+hr)
+                                time24hr = newTime.rjust(2,'0')+'-'+item['SKID'].replace('HR#','')[3:5] 
                                 newTime = newTime.rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
+                                 
+                                getAppos = dynamodb.query(
+                                    TableName="TuCita247",
+                                    IndexName="TuCita247_Index",
+                                    ReturnConsumedCapacity='TOTAL',
+                                    KeyConditionExpression='GSI1PK = :key01 and GSI1SK = :key02',
+                                    ExpressionAttributeValues={
+                                        ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
+                                        ':key02': {'S': '1#DT#'+nextDate.strftime("%Y-%m-%d")+'-'+time24hr}
+                                    }
+                                )
+                                for row in json_dynamodb.loads(getAppos['Items']):
+                                    if row['PKID'] != '':
+                                        count = count +1
+                                
                                 recordset = {
                                     'Time': newTime,
                                     'TimeService': item['TIME_SERVICE'],
                                     'ServiceId': item['SERVICEID'],
                                     'Bucket': item['CUSTOMER_PER_TIME'],
-                                    'Available': item['AVAILABLE'],
-                                    'Used': +item['CUSTOMER_PER_TIME']-int(item['AVAILABLE'])
+                                    'Available': item['CUSTOMER_PER_TIME']-count,
+                                    'Used': count
                                 }
+                                if item['CUSTOMER_PER_TIME']-count == 0:
+                                    availableAppo = 0
+
                                 timeExists = findHours(newTime, hoursData)
                                 if timeExists == '':
                                     hoursData.append(recordset)
-                                else:
+
+                            if availableAppo == 0:
+                                for hr in times:
+                                    newTime = str(int(item['SKID'].replace('HR#','')[0:2])+hr)
+                                    newTime = newTime.rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
+
                                     recordset = {
                                         'Time': newTime,
                                         'TimeService': item['TIME_SERVICE'],
                                         'ServiceId': item['SERVICEID'],
                                         'Bucket': item['CUSTOMER_PER_TIME'],
-                                        'Available': item['AVAILABLE']-(timeExists['Bucket']-timeExists['Available']),
-                                        'Used': +item['CUSTOMER_PER_TIME']-(int(item['AVAILABLE'])-(timeExists['Bucket']-timeExists['Available']))
+                                        'Available': 0,
+                                        'Used': item['CUSTOMER_PER_TIME']
                                     }
-                                    hoursData.remove(timeExists)
-                                    hoursData.append(recordset)
+                                    timeExists = findHours(newTime, hoursData)
+                                    if timeExists != '':
+                                        hoursData.remove(timeExists)
+                                        hoursData.append(recordset)
+                            
+                            appoAvailable = 0
+                            for hr in hoursData[:]:
+                                tempHour = int(hr['Time'][0:2])+12 if hr['Time'][-2:] == 'PM' else int(hr['Time'][0:2])
+                                newTime = str(tempHour+1) +':' + hr['Time'][3:5] + ' AM' if int(tempHour+1) <= 12 else str(tempHour+1-12) + ':' + hr['Time'][3:5] + ' PM'
+                                oldTime = hr['Time']
+                                timeExists = findHours(newTime, hoursData)
+                                
+                                if timeExists != '':
+                                    appoAvailable = hr['Available']
+                                else:
+                                    timeExists02 = findHours(oldTime, hoursData)
+                                    if timeExists02 != '':
+                                        recordset = {
+                                            'Time': oldTime,
+                                            'TimeService': hr['TimeService'],
+                                            'ServiceId': hr['ServiceId'],
+                                            'Bucket': hr['Bucket'],
+                                            'Available': appoAvailable,
+                                            'Used': hr['Bucket']-appoAvailable
+                                        }
+                                        hoursData.remove(timeExists02)
+                                        hoursData.append(recordset)
+
                         else:
                             recordset = {
                                 'Time': item['SKID'].replace('HR#','').replace('-',':'),
