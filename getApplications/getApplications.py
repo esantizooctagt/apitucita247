@@ -32,6 +32,7 @@ def lambda_handler(event, context):
     try:
         roleId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
+        language = event['pathParameters']['language']
         
         e = {'#s': 'STATUS'}
         f = '#s = :stat'
@@ -50,7 +51,7 @@ def lambda_handler(event, context):
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'ApplicationId': row['SKID'],
-                    'Name': row['NAME'],
+                    'Name': row['NAME'] if language == 'EN' else row['NAME_ESP'],
                     'Active': 0 if roleId == '0' else 1,
                     'Icon': row['ICON'],
                     'Route': row['ROUTE'],
@@ -83,7 +84,7 @@ def lambda_handler(event, context):
                 if response02['Count'] == 0:
                     recordset = {
                         'ApplicationId': apps['SKID'],
-                        'Name': apps['NAME'],
+                        'Name': apps['NAME'] if language == 'EN' else row['NAME_ESP'],
                         'Level_Access': '0',
                         'Active': '0',
                         'OrderApp': apps['ORDERAPP']
@@ -94,7 +95,7 @@ def lambda_handler(event, context):
                     items = json_dynamodb.loads(row)
                     recordset = {
                         'ApplicationId': apps['SKID'],
-                        'Name': apps['NAME'],
+                        'Name': apps['NAME'] if language == 'EN' else row['NAME_ESP'],
                         'Level_Access': str(items['LEVEL_ACCESS']),
                         'Active': '1',
                         'Route': apps['ROUTE'],
