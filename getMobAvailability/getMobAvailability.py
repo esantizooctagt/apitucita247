@@ -42,6 +42,8 @@ def lambda_handler(event, context):
         statusCode = ''
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
+        providerId = event['pathParameters']['providerId']
+        serviceId = event['pathParameters']['serviceId']
         appoDate = datetime.datetime.strptime(event['pathParameters']['appoDate'], '%m-%d-%Y')
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')

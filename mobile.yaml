@@ -416,12 +416,12 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
 
-  GetPurposeFunction:
+  GetMobProvidersFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: GetPurpose
-      CodeUri: getPurpose/
-      Handler: getPurpose.lambda_handler
+      FunctionName: GetMobProviders
+      CodeUri: getMobProviders/
+      Handler: getMobProviders.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
@@ -431,7 +431,26 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /mobile/purpose/{businessId}
+            Path: /mobile/providers/{businessId}/{locationId}
+            Method: get
+            ApiId: !Ref HttpApi
+        
+  GetMobServicesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetMobServices
+      CodeUri: getMobServices/
+      Handler: getMobServices.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/services/{businessId}/{providerId}
             Method: get
             ApiId: !Ref HttpApi
 
@@ -450,7 +469,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /mobile/appointment/availability/{businessId}/{locationId}/{appoDate}
+            Path: /mobile/appointment/availability/{businessId}/{locationId}/{providerId}/{serviceId}/{appoDate}
             Method: get
             ApiId: !Ref HttpApi
 

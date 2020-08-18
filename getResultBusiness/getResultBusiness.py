@@ -47,7 +47,7 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :categoryId)',
+                    KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :categoryId)',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'PARENT#BUS'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId)}
@@ -59,7 +59,7 @@ def lambda_handler(event, context):
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
                     ExclusiveStartKey= lastItem,
-                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :categoryId)',
+                    KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :categoryId)',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'PARENT#BUS'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId)}
@@ -71,7 +71,7 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :categoryId)',
+                    KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :categoryId)',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'PARENT#BUS'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId) + '#SUB#' + str(subcategoryId)}
@@ -83,7 +83,7 @@ def lambda_handler(event, context):
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
                     ExclusiveStartKey= lastItem,
-                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :categoryId)',
+                    KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :categoryId)',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'PARENT#BUS'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId) + '#SUB#' + str(subcategoryId)}
