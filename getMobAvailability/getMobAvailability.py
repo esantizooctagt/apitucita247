@@ -73,18 +73,6 @@ def lambda_handler(event, context):
 
         if appoDate.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
             currHour = today.strftime("%H:%M")
-            if int(currHour.replace(':','')[0:2]) > int(hourDate.replace(':','')[0:2]):
-                statusCode = 404
-                body = json.dumps({'Message': 'Hour not available', 'Data': result, 'Code': 400})
-                response = {
-                    'statusCode' : statusCode,
-                    'headers' : {
-                        "content-type" : "application/json",
-                        "access-control-allow-origin" : "*"
-                    },
-                    'body' : body
-                }
-                return response
 
         #STATUS DEL PAQUETE ADQUIRIDO 1 ACTIVO Y TRAE TOTAL DE NUMERO DE CITAS
         statPlan = dynamodb.query(
@@ -222,7 +210,8 @@ def lambda_handler(event, context):
                                         count = count +1
                                 recordset = {
                                     'Hour': newTime,
-                                    'Available': row['CUSTOMER_PER_TIME']-count
+                                    'ServiceId': item['SERVICEID'],
+                                    'Available': item['CUSTOMER_PER_TIME']-count
                                 }
                                 
                                 timeExists = searchHours(newTime, hoursData)
@@ -239,6 +228,7 @@ def lambda_handler(event, context):
                         else:
                             recordset = {
                                 'Hour': item['SKID'].replace('HR#','').replace('-',':'),
+                                'ServiceId': item['SERVICEID'],
                                 'Available': item['AVAILABLE']
                             }
                             hoursData.append(recordset)
@@ -313,7 +303,7 @@ def lambda_handler(event, context):
                                     hoursData.remove(actHour)
                                     actHour['Available'] = searchHour['Available']
                                     hoursData.append(actHour)
-                                    
+
                     for item in dateAppo:
                         ini = Decimal(item['I'])
                         fin = Decimal(item['F'])
@@ -330,8 +320,12 @@ def lambda_handler(event, context):
                             available = numCustomer
                             for x in hoursData:
                                 if x['Hour'] == hStd:
-                                    available = int(x['Available'])
-                                    break
+                                    if x['ServiceId'] == serviceId:
+                                        available = int(x['Available'])
+                                        break
+                                    else:
+                                        available = 0
+                                        break
                             if int(available) > 0:
                                 if currHour != '':
                                     if int(hStd.replace(':','')) > int(currHour.replace(':','')):

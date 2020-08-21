@@ -362,7 +362,7 @@ def lambda_handler(event, context):
                         locTime = str(int(hourDate[0:2])+z).zfill(2)+':'+str(hourDate[3:5])
                         hrArr, start, available, ser = findHours(locTime, hoursData)
                         if hrArr != '':
-                            if ser == serviceId or ser == '':
+                            if (ser == serviceId or ser == '') and available-guests >= 0:
                                 validAppo = 1
                                 if z == 0:
                                     existe = start
