@@ -37,6 +37,13 @@ def cleanNullTerms(d):
          clean[k] = v
    return clean
 
+def searchHours(time, hours):
+    for item in hours:
+        if item['Hour'] == time:
+            return item
+    item = ''
+    return item
+
 def lambda_handler(event, context):
     try:
         statusCode = ''
@@ -66,6 +73,18 @@ def lambda_handler(event, context):
 
         if appoDate.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
             currHour = today.strftime("%H:%M")
+            if int(currHour.replace(':','')[0:2]) > int(hourDate.replace(':','')[0:2]):
+                statusCode = 404
+                body = json.dumps({'Message': 'Hour not available', 'Data': result, 'Code': 400})
+                response = {
+                    'statusCode' : statusCode,
+                    'headers' : {
+                        "content-type" : "application/json",
+                        "access-control-allow-origin" : "*"
+                    },
+                    'body' : body
+                }
+                return response
 
         #STATUS DEL PAQUETE ADQUIRIDO 1 ACTIVO Y TRAE TOTAL DE NUMERO DE CITAS
         statPlan = dynamodb.query(
@@ -88,31 +107,62 @@ def lambda_handler(event, context):
             statusCode = 404
             body = json.dumps({'Message': 'Disabled plan', 'Data': result, 'Code': 400})
         else:
-            #CITAS DISPONIBLES DE PAQUETES ADQUIRIDOS QUE VENCEN A FUTURO
-            avaiAppoPack = dynamodb.query(
-                TableName = "TuCita247",
-                ReturnConsumedCapacity = 'TOTAL',
-                KeyConditionExpression = 'PKID = :businessId AND SKID BETWEEN :key and :fin',
-                ExpressionAttributeValues = {
-                    ':businessId': {'S': 'BUS#' + businessId},
-                    ':key': {'S': 'PACK#' + dateStd},
-                    ':fin': {'S': 'PACK#' + dateFin}
-                }
-            )
-            availablePackAppos = 0
-            for availablePlan in json_dynamodb.loads(avaiAppoPack['Items']):
-                availablePackAppos = availablePackAppos + availablePlan['AVAILABLE']
+            typeAppo = 0
+            code = ''
+            if numberAppos > 0:
+                typeAppo = 1
+            else:
+                #CITAS DISPONIBLES DE PAQUETES ADQUIRIDOS QUE VENCEN A FUTURO
+                avaiAppoPack = dynamodb.query(
+                    TableName = "TuCita247",
+                    ReturnConsumedCapacity = 'TOTAL',
+                    KeyConditionExpression = 'PKID = :businessId AND SKID BETWEEN :key and :fin',
+                    ExpressionAttributeValues = {
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':key': {'S': 'PACK#' + dateIni},
+                        ':fin': {'S': 'PACK#' + dateFin}
+                    }
+                )
+                for availablePlan in json_dynamodb.loads(avaiAppoPack['Items']):
+                    if availablePlan['AVAILABLE'] > 0:
+                        numberAppos = availablePlan['AVAILABLE']
+                        typeAppo = 2
+                        code = availablePlan['SKID']
+                        break
+                
+            #SIN DISPONIBILIDAD DE CITAS
+            if numberAppos == 0:
+                statusCode = 404
+                body = json.dumps({'Message': 'No appointments available', 'Data': result, 'Code': 400})
+            else:
+                #ENTRA SI HAY CITAS DISPONIBLES YA SEA DE PLAN O PAQUETE VIGENTE
+                #GET SERVICES 
+                service = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#'+businessId},
+                        ':serviceId': {'S': 'SER#'+serviceId}
+                    }
+                )
+                for serv in json_dynamodb.loads(service['Items']):
+                    bucket = serv['TIME_SERVICE']
+                    numCustomer = serv['CUSTOMER_PER_TIME']
 
-            #ENTRA SI HAY CITAS DISPONIBLES YA SEA DE PLAN O PAQUETE VIGENTE
-            if numberAppos > 0 or availablePackAppos > 0:
+                if bucket == 0:
+                    statusCode = 500
+                    body = json.dumps({'Message': 'No data for this service provider', 'Code': 500})
+                    return
+                    
                 #GET OPERATION HOURS FROM SPECIFIC LOCATION
                 getCurrDate = dynamodb.query(
                     TableName = "TuCita247",
                     ReturnConsumedCapacity = 'TOTAL',
-                    KeyConditionExpression = 'PKID = :businessId and begins_with ( SKID , :key ) ',
+                    KeyConditionExpression = 'PKID = :businessId AND SKID = :providerId',
                     ExpressionAttributeValues = {
-                        ':businessId': {'S': 'BUS#' + businessId},
-                        ':key': {'S': 'LOC#' + locationId}
+                        ':businessId': {'S': 'BUS#'+businessId+'#LOC#'+locationId},
+                        ':providerId': {'S': 'PRO#'+providerId}
                     },
                     Limit = 1
                 )
@@ -121,8 +171,8 @@ def lambda_handler(event, context):
                     dayOffValid = True
 
                     opeHours = json.loads(currDate['OPERATIONHOURS'])
-                    numCustomer = currDate['CUSTOMER_PER_BUCKET']
-                    bucket = currDate['BUCKET_INTERVAL']
+                    # numCustomer = currDate['CUSTOMER_PER_BUCKET']
+                    # bucket = currDate['BUCKET_INTERVAL']
                     daysOff = currDate['DAYS_OFF'] if 'DAYS_OFF' in currDate else []
                     dateAppo = opeHours[dayName] if dayName in opeHours else ''
                     if daysOff != []:
@@ -132,22 +182,138 @@ def lambda_handler(event, context):
                             body = json.dumps({'Message': 'Day Off', 'Data': [], 'Code': 400})
                             break
                     
-                    #GET HOURS WITH DATA FROM SPECIFIC LOCATION
+                    #GET SUMMARIZE APPOINTMENTS FROM A SPECIFIC LOCATION AND PROVIDER FOR SPECIFIC DATE
                     getCurrHours = dynamodb.query(
                         TableName = "TuCita247",
                         ReturnConsumedCapacity = 'TOTAL',
                         KeyConditionExpression = 'PKID = :key',
                         ExpressionAttributeValues = {
-                            ':key': {'S': 'LOC#' + locationId + '#DT#' + dateStd}
-                        }
+                            ':key': {'S': 'LOC#'+locationId+'#PRO#'+providerId+'#DT#'+dateStd}
+                        },
+                        ScanIndexForward=True
                     )
-                    for row in json_dynamodb.loads(getCurrHours['Items']):
-                        recordset = {
-                            'Hour': row['SKID'].replace('HR#','').replace('-',':'),
-                            'Available': row['AVAILABLE']
-                        }
-                        hoursData.append(recordset)
 
+                    hoursData = []
+                    bookings = json_dynamodb.loads(getCurrHours['Items'])
+                    for item in bookings:
+                        if (int(item['TIME_SERVICE']) > 1):
+                            times = range(0, item['TIME_SERVICE'])
+                            changes = range(0, item['TIME_SERVICE'])
+                            count = 0
+                            timeInterval = []
+                            #CONSOLIDA HORAS DE BOOKINGS
+                            for hr in times:
+                                newTime = str(int(item['SKID'].replace('HR#','')[0:2])+hr)
+                                time24hr = newTime.rjust(2,'0')+'-'+item['SKID'].replace('HR#','')[3:5] 
+                                newTime = newTime.rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
+                                 
+                                getAppos = dynamodb.query(
+                                    TableName="TuCita247",
+                                    IndexName="TuCita247_Index",
+                                    ReturnConsumedCapacity='TOTAL',
+                                    KeyConditionExpression='GSI1PK = :key01 and GSI1SK = :key02',
+                                    ExpressionAttributeValues={
+                                        ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
+                                        ':key02': {'S': '1#DT#'+appoDate.strftime("%Y-%m-%d")+'-'+time24hr}
+                                    }
+                                )
+                                for row in json_dynamodb.loads(getAppos['Items']):
+                                    if row['PKID'] != '':
+                                        count = count +1
+                                recordset = {
+                                    'Hour': newTime,
+                                    'Available': row['CUSTOMER_PER_TIME']-count
+                                }
+                                
+                                timeExists = searchHours(newTime, hoursData)
+                                newAva = item['CUSTOMER_PER_TIME']-count
+                                if timeExists == '':
+                                    hoursData.append(recordset)
+                                else:
+                                    if timeExists['Available'] < item['CUSTOMER_PER_TIME']-count:
+                                        newAva = timeExists['Available'] 
+                                        
+                                    hoursData.remove(timeExists)
+                                    timeExists['Available'] = newAva
+                                    hoursData.append(timeExists)
+                        else:
+                            recordset = {
+                                'Hour': item['SKID'].replace('HR#','').replace('-',':'),
+                                'Available': item['AVAILABLE']
+                            }
+                            hoursData.append(recordset)
+
+                    for item in bookings:
+                        if (int(item['TIME_SERVICE']) > 1):
+                            # VALIDA HORA INICIAL DEL SERVICIO QUE SE PUEDA EJECUTAR O NO
+                            checkHours = int(item['SKID'].replace('HR#','')[0:2])
+                            y = range(1, int(item['TIME_SERVICE']))
+                            availability = 0
+                            for z in y:
+                                opeTime = int(checkHours-z)
+                                if len(dateAppo) >= 1:
+                                    if opeTime >= int(dateAppo[0]['I']) and opeTime <= int(dateAppo[0]['F'])-1:
+                                        checkDisp = searchHours(str(opeTime).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
+                                        if checkDisp == '':
+                                            availability = 1
+                                        else: 
+                                            actHour = searchHours(str(checkHours).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
+                                            if item['SERVICEID'] == checkDisp['ServiceId'] and checkDisp['Available'] >= actHour['Available']:
+                                                availability = 1
+                                if len(dateAppo) == 2:
+                                    if opeTime >= int(dateAppo[1]['I']) and opeTime <= int(dateAppo[1]['F'])-1:
+                                        checkDisp = searchHours(str(opeTime).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
+                                        if checkDisp == '':
+                                            availability = 1
+                                        else: 
+                                            actHour = searchHours(str(checkHours).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
+                                            if item['SERVICEID'] == checkDisp['ServiceId'] and checkDisp['Available'] >= actHour['Available']:
+                                                availability = 1
+    
+                            if availability == 0:
+                                actHour = searchHours(str(checkHours).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
+                                checkHours = str(checkHours+1).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
+                                searchHour = searchHours(checkHours, hoursData)
+                                if searchHour != '':
+                                    hoursData.remove(actHour)
+                                    actHour['Available'] = searchHour['Available']
+                                    hoursData.append(actHour)
+    
+                            # VALIDA HORA FINAL DEL SERVICIO QUE SE PUEDA EJECUTAR O NO
+                            checkHours = int(item['SKID'].replace('HR#','')[0:2])+int(item['TIME_SERVICE'])-1
+                            y = range(1, int(item['TIME_SERVICE']))
+                            availability = 0
+                            for z in y:
+                                opeTime = int(checkHours+z)
+                                logger.info(opeTime)
+                                if len(dateAppo) >= 1:
+                                    if opeTime >= int(dateAppo[0]['I']) and opeTime <= int(dateAppo[0]['F'])-1:
+                                        checkDisp = searchHours(str(opeTime).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
+                                        if checkDisp == '':
+                                            availability = 1
+                                        else: 
+                                            actHour = searchHours(str(checkHours).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
+                                            if item['SERVICEID'] == checkDisp['ServiceId'] and checkDisp['Available'] >= actHour['Available']:
+                                                availability = 1
+                                if len(dateAppo) == 2:
+                                    if opeTime >= int(dateAppo[1]['I']) and opeTime <= int(dateAppo[1]['F'])-1:
+                                        checkDisp = searchHours(str(opeTime).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
+                                        if checkDisp == '':
+                                            availability = 1
+                                        else: 
+                                            actHour = searchHours(str(checkHours).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
+                                            if item['SERVICEID'] == checkDisp['ServiceId'] and checkDisp['Available'] >= actHour['Available']:
+                                                availability = 1
+    
+                            if availability == 0:
+                                actHour = searchHours(str(checkHours).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
+                                checkHours = str(checkHours-1).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
+                                searchHour = searchHours(checkHours, hoursData)
+                                if searchHour != '':
+                                    hoursData.remove(actHour)
+                                    actHour['Available'] = searchHour['Available']
+                                    hoursData.append(actHour)
+                                    
                     for item in dateAppo:
                         ini = Decimal(item['I'])
                         fin = Decimal(item['F'])
