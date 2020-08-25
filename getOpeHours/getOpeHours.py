@@ -109,7 +109,7 @@ def lambda_handler(event, context):
                                 newTime = str(int(item['SKID'].replace('HR#','')[0:2])+hr)
                                 time24hr = newTime.rjust(2,'0')+'-'+item['SKID'].replace('HR#','')[3:5] 
                                 newTime = newTime.rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
-                                 
+                                
                                 getAppos = dynamodb.query(
                                     TableName="TuCita247",
                                     IndexName="TuCita247_Index",
@@ -122,14 +122,15 @@ def lambda_handler(event, context):
                                 )
                                 for row in json_dynamodb.loads(getAppos['Items']):
                                     if row['PKID'] != '':
-                                        count = count +1
+                                        count = count +row['PEOPLE_QTY']
                                 recordset = {
                                     'Time': newTime,
                                     'TimeService': item['TIME_SERVICE'],
                                     'ServiceId': item['SERVICEID'],
                                     'Bucket': item['CUSTOMER_PER_TIME'],
                                     'Available': item['CUSTOMER_PER_TIME']-count,
-                                    'Used': count
+                                    'Used': count,
+                                    'Cancel': 0
                                 }
                                 timeExists = findHours(newTime, hoursData)
                                 newAva = item['CUSTOMER_PER_TIME']-count
@@ -143,15 +144,32 @@ def lambda_handler(event, context):
                                     timeExists['Available'] = newAva
                                     hoursData.append(timeExists)
                         else:
-                            recordset = {
-                                'Time': item['SKID'].replace('HR#','').replace('-',':'),
-                                'TimeService': item['TIME_SERVICE'],
-                                'ServiceId': item['SERVICEID'],
-                                'Bucket': item['CUSTOMER_PER_TIME'],
-                                'Available': item['AVAILABLE'],
-                                'Used': +item['CUSTOMER_PER_TIME']-int(item['AVAILABLE'])
-                            }
-                            hoursData.append(recordset)
+                            if int(item['CANCEL']) == 1:
+                                timeExists = findHours(item['SKID'].replace('HR#','').replace('-',':'), hoursData)
+                                if timeExists != '':
+                                    hoursData.remove(timeExists)
+
+                                recordset = {
+                                    'Time': item['SKID'].replace('HR#','').replace('-',':'),
+                                    'TimeService': 1,
+                                    'ServiceId': '',
+                                    'Bucket': 0,
+                                    'Available': 0,
+                                    'Used': 0,
+                                    'Cancel': 1
+                                }
+                                hoursData.append(recordset)
+                            else:
+                                recordset = {
+                                    'Time': item['SKID'].replace('HR#','').replace('-',':'),
+                                    'TimeService': item['TIME_SERVICE'],
+                                    'ServiceId': item['SERVICEID'],
+                                    'Bucket': item['CUSTOMER_PER_TIME'],
+                                    'Available': item['AVAILABLE'],
+                                    'Used': +item['CUSTOMER_PER_TIME']-int(item['AVAILABLE']),
+                                    'Cancel': 0
+                                }
+                                hoursData.append(recordset)
                     
                     for item in bookings:
                         if (int(item['TIME_SERVICE']) > 1):
@@ -246,13 +264,14 @@ def lambda_handler(event, context):
                                 if int(h[0:2]) > 12:
                                     h = str(int(h[0:2])-12).zfill(2) + h[2:5] + ' PM'
                                 else:
-                                    h = h + ' AM'
+                                    h = h + ' AM' if int(h[0:2]) < 12 else h + ' PM'
                                 recordset = {
                                     'Time': h,
                                     'Bucket': 1,
                                     'Available': 1,
                                     'ServiceId': '',
-                                    'Used': 0
+                                    'Used': 0,
+                                    'Cancel': 0
                                 }
                             else:
                                 record = findHours(h, hoursData)
@@ -260,14 +279,15 @@ def lambda_handler(event, context):
                                 if int(h[0:2]) > 12:
                                     h = str(int(h[0:2])-12).zfill(2) + h[2:5] + ' PM'
                                 else:
-                                    h = h + ' AM'
+                                    h = h + ' AM' if int(h[0:2]) < 12 else h + ' PM'
 
                                 recordset = {
                                     'Time': h,
                                     'Bucket': record['Bucket'],
                                     'Available': record['Available'],
                                     'ServiceId': record['ServiceId'],
-                                    'Used': record['Used']
+                                    'Used': record['Used'],
+                                    'Cancel': record['Cancel']
                                 }
                             
                             if n == 0:
@@ -296,13 +316,12 @@ def lambda_handler(event, context):
                 if int(h24[0:2]) > 12:
                     h = str(int(h24[0:2])-12).zfill(2) + h24[2:5] + ' PM'
                 else:
-                    h = h24 + ' AM'
+                    h = h24 + ' AM' if int(h24[0:2]) < 12 else h24 + ' PM'
                 recordset = {
                     'Time': h,
                     'Time24H': h24
                 }
                 Hours.append(recordset)
-
 
             statusCode = 200
             body = json.dumps({'Hours': Hours, 'Monday': Monday, 'Tuesday': Tuesday, 'Wednesday': Wednesday, 'Thursday': Thursday, 'Friday': Friday, 'Saturday': Saturday, 'Sunday': Sunday,'Code': 200})

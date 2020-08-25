@@ -28,30 +28,20 @@ def lambda_handler(event, context):
         statusCode = ''
         businessId = event['pathParameters']['id']
 
-        e = {'#s': 'STATUS'}
-        f = '#s = :stat'
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :reasons )',
-            ExpressionAttributeNames=e,
-            FilterExpression=f,
+            KeyConditionExpression='PKID = :businessId AND SKID = :reasons',
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#'+businessId},
-                ':reasons': {'S': 'REAS#'},
-                ':stat' : {'N': '1'}
+                ':reasons': {'S': 'METADATA'}
             }
         )
-        records = []
         for row in json_dynamodb.loads(response['Items']):
-            recordset = {
-                "ReasonId": row['SKID'].replace('REAS#',''),
-                "Description": row['DESCRIPTION'],
-            }
-            records.append(recordset)
+            reasons = row['REASONS']
 
         statusCode = 200
-        body = json.dumps({'Message': 'Get reasons successfully', 'Code': 200, 'Reasons': records})
+        body = json.dumps({'Message': 'Get reasons successfully', 'Code': 200, 'Reasons': reasons})
 
         if statusCode == '':
             statusCode = 500

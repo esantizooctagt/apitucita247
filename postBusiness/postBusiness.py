@@ -138,6 +138,7 @@ def lambda_handler(event, context):
                     # "WEBSITE": {"S": data['Website']},
                     # "TAGS": {"S": data['Tags'] if data['Tags'] != '' else None},
                     "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
+                    "REASONS": {"S": 'OTHER'},
                     "TU_CITA_LINK": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
                     "ZIPCODE": {"S": data['ZipCode']},
                     "STATUS": {"N": str(1)},

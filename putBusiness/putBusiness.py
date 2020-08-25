@@ -51,7 +51,7 @@ def lambda_handler(event, context):
         #     }
         # )
 
-        # items = []
+        items = []
         # for cats in response['Items']:
         #     row = json_dynamodb.loads(cats)
         #     encontro = 0
@@ -120,7 +120,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA' }
                 },
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, GSI4PK = :search, GSI4SK = :search, CATEGORYID = :categoryId" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
+                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, REASONS = :reasons, GSI4PK = :search, GSI4SK = :search, CATEGORYID = :categoryId" + (", GSI1PK = :key1, GSI1SK = :skey1" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
                 "ExpressionAttributeNames": { '#n': 'NAME' },
                 "ExpressionAttributeValues": { 
                     ":longDescrip": {"S": data['LongDescription']},
@@ -138,10 +138,11 @@ def lambda_handler(event, context):
                     ":website": {"S": data['Website']},
                     ":parentBus": {"N": str(data['ParentBusiness'])},
                     ":tags": {"S": data['Tags']},
+                    ":reasons": {"S": data['Reasons']},
                     ":tucitalink": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
                     ":categoryId": {"S": data['CategoryId']},
                     ":key1": {"S": "PARENT#BUS" if parentBusiness == 1 else None},
-                    ":skey1": {"S": data['Name'] + "#" + businessId if parentBusiness == 1 else None},
+                    ":skey1": {"S": data['CategoryId'] + "#" + businessId},
                     ":zipcode": {"S": data['ZipCode']},
                     ":search": {"S": "SEARCH"}
                 },

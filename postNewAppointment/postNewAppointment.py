@@ -362,7 +362,7 @@ def lambda_handler(event, context):
                         locTime = str(int(hourDate[0:2])+z).zfill(2)+':'+str(hourDate[3:5])
                         hrArr, start, available, ser = findHours(locTime, hoursData)
                         if hrArr != '':
-                            if (ser == serviceId or ser == '') and available-guests >= 0:
+                            if (ser == serviceId or ser == '') and available-int(guests) >= 0:
                                 validAppo = 1
                                 if z == 0:
                                     existe = start
@@ -560,7 +560,7 @@ def lambda_handler(event, context):
                                 },
                                 "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
                                 "ExpressionAttributeValues": { 
-                                    ":increment": {"N": str(1)},
+                                    ":increment": {"N": str(guests)}, #str(1)},
                                     ":nocero": {"N": str(0)},
                                     ":serviceId": {"S": serviceId}
                                 },
@@ -579,7 +579,7 @@ def lambda_handler(event, context):
                                 "TIME_SERVICE": {"N": str(bucket)},
                                 "CUSTOMER_PER_TIME": {"N": str(numCustomer)},
                                 "SERVICEID": {"S": serviceId},
-                                "AVAILABLE": {"N": str(numCustomer-1)}
+                                "AVAILABLE": {"N": str(numCustomer-guests)}
                             },
                             "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"

@@ -23,7 +23,7 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
 dynamodbQuery = boto3.client('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
-ses = boto3.client('ses',region_name=REGION)
+ses = boto3.client('ses', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -46,6 +46,7 @@ def lambda_handler(event, context):
         
         status = data['Status']
         dateAppo = data['DateAppo']
+        guests = data['Guests'] if 'Guests' in data else ''
         reasonId = data['Reason'] if 'Reason' in data else ''
         customerId = data['CustomerId'] if 'CustomerId' in data else ''
 
@@ -68,31 +69,114 @@ def lambda_handler(event, context):
                 businessId = 'BUS#'+dataId.split('#')[1]+'#5'
                 locationId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#5'
                 providerId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#5'
+                keyUpd = 'LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#DT#'+dateAppo[0:10]
 
         table = dynamodb.Table('TuCita247')
         e = {'#s': 'STATUS'}
-        if reasonId != '':
-            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': '#5', ':reason': reasonId, ':dateope': dateOpe, ':pkey05': businessId, ':skey05': appoData, ':pkey06': locationId, ':skey06': appoData, ':pkey07': providerId, ':skey07': appoData}
-        else:
+        if reasonId == '':
             v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
         
-        cancelStr = ''
-        if str(status) == "5":
-            cancelStr = ', GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, TIMECANCEL = :dateope'
+        # cancelStr = ''
+        # if str(status) == "5":
+        #     cancelStr = ', GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, TIMECANCEL = :dateope'
+        
+        if str(status) != "5":
+            response = table.update_item(
+                Key={
+                    'PKID': 'APPO#' + appointmentId,
+                    'SKID': 'APPO#' + appointmentId
+                },
+                UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02" + (", TIMECHEK = :dateope" if str(status) == "2" else ""),
+                ExpressionAttributeNames=e,
+                ExpressionAttributeValues=v,
+                ReturnValues="UPDATED_NEW"
+            )
+            appo = json_dynamodb.loads(response['Attributes'])
+        else:
+            items = []
+            getData = dynamodbQuery.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :key01 AND SKID = :key02',
+                ExpressionAttributeValues={
+                    ':key01': {'S': keyUpd},
+                    ':key02': {'S': 'HR#' + dateAppo[-5:]}
+                }
+            )
+            custQty = 0
+            available = 0
+            for row in json_dynamodb.loads(getData['Items']):
+                custQty = int(row['CUSTOMER_PER_TIME'])
+                available = int(row['AVAILABLE'])+int(guests)
 
-        response = table.update_item(
-            Key={
-                'PKID': 'APPO#' + appointmentId,
-                'SKID': 'APPO#' + appointmentId
-            },
-            UpdateExpression="set #s = :status, GSI1SK = :key01, GSI2SK = :key02" + (", TIMECHEK = :dateope" if str(status) == "2" else "") + (", REASONID = :reason" if reasonId != "" else "") + cancelStr,
-            ExpressionAttributeNames=e,
-            ExpressionAttributeValues=v,
-            ReturnValues="UPDATED_NEW"
-        )
+            if available < custQty:
+                recordset = {
+                    "Update": {
+                        "TableName": "TuCita247",
+                        "Key": {
+                            "PKID": {"S": keyUpd}, 
+                            "SKID": {"S": 'HR#' + dateAppo[-5:]}, 
+                        },
+                        "UpdateExpression": "SET AVAILABLE = AVAILABLE + :increment",
+                        "ExpressionAttributeValues": { 
+                            ":increment": {"N": str(guests)}
+                        },
+                        "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                    }
+                }
+                items.append(recordset)
+
+            if available == custQty:
+                recordset = {
+                    "Delete": {
+                        "TableName": "TuCita247",
+                        "Key": {
+                            "PKID": {"S": keyUpd}, 
+                            "SKID": {"S": 'HR#' + dateAppo[-5:]}, 
+                        },
+                        "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                    }
+                }
+                items.append(recordset)
+
+            recordset = {
+                "Update": {
+                    "TableName": "TuCita247",
+                    "Key": {
+                        "PKID": {"S": 'APPO#' + appointmentId}, 
+                        "SKID": {"S": 'APPO#' + appointmentId}, 
+                    },
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, REASONID = :reason, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, TIMECANCEL = :dateope",
+                    "ExpressionAttributeValues": { 
+                        ":status": {"N": str(status)}, 
+                        ":key01": {"S": str(status) + '#DT#' + str(dateAppo)}, 
+                        ":key02": {"S": '#5'}, 
+                        ":reason": {"S": reasonId},  
+                        ":pkey05": {"S": businessId}, 
+                        ":skey05": {"S": appoData}, 
+                        ":pkey06": {"S": locationId}, 
+                        ":skey06": {"S": appoData}, 
+                        ":pkey07": {"S": providerId}, 
+                        ":skey07": {"S": appoData},
+                        ":dateope": {"S": dateOpe}
+                    },
+                    "ExpressionAttributeNames": {'#s': 'STATUS'},
+                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                }
+            }
+            items.append(recordset)
+
+            logger.info(items)
+            response = dynamodbQuery.transact_write_items(
+                TransactItems = items
+            )
+            appo = ''
 
         statusCode = 200
-        body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200, 'Appo': json_dynamodb.loads(response['Attributes'])})
+        body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200, 'Appo': appo})
 
         logger.info(response)
         #PASA A PRE-CHECK IN Y ENVIA NOTIFICACION POR SNS A SMS y CORREO, ONESIGNAL (PUSH NOTIFICATION)
