@@ -213,7 +213,6 @@ def lambda_handler(event, context):
                             availability = 0
                             for z in y:
                                 opeTime = int(checkHours+z)
-                                logger.info(opeTime)
                                 if len(dayHours) >= 1:
                                     if opeTime >= int(dayHours[0]['I']) and opeTime <= int(dayHours[0]['F'])-1:
                                         checkDisp = findHours(str(opeTime).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
@@ -246,10 +245,89 @@ def lambda_handler(event, context):
                     fin = 0
                     interval = 1
                     bucket = 1
+                    initRange = 0
+                    iniVal = 0
+                    finVal = 0
                     for dt in dayHours:
                         ini = Decimal(dt['I'])
                         fin = Decimal(dt['F'])
                         scale = 10
+                        initRange = initRange + 1
+                        if len(dayHours) == 1 or initRange == 2:
+                            for h in range(int(scale*fin), int(scale*24), int(scale*interval)):
+                                if (h/scale).is_integer():
+                                    h = str(math.trunc(h/scale)).zfill(2) + ':00' 
+                                else:
+                                    h = str(math.trunc(h/scale)).zfill(2) + ':30'
+                                if findHours(h, hoursData) != '':
+                                    record = findHours(h, hoursData)
+                                    if int(h[0:2]) > 12:
+                                        h = str(int(h[0:2])-12).zfill(2) + h[2:5] + ' PM'
+                                    else:
+                                        h = h + ' AM' if int(h[0:2]) < 12 else h + ' PM'
+                                    recordset = {
+                                        'Time': h,
+                                        'Bucket': 1 if record['ServiceId'] == '' else record['Bucket'],
+                                        'Available': 1 if record['ServiceId'] == '' else record['Available'],
+                                        'ServiceId': record['ServiceId'],
+                                        'Used': 0 if record['ServiceId'] == '' else record['Used'],
+                                        'Cancel': record['Cancel']
+                                    }
+                                    
+                                    if n == 0:
+                                        Monday.append(recordset)
+                                    if n == 1:
+                                        Tuesday.append(recordset)
+                                    if n == 2:
+                                        Wednesday.append(recordset)
+                                    if n == 3:
+                                        Thursday.append(recordset)
+                                    if n == 4:
+                                        Friday.append(recordset)
+                                    if n == 5:
+                                        Saturday.append(recordset)
+                                    if n == 6:
+                                        Sunday.append(recordset)
+                        if len(dayHours) == 2:
+                            if initRange == 1:
+                                iniVal = Decimal(dt['I'])
+                                finVal = Decimal(dt['F'])
+                            if initRange == 2:
+                                for h in range(int(scale*finVal), int(scale*ini), int(scale*interval)):
+                                    if (h/scale).is_integer():
+                                        h = str(math.trunc(h/scale)).zfill(2) + ':00' 
+                                    else:
+                                        h = str(math.trunc(h/scale)).zfill(2) + ':30'
+                                    if findHours(h, hoursData) != '':
+                                        record = findHours(h, hoursData)
+                                        if int(h[0:2]) > 12:
+                                            h = str(int(h[0:2])-12).zfill(2) + h[2:5] + ' PM'
+                                        else:
+                                            h = h + ' AM' if int(h[0:2]) < 12 else h + ' PM'
+                                        recordset = {
+                                            'Time': h,
+                                            'Bucket': 1 if record['ServiceId'] == '' else record['Bucket'],
+                                            'Available': 1 if record['ServiceId'] == '' else record['Available'],
+                                            'ServiceId': record['ServiceId'],
+                                            'Used': 0 if record['ServiceId'] == '' else record['Used'],
+                                            'Cancel': record['Cancel']
+                                        }
+    
+                                        if n == 0:
+                                            Monday.append(recordset)
+                                        if n == 1:
+                                            Tuesday.append(recordset)
+                                        if n == 2:
+                                            Wednesday.append(recordset)
+                                        if n == 3:
+                                            Thursday.append(recordset)
+                                        if n == 4:
+                                            Friday.append(recordset)
+                                        if n == 5:
+                                            Saturday.append(recordset)
+                                        if n == 6:
+                                            Sunday.append(recordset)
+                        
                         if minVal > ini:
                             minVal = ini
                         if maxVal < fin:
