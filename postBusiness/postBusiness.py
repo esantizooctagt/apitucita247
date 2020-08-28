@@ -368,19 +368,22 @@ def lambda_handler(event, context):
             statusCode = 404
             body = json.dumps({"Code":400, "error": False, 
                     "success": True, 
+                    'BusinessId': '',
                     "message": "This email already exists", 
                     "data": None})
         except client.exceptions.InvalidPasswordException as e:
             statusCode = 404
             body = json.dumps({"Code":400,"error": False, 
                     "success": True, 
+                    'BusinessId': '',
                     "message": "Password should have Caps,\
                                 Special chars, Numbers", 
                     "data": None})
         except client.exceptions.UserLambdaValidationException as e:
             statusCode = 404
             body = json.dumps({"Code":400,"error": False, 
-                    "success": True, 
+                    "success": True,
+                    'BusinessId': '',
                     "message": "Email already exists " + str(e), 
                     "data": None})
         
@@ -388,12 +391,13 @@ def lambda_handler(event, context):
             statusCode = 404
             body = json.dumps({"Code":400,"error": False, 
                     "success": True, 
+                    'BusinessId': '',
                     "message": str(e), 
                     "data": None})
 
         if statusCode == '':
             statusCode = 500
-            body = json.dumps({'Message': 'Error on update business', 'BusinessId': businessId, 'Code': 500})
+            body = json.dumps({'Message': 'Error on update business', 'BusinessId': '', 'Code': 500})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})

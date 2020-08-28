@@ -276,7 +276,7 @@ def lambda_handler(event, context):
                                     hoursData.append(timeExists)
                         else:
                             if int(item['CANCEL']) == 1:
-                                timeExists = findHours(item['SKID'].replace('HR#','').replace('-',':'), hoursData)
+                                timeExists = searchHours(item['SKID'].replace('HR#','').replace('-',':'), hoursData)
                                 if timeExists != '':
                                     hoursData.remove(timeExists)
 
@@ -566,78 +566,98 @@ def lambda_handler(event, context):
                     # logger.info(recordset)
                     items.append(recordset)
 
-                    if existe == 1:
-                        #valida que exista el registro y que no sea el servicioid empty
-                        getSummarize = dynamodb.query(
-                            TableName = "TuCita247",
-                            ReturnConsumedCapacity = 'TOTAL',
-                            KeyConditionExpression = 'PKID = :key01 AND SKID = :key02',
-                            ExpressionAttributeValues = {
-                                ':key01': {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]},
-                                ':key02': {"S": 'HR#'+data['AppoHour'].replace(':','-')}
-                            }
-                        )
-                        updateSum = 0
-                        for summ in json_dynamodb.loads(getSummarize['Items']):
-                            if summ['SERVICEID'] == '':
-                                updateSum = 1
-
-                        if updateSum == 0:
-                            #update
-                            recordset = {
-                                "Update":{
-                                    "TableName": "TuCita247",
-                                    "Key": {
-                                        "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
-                                        "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}
-                                    },
-                                    "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
-                                    "ExpressionAttributeValues": { 
-                                        ":increment": {"N": str(guests)}, #str(1)},
-                                        ":nocero": {"N": str(0)},
-                                        ":serviceId": {"S": serviceId}
-                                    },
-                                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE >= :nocero AND SERVICEID = :serviceId",
-                                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                                }
-                            }
-                        else:
-                            #update
-                            recordset = {
-                                "Update":{
-                                    "TableName": "TuCita247",
-                                    "Key": {
-                                        "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
-                                        "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}
-                                    },
-                                    "UpdateExpression": "SET AVAILABLE = :available, TIME_SERVICE = :timeSer, CUSTOMER_PER_TIME = :custPerTime, SERVICEID = :serviceId",
-                                    "ExpressionAttributeValues": { 
-                                        ":available": {"N": str(int(numCustomer)-int(guests))},
-                                        ":timeSer": {"N": str(bucket)},
-                                        ":custPerTime": {"N": str(numCustomer)},
-                                        ":serviceId": {"S": str(serviceId)}
-                                    },
-                                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                                }
-                            }
-                    else:
-                        #put
+                    # if existe == 1:
+                    #valida que exista el registro y que no sea el servicioid empty
+                    getSummarize = dynamodb.query(
+                        TableName = "TuCita247",
+                        ReturnConsumedCapacity = 'TOTAL',
+                        KeyConditionExpression = 'PKID = :key01 AND SKID = :key02',
+                        ExpressionAttributeValues = {
+                            ':key01': {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]},
+                            ':key02': {"S": 'HR#'+data['AppoHour'].replace(':','-')}
+                        }
+                    )
+                    updateSum = 0
+                    putSum = 0
+                    for summ in json_dynamodb.loads(getSummarize['Items']):
+                        putSum = 1
+                        if summ['SERVICEID'] == '':
+                            updateSum = 1
+                            ## me queda aqui pendiente de validar si existe o no registro para acutalizar o crear
+                    if updateSum == 0 and putSum == 0:
                         recordset = {
-                        "Put": {
-                            "TableName": "TuCita247",
-                            "Item": {
-                                "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
-                                "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
-                                "TIME_SERVICE": {"N": str(bucket)},
-                                "CUSTOMER_PER_TIME": {"N": str(int(numCustomer))},
-                                "SERVICEID": {"S": str(serviceId)},
-                                "AVAILABLE": {"N": str(int(numCustomer)-int(guests))}
-                            },
-                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                            "Put": {
+                                "TableName": "TuCita247",
+                                "Item": {
+                                    "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
+                                    "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
+                                    "TIME_SERVICE": {"N": str(bucket)},
+                                    "CUSTOMER_PER_TIME": {"N": str(int(numCustomer))},
+                                    "SERVICEID": {"S": str(serviceId)},
+                                    "AVAILABLE": {"N": str(int(numCustomer)-int(guests))},
+                                    "CANCEL": {"N": str(0)}
+                                },
+                                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                                }
+                            }
+                    if updateSum == 0 and putSum == 1:
+                        #update
+                        recordset = {
+                            "Update":{
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
+                                    "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}
+                                },
+                                "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
+                                "ExpressionAttributeValues": { 
+                                    ":increment": {"N": str(guests)}, #str(1)},
+                                    ":nocero": {"N": str(0)},
+                                    ":serviceId": {"S": serviceId}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE >= :nocero AND SERVICEID = :serviceId",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
                             }
                         }
+                    if updateSum == 1:
+                        #update
+                        recordset = {
+                            "Update":{
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
+                                    "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}
+                                },
+                                "UpdateExpression": "SET AVAILABLE = :available, TIME_SERVICE = :timeSer, CUSTOMER_PER_TIME = :custPerTime, SERVICEID = :serviceId",
+                                "ExpressionAttributeValues": { 
+                                    ":available": {"N": str(int(numCustomer)-int(guests))},
+                                    ":timeSer": {"N": str(bucket)},
+                                    ":custPerTime": {"N": str(numCustomer)},
+                                    ":serviceId": {"S": str(serviceId)}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                            }
+                        }
+                    # else:
+                    #     #put
+                    #     recordset = {
+                    #     "Put": {
+                    #         "TableName": "TuCita247",
+                    #         "Item": {
+                    #             "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
+                    #             "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
+                    #             "TIME_SERVICE": {"N": str(bucket)},
+                    #             "CUSTOMER_PER_TIME": {"N": str(int(numCustomer))},
+                    #             "SERVICEID": {"S": str(serviceId)},
+                    #             "AVAILABLE": {"N": str(int(numCustomer)-int(guests))},
+                    #             "CANCEL": {"N": str(0)}
+                    #         },
+                    #         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    #         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                    #         }
+                    #     }
                     # logger.info(recordset)
                     items.append(recordset)
 

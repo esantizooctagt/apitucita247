@@ -268,23 +268,54 @@ def lambda_handler(event, context):
             }
             items.append(recordset)
         else:
-            recordset = {
-                "Put": {
-                    "TableName": "TuCita247",
-                    "Item": {
-                        "PKID": {"S": 'LOC#'+locationId+'#PRO#'+providerId+'#DT#'+dateAppo[0:10]}, 
-                        "SKID": {"S": 'HR#'+dateAppo[-5:]},
-                        "SERVICEID": {"S": ''},
-                        "AVAILABLE": {"N": str(0)},
-                        "CUSTOMER_PER_TIME": {"N": str(0)},
-                        "TIME_SERVICE": {"N": str(1)},
-                        "CANCEL": {"N": str(1)}
-                    },
-                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+            response = dynamodbQuery.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :key01 AND SKID = :key02',
+                ExpressionAttributeValues={
+                    ':key01': {'S': 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppo[0:10]},
+                    ':key02': {'S': 'HR#'+dateAppo[-5:]}
                 }
-            }
-            items.append(recordset)
+            )
+            existSum = 0
+            for item in json_dynamodb.loads(response['Items']):
+                existSum = 1
+            
+            if existSum == 0:
+                recordset = {
+                    "Put": {
+                        "TableName": "TuCita247",
+                        "Item": {
+                            "PKID": {"S": 'LOC#'+locationId+'#PRO#'+providerId+'#DT#'+dateAppo[0:10]}, 
+                            "SKID": {"S": 'HR#'+dateAppo[-5:]},
+                            "SERVICEID": {"S": ''},
+                            "AVAILABLE": {"N": str(0)},
+                            "CUSTOMER_PER_TIME": {"N": str(0)},
+                            "TIME_SERVICE": {"N": str(1)},
+                            "CANCEL": {"N": str(1)}
+                        },
+                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                    }
+                }
+                items.append(recordset)
+            else:
+                recordset = {
+                    "Update": {
+                        "TableName": "TuCita247",
+                        "Key": {
+                            "PKID": {"S": 'LOC#'+locationId+'#PRO#'+providerId+'#DT#'+dateAppo[0:10]}, 
+                            "SKID": {"S": 'HR#'+dateAppo[-5:]}, 
+                        },
+                        "UpdateExpression": "SET AVAILABLE = :available, CANCEL = :cancel, TIME_SERVICE = :service",
+                        "ExpressionAttributeValues": {
+                            ':available': {"N": str(0)},
+                            ':cancel': {"N": str(1)},
+                            ':service': {"N": str(1)}
+                        }
+                    }
+                }
+                items.append(recordset)
         
         logger.info(items)
         response = dynamodbQuery.transact_write_items(
