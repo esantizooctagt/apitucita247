@@ -231,11 +231,26 @@ def lambda_handler(event, context):
                     hoursData = []
                     bookings = json_dynamodb.loads(getCurrHours['Items'])
                     for item in bookings:
+                        if 'SERVICEID' in item:
+                            getService = dynamodb.query(
+                                TableName="TuCita247",
+                                ReturnConsumedCapacity='TOTAL',
+                                KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
+                                ExpressionAttributeValues={
+                                    ':businessId': {'S': 'BUS#'+businessId},
+                                    ':serviceId': {'S': 'SER#'+item['SERVICEID']}
+                                }
+                            )
+                        custPerTime = 0
+                        for data in json_dynamodb.loads(getService['Items']):
+                            custPerTime = int(data['CUSTOMER_PER_TIME'])
+
                         if (int(item['TIME_SERVICE']) > 1):
                             times = range(0, item['TIME_SERVICE'])
                             changes = range(0, item['TIME_SERVICE'])
                             count = 0
                             timeInterval = []
+                            minHours = -1
                             #CONSOLIDA HORAS DE BOOKINGS
                             for hr in times:
                                 newTime = str(int(item['SKID'].replace('HR#','')[0:2])+hr)
@@ -258,22 +273,72 @@ def lambda_handler(event, context):
                                 recordset = {
                                     'Hour': newTime,
                                     'TimeService': item['TIME_SERVICE'],
-                                    'Available': item['CUSTOMER_PER_TIME']-count,
+                                    'Available': custPerTime-count, #item['CUSTOMER_PER_TIME']-count,
                                     'ServiceId': item['SERVICEID'],
                                     'Cancel': 0,
                                     'Start': 1 if hr == 0 else 0
                                 }
                                 timeExists = searchHours(newTime, hoursData)
-                                newAva = item['CUSTOMER_PER_TIME']-count
+                                # newAva = item['CUSTOMER_PER_TIME']-count
+                                newAva = custPerTime-count
                                 if timeExists == '':
                                     hoursData.append(recordset)
                                 else:
-                                    if timeExists['Available'] < item['CUSTOMER_PER_TIME']-count:
+                                    #item['CUSTOMER_PER_TIME']-count:
+                                    if timeExists['Available'] < custPerTime-count:
                                         newAva = timeExists['Available'] 
                                         
                                     hoursData.remove(timeExists)
                                     timeExists['Available'] = newAva
                                     hoursData.append(timeExists)
+                                if minHours == -1 or minHours > newAva:
+                                    minHours = newAva
+                            
+                            for hr in times:
+                                newTime = str(int(item['SKID'].replace('HR#','')[0:2])+hr)
+                                nextTime = str(int(item['SKID'].replace('HR#','')[0:2])+hr+1)
+                                time24hr = nextTime.rjust(2,'0')+'-'+item['SKID'].replace('HR#','')[3:5] 
+                                newTime = newTime.rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
+                                nextTime = nextTime.rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
+                                
+                                validNext = searchHours(nextTime, hoursData)
+                                if validNext != '':
+                                    timeExists = searchHours(newTime, hoursData)
+                                    recordset = {
+                                        'Hour': newTime,
+                                        'TimeService': timeExists['TimeService'],
+                                        'Available': minHours,
+                                        'ServiceId': timeExists['ServiceId'],
+                                        'Cancel': timeExists['Cancel'],
+                                        'Start': timeExists['Start']
+                                    }
+                                    if timeExists != '':
+                                        hoursData.remove(timeExists)
+                                        hoursData.append(recordset)
+                                else:
+                                    timeExists = searchHours(newTime, hoursData)
+                                    getAppos = dynamodb.query(
+                                        TableName="TuCita247",
+                                        IndexName="TuCita247_Index",
+                                        ReturnConsumedCapacity='TOTAL',
+                                        KeyConditionExpression='GSI1PK = :key01 and GSI1SK = :key02',
+                                        ExpressionAttributeValues={
+                                            ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
+                                            ':key02': {'S': '1#DT#'+appoDate.strftime("%Y-%m-%d")+'-'+time24hr}
+                                        }
+                                    )
+                                    for row in json_dynamodb.loads(getAppos['Items']):
+                                        if row['SERVICEID'] != timeExists['ServiceId']:
+                                            recordset = {
+                                                'Hour': newTime,
+                                                'TimeService': timeExists['TimeService'],
+                                                'Available': 0,
+                                                'ServiceId': timeExists['ServiceId'],
+                                                'Cancel': timeExists['Cancel'],
+                                                'Start': timeExists['Start']
+                                            }
+                                            hoursData.remove(timeExists)
+                                            hoursData.append(recordset)
                         else:
                             if int(item['CANCEL']) == 1:
                                 timeExists = searchHours(item['SKID'].replace('HR#','').replace('-',':'), hoursData)
@@ -342,7 +407,6 @@ def lambda_handler(event, context):
                             availability = 0
                             for z in y:
                                 opeTime = int(checkHours+z)
-                                logger.info(opeTime)
                                 if len(dateAppo) >= 1:
                                     if opeTime >= int(dateAppo[0]['I']) and opeTime <= int(dateAppo[0]['F'])-1:
                                         checkDisp = searchHours(str(opeTime).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5], hoursData)
@@ -367,9 +431,10 @@ def lambda_handler(event, context):
                                 checkHours = str(checkHours-1).rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
                                 searchHour = searchHours(checkHours, hoursData)
                                 if searchHour != '':
-                                    hoursData.remove(actHour)
-                                    actHour['Available'] = searchHour['Available']
-                                    hoursData.append(actHour)
+                                    if actHour['Available'] > searchHour['Available']:
+                                        hoursData.remove(actHour)
+                                        actHour['Available'] = searchHour['Available']
+                                        hoursData.append(actHour)
 
                     validAppo = 0
                     existe = 0

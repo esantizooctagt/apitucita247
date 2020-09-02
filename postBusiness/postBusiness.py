@@ -324,7 +324,7 @@ def lambda_handler(event, context):
             RECIPIENT = data['Email']
             SUBJECT = "Tu Cita 24/7 - Welcome Email"
             BODY_TEXT = ("Your Cita 24/7 account is already created, click the link to activate it https://console.tucita247.com/en/verification/" + userId + "/0 your temp password is: " + passDecrypt)
-                        
+            
             # The HTML body of the email.
             BODY_HTML = """<html>
             <head></head>
@@ -335,7 +335,7 @@ def lambda_handler(event, context):
             </html>"""
 
             CHARSET = "UTF-8"
-
+            logger.info("prev send email")
             response = ses.send_email(
                 Destination={
                     'ToAddresses': [
@@ -360,7 +360,7 @@ def lambda_handler(event, context):
                 },
                 Source=SENDER
             )
-
+            logger.info("Success BUsinessId --> " + businessId)
             statusCode = 200
             body = json.dumps({'Message': 'Business created successfully', 'BusinessId': businessId, 'Code': 200})
 
