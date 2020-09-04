@@ -38,28 +38,28 @@ def findService(serviceId, servs):
     item = 0
     return item
 
-def findBookings(timeIni, timeFin, hours, service, intervalo):
-    qty = 0
-    temporal = []
-    temporalFin = []
-    for item in hours:
-        if item['ServiceId'] == service:
-            if item['Time'] >= timeIni and item['Time'] <= timeFin:
-                logger.info("data "+str(item['Time'])+" -- "+str(item['People']))
-                temporal.append(int(item['People']))
-                qty = qty + item['People']    
-            else:
-                if item['Time']+intervalo >= timeIni and item['Time']+intervalo <= timeFin:
-                    logger.info("data 00 "+str(item['Time'])+" -- "+str(item['People']))
-                    temporalFin.append(int(item['People']))
-                    qty = qty + item['People']
-    x= list(set(temporal).intersection(temporalFin))
-    result = 0
-    if intervalo == 1:
-        for y in x:
-            result = result + y
+# def findBookings(timeIni, timeFin, hours, service, intervalo):
+#     qty = 0
+#     temporal = []
+#     temporalFin = []
+#     for item in hours:
+#         if item['ServiceId'] == service:
+#             if item['Time'] >= timeIni and item['Time'] <= timeFin:
+#                 logger.info("data "+str(item['Time'])+" -- "+str(item['People']))
+#                 temporal.append(int(item['People']))
+#                 qty = qty + item['People']    
+#             else:
+#                 if item['Time']+intervalo >= timeIni and item['Time']+intervalo <= timeFin:
+#                     logger.info("data 00 "+str(item['Time'])+" -- "+str(item['People']))
+#                     temporalFin.append(int(item['People']))
+#                     qty = qty + item['People']
+#     x= list(set(temporal).intersection(temporalFin))
+#     result = 0
+#     if intervalo == 1:
+#         for y in x:
+#             result = result + y
         
-    return qty-result
+#     return qty-result
     
 def findUsedHours(time, hours, serviceId):
     count = 0
@@ -266,6 +266,8 @@ def lambda_handler(event, context):
                                             count = custPerTime
                                             break
                                     tempCount = findUsedHours(nextHr, hoursBooks, item['SERVICEID'])
+                                    if tempCount < count:
+                                        count = tempCount
                                         # else:
                                         #     nexCount = findBookings(nextHr, nextHr+1, hoursBooks, item['SERVICEID'], int(item['TIME_SERVICE'])-1)
                                         #     count = count + nexCount
