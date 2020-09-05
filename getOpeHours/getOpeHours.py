@@ -37,35 +37,12 @@ def findService(serviceId, servs):
             return int(item['CustomerPerTime'])
     item = 0
     return item
-
-# def findBookings(timeIni, timeFin, hours, service, intervalo):
-#     qty = 0
-#     temporal = []
-#     temporalFin = []
-#     for item in hours:
-#         if item['ServiceId'] == service:
-#             if item['Time'] >= timeIni and item['Time'] <= timeFin:
-#                 logger.info("data "+str(item['Time'])+" -- "+str(item['People']))
-#                 temporal.append(int(item['People']))
-#                 qty = qty + item['People']    
-#             else:
-#                 if item['Time']+intervalo >= timeIni and item['Time']+intervalo <= timeFin:
-#                     logger.info("data 00 "+str(item['Time'])+" -- "+str(item['People']))
-#                     temporalFin.append(int(item['People']))
-#                     qty = qty + item['People']
-#     x= list(set(temporal).intersection(temporalFin))
-#     result = 0
-#     if intervalo == 1:
-#         for y in x:
-#             result = result + y
-        
-#     return qty-result
     
-def findUsedHours(time, hours, serviceId):
+def findUsedHours(time, hours, serviceId, interval):
     count = 0
-    for item in time:
+    for item in hours:
         if item['ServiceId'] == serviceId:
-            if item['Time'] < time and item['Time'] >= time:
+            if item['Time'] < time and item['Time']+interval >= time:
                 count = count + int(item['People'])
             if item['Time'] == time:
                 count = count + int(item['People'])
@@ -183,6 +160,7 @@ def lambda_handler(event, context):
                 if dayOffValid == True:
                     hoursData = []
                     hoursBooks = []
+                    #OBTIENE LAS CITAS DE ESE DIA
                     getAppos = dynamodb.query(
                         TableName="TuCita247",
                         IndexName="TuCita247_Index",
@@ -207,7 +185,32 @@ def lambda_handler(event, context):
                             hoursBooks.remove(resAppo)
                             recordset['People'] = int(hours['PEOPLE_QTY'])+int(resAppo['People']) 
                             hoursBooks.append(recordset)
-                    
+                    #OBTIENE LAS CITAS EN RESERVA DE UN DIA
+                    getReservas = dynamodb.query(
+                        TableName="TuCita247",
+                        IndexName="TuCita247_Index",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='GSI1PK = :key01 and begins_with(GSI1SK, :key02)',
+                        ExpressionAttributeValues={
+                            ':key01': {'S': 'RES#BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
+                            ':key02': {'S': '1#DT#'+nextDate.strftime("%Y-%m-%d")}
+                        }
+                    )
+                    for res in json_dynamodb.loads(getReservas['Items']):
+                        timeBooking = int(res['GSI1SK'].replace('1#DT#'+nextDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                        recordset = {
+                            'Time': timeBooking,
+                            'ServiceId': res['SERVICEID'],
+                            'People': res['PEOPLE_QTY']
+                        }
+                        resAppo = findHoursAppo(timeBooking, hoursBooks, res['SERVICEID'])
+                        if resAppo == '':
+                            hoursBooks.append(recordset)
+                        else:
+                            hoursBooks.remove(resAppo)
+                            recordset['People'] = int(res['PEOPLE_QTY'])+int(resAppo['People']) 
+                            hoursBooks.append(recordset)
+
                     getAvailability = dynamodb.query(
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
@@ -227,7 +230,6 @@ def lambda_handler(event, context):
                             times = range(0, item['TIME_SERVICE'])
                             changes = range(0, item['TIME_SERVICE'])
                             timeInterval = []
-
                             #CONSOLIDA HORAS DE BOOKINGS
                             for hr in times:
                                 count = 0
@@ -235,20 +237,7 @@ def lambda_handler(event, context):
                                 time24hr = int(newTime) 
                                 newTime = newTime.rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
 
-                                # horaIni = int(item['SKID'].replace('HR#','')[0:2])+hr
-                                # horaFin = int(item['SKID'].replace('HR#','')[0:2])+int(item['TIME_SERVICE'])-1+hr
-                                # logger.info("Eval Time " + str(item['SKID'].replace('HR#','')) + " sub hora " + str(hr) + " ini " + str(horaIni) + " fin " + str(horaFin))   
-                                count = findUsedHours(time24hr, hoursBooks, item['SERVICEID'])
-                                
-                                # if getApp != '':
-                                #     count = findBookings(horaIni, horaFin, hoursBooks, item['SERVICEID'], int(item['TIME_SERVICE'])-1)
-                                #     logger.info("cont " + str(count))
-                                # else:
-                                #     if availableHour(time24hr, newTime.replace(':','-'), dayHours, locationId, providerId, item['SERVICEID'], nextDate) == False:
-                                #         count = custPerTime
-                                #     else:
-                                #         count = findBookings(horaIni, horaFin, hoursBooks, item['SERVICEID'], int(item['TIME_SERVICE'])-1)
-                                     
+                                count = findUsedHours(time24hr, hoursBooks, item['SERVICEID'], int(item['TIME_SERVICE'])-1)
                                 res = range(1, int(item['TIME_SERVICE']))
                                 for citas in res:
                                     nextHr = time24hr+citas
@@ -258,20 +247,13 @@ def lambda_handler(event, context):
                                         if getApp['ServiceId'] != item['SERVICEID']:
                                             count = custPerTime
                                             break
-                                        # else:
-                                        #     nexCount = findBookings(nextHr, nextHr+1, hoursBooks, item['SERVICEID'], int(item['TIME_SERVICE'])-1)
-                                        #     count = count + nexCount
                                     else:
                                         if availableHour(nextHr, newHr, dayHours, locationId, providerId, item['SERVICEID'], nextDate) == False:
                                             count = custPerTime
                                             break
-                                    tempCount = findUsedHours(nextHr, hoursBooks, item['SERVICEID'])
-                                    if tempCount < count:
+                                    tempCount = findUsedHours(nextHr, hoursBooks, item['SERVICEID'], int(item['TIME_SERVICE'])-1)
+                                    if tempCount > count:
                                         count = tempCount
-                                        # else:
-                                        #     nexCount = findBookings(nextHr, nextHr+1, hoursBooks, item['SERVICEID'], int(item['TIME_SERVICE'])-1)
-                                        #     count = count + nexCount
-                                    
                                             
                                 recordset = {
                                     'Time': newTime,
