@@ -185,6 +185,7 @@ def lambda_handler(event, context):
                             hoursBooks.remove(resAppo)
                             recordset['People'] = int(hours['PEOPLE_QTY'])+int(resAppo['People']) 
                             hoursBooks.append(recordset)
+                            
                     #OBTIENE LAS CITAS EN RESERVA DE UN DIA
                     getReservas = dynamodb.query(
                         TableName="TuCita247",
@@ -211,6 +212,7 @@ def lambda_handler(event, context):
                             recordset['People'] = int(res['PEOPLE_QTY'])+int(resAppo['People']) 
                             hoursBooks.append(recordset)
 
+                    #GET SUMMARIZE APPOINTMENTS FROM A SPECIFIC LOCATION AND PROVIDER FOR SPECIFIC DATE
                     getAvailability = dynamodb.query(
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
