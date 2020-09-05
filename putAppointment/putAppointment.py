@@ -76,10 +76,6 @@ def lambda_handler(event, context):
         if reasonId == '':
             v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
         
-        # cancelStr = ''
-        # if str(status) == "5":
-        #     cancelStr = ', GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, TIMECANCEL = :dateope'
-        
         if str(status) != "5":
             response = table.update_item(
                 Key={
@@ -266,6 +262,9 @@ def lambda_handler(event, context):
         if e.response['Error']['Code']=='ConditionalCheckFailedException':  
             statusCode = 404
             body = json.dumps({'Message': 'Invalida qr code', 'Code': 400})
+        else:
+            statusCode = 404
+            body = json.dumps({'Message': str(e), 'Code': 400})
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e), 'Code': 500})

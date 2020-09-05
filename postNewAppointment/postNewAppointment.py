@@ -57,9 +57,9 @@ def findUsedHours(time, hours, serviceId, interval):
     count = 0
     for item in hours:
         if item['ServiceId'] == serviceId:
-            if item['Time'] < time and item['Time']+interval >= time:
+            if item['Hour'] < time and item['Hour']+interval >= time:
                 count = count + int(item['People'])
-            if item['Time'] == time:
+            if item['Hour'] == time:
                 count = count + int(item['People'])
     return count
 
