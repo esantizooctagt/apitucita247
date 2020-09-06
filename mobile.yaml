@@ -263,6 +263,44 @@ Resources:
             Path: /mobile/appointments/{customerId}
             Method: get
             ApiId: !Ref HttpApi
+  
+  GetReserveApposFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetReserveAppos
+      CodeUri: getReserveAppos/
+      Handler: getReserveAppos.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/appointments/reserve/{customerId}
+            Method: get
+            ApiId: !Ref HttpApi
+
+  DelReserveAppoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: DelReserveAppo
+      CodeUri: delReserveAppo/
+      Handler: delReserveAppo.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/appointments/reserve/{appointmentId}/{customerId}
+            Method: delete
+            ApiId: !Ref HttpApi
 
   GetMessagesMobileFunction:
     Type: AWS::Serverless::Function
