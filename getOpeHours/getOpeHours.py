@@ -222,8 +222,7 @@ def lambda_handler(event, context):
                         },
                         ScanIndexForward=True
                     )
-                    bookings = json_dynamodb.loads(getAvailability['Items'])
-                    for item in bookings:
+                    for item in json_dynamodb.loads(getAvailability['Items']):
                         custPerTime = 0
                         if 'SERVICEID' in item:
                             custPerTime = findService(item['SERVICEID'], services)
