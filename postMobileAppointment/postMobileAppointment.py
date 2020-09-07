@@ -586,6 +586,7 @@ def lambda_handler(event, context):
                                 "DOOR": {"S": door},
                                 "ON_BEHALF": {"N": str(onbehalf)},
                                 "PEOPLE_QTY": {"N": str(guest)},
+                                "SERVICEID": {"S": serviceId},
                                 "DISABILITY": {"N": str(disability) if disability != '' else None},
                                 "GSI1PK": {"S": 'RES#BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId}, 
                                 "GSI1SK": {"S": '1#DT#' + dateAppointment[0:10]}

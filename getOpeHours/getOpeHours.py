@@ -37,7 +37,14 @@ def findService(serviceId, servs):
             return int(item['CustomerPerTime'])
     item = 0
     return item
-    
+
+def findServiceTime(serviceId, servs):
+    for item in servs:
+        if item['ServiceId'] == serviceId:
+            return int(item['TimeService'])
+    item = 0
+    return item
+
 def findUsedHours(time, hours, serviceId, interval):
     count = 0
     for item in hours:
@@ -138,7 +145,8 @@ def lambda_handler(event, context):
             for serv in json_dynamodb.loads(getServices['Items']):
                 recordset = {
                     'ServiceId': serv['SKID'].replace('SER#',''),
-                    'CustomerPerTime': int(serv['CUSTOMER_PER_TIME'])
+                    'CustomerPerTime': int(serv['CUSTOMER_PER_TIME']),
+                    'TimeService': int(serv['TIME_SERVICE'])
                 }
                 services.append(recordset)
 
@@ -173,10 +181,12 @@ def lambda_handler(event, context):
                     )
                     for hours in json_dynamodb.loads(getAppos['Items']):
                         timeBooking = int(hours['GSI1SK'].replace('1#DT#'+nextDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                        cxTime = findServiceTime(hours['SERVICEID'], services)
                         recordset = {
                             'Time': timeBooking,
                             'ServiceId': hours['SERVICEID'],
-                            'People': hours['PEOPLE_QTY']
+                            'People': hours['PEOPLE_QTY'],
+                            'TimeService': cxTime
                         }
                         resAppo = findHoursAppo(timeBooking, hoursBooks, hours['SERVICEID'])
                         if resAppo == '':
@@ -199,10 +209,12 @@ def lambda_handler(event, context):
                     )
                     for res in json_dynamodb.loads(getReservas['Items']):
                         timeBooking = int(str(res['DATE_APPO'][-5:])[0:2])
+                        cxTime = findServiceTime(res['SERVICEID'], services)
                         recordset = {
                             'Time': timeBooking,
                             'ServiceId': res['SERVICEID'],
-                            'People': res['PEOPLE_QTY']
+                            'People': res['PEOPLE_QTY'],
+                            'TimeService': cxTime
                         }
                         resAppo = findHoursAppo(timeBooking, hoursBooks, res['SERVICEID'])
                         if resAppo == '':
@@ -222,6 +234,7 @@ def lambda_handler(event, context):
                         },
                         ScanIndexForward=True
                     )
+                    ## extraer datos de horas en vez del summarize y traer el dato del tiempo del servicio y a parte el flujo para extraer cancelaciones
                     for item in json_dynamodb.loads(getAvailability['Items']):
                         custPerTime = 0
                         if 'SERVICEID' in item:

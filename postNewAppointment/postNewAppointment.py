@@ -628,8 +628,7 @@ def lambda_handler(event, context):
                     # logger.info(recordset)
                     items.append(recordset)
 
-                    # if existe == 1:
-                    #valida que exista el registro y que no sea el servicioid empty
+                    #VALIDA SI SE CREA REGISTRO O SE ACTUALIZA
                     getSummarize = dynamodb.query(
                         TableName = "TuCita247",
                         ReturnConsumedCapacity = 'TOTAL',
@@ -645,7 +644,7 @@ def lambda_handler(event, context):
                         putSum = 1
                         if summ['SERVICEID'] == '':
                             updateSum = 1
-                            ## me queda aqui pendiente de validar si existe o no registro para acutalizar o crear
+
                     if updateSum == 0 and putSum == 0:
                         recordset = {
                             "Put": {
@@ -702,25 +701,6 @@ def lambda_handler(event, context):
                                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
                             }
                         }
-                    # else:
-                    #     #put
-                    #     recordset = {
-                    #     "Put": {
-                    #         "TableName": "TuCita247",
-                    #         "Item": {
-                    #             "PKID": {"S": 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppointment[0:10]}, 
-                    #             "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
-                    #             "TIME_SERVICE": {"N": str(bucket)},
-                    #             "CUSTOMER_PER_TIME": {"N": str(int(numCustomer))},
-                    #             "SERVICEID": {"S": str(serviceId)},
-                    #             "AVAILABLE": {"N": str(int(numCustomer)-int(guests))},
-                    #             "CANCEL": {"N": str(0)}
-                    #         },
-                    #         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                    #         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                    #         }
-                    #     }
-                    # logger.info(recordset)
                     items.append(recordset)
 
                     if status == 3:
