@@ -158,6 +158,24 @@ def lambda_handler(event, context):
         }
         items.append(cleanNullTerms(rows))
 
+        cats = data['CategoryId'].split('#')
+        rows = {
+            "Update": {
+                "TableName": "TuCita247",
+                "Key": {
+                    "PKID": {"S": 'CAT#'+cats[1]},
+                    "SKID": {"S": 'CAT#'+cats[1]}
+                },
+                "UpdateExpression": "SET QTY = QTY + :increment",
+                "ExpressionAttributeValues": { 
+                    ":increment": {"N": str(1)}
+                },
+                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+            }
+        }
+        items.append(rows)
+
         rows = {
             "Put": {
                 "TableName": "TuCita247",

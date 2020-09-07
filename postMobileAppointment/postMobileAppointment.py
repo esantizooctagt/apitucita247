@@ -137,12 +137,14 @@ def lambda_handler(event, context):
         onbehalf = data['OnBehalf']
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%m-%d-%Y')
         hourDate = data['AppoHour']
-        booking = data['Booking']
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
+        todayOpe = datetime.datetime.now()
+        dateOpeRes = todayOpe.strftime("%Y-%m-%d-%H-%M-%S")
 
         dayName = appoDate.strftime("%A")[0:3].upper()
         dateIni= today.strftime("%Y-%m-%d")
@@ -439,136 +441,7 @@ def lambda_handler(event, context):
                                 break
 
                 #PROCEDE A GUARDAR LA CITA
-                if validAppo == 1 and booking == "0":
-                    recordset = {}
-                    items = []
-                    appoId = str(uuid.uuid4()).replace("-","")
-                    qrCode = ''.join(random.choice(letters) for i in range(6))
-                    recordset = {
-                        "Put": {
-                            "TableName": "TuCita247",
-                            "Item": {
-                                "PKID": {"S": 'APPO#'+appoId}, 
-                                "SKID": {"S": 'APPO#'+appoId}, 
-                                "STATUS": {"N": "1"}, 
-                                "NAME": {"S": name},
-                                "DATE_APPO": {"S": dateAppointment},
-                                "PHONE": {"S": phone},
-                                "DOOR": {"S": door},
-                                "ON_BEHALF": {"N": str(onbehalf)},
-                                "PEOPLE_QTY": {"N": str(guest)},
-                                "DISABILITY": {"N": str(disability) if disability != '' else None},
-                                "QRCODE": {"S": qrCode},
-                                "TYPE": {"N": "1"},
-                                "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-                                "GSI1SK": {"S": '1#DT#' + dateAppointment}, 
-                                "GSI2PK": {"S": 'CUS#' + customerId},
-                                "GSI2SK": {"S": dateAppointment[0:10]},
-                                "GSI3PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#' + dateAppointment[0:10]}, 
-                                "GSI3SK": {"S": 'QR#' + qrCode}
-                            },
-                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                            }
-                        }
-                    logger.info(cleanNullTerms(recordset))
-                    items.append(cleanNullTerms(recordset))
-
-                    recordset = {
-                        "Put": {
-                            "TableName": "TuCita247",
-                            "Item": {
-                                "PKID": {"S": 'LOC#' + locationId + '#' + dateAppointment[0:10] + '#' + qrCode}, 
-                                "SKID": {"S": 'LOC#' + locationId + '#' + dateAppointment[0:10] + '#' + qrCode}
-                            },
-                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                            }
-                        }
-                    logger.info(recordset)
-                    items.append(recordset)
-
-                    if typeAppo == 1:
-                        recordset = {
-                            "Update":{
-                                "TableName": "TuCita247",
-                                "Key": {
-                                    "PKID": {"S": 'BUS#' + businessId}, 
-                                    "SKID": {"S": 'PLAN'}, 
-                                },
-                                "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
-                                "ExpressionAttributeValues": { 
-                                    ":increment": {"N": str(1)},
-                                    ":nocero": {"N": str(0)}
-                                },
-                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE > :nocero",
-                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                                }
-                            }
-                    else:
-                        recordset = {
-                            "Update":{
-                                "TableName": "TuCita247",
-                                "Key": {
-                                    "PKID": {"S": 'BUS#' + businessId}, 
-                                    "SKID": {"S": code}, 
-                                },
-                                "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
-                                "ExpressionAttributeValues": { 
-                                    ":increment": {"N": str(1)},
-                                    ":nocero": {"N": str(0)}
-                                },
-                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE > :nocero",
-                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                                }
-                            }
-                    
-                    logger.info(recordset)
-                    items.append(recordset)
-
-                    if existe == 1:
-                        #update
-                        recordset = {
-                            "Update":{
-                                "TableName": "TuCita247",
-                                "Key": {
-                                    "PKID": {"S": 'LOC#' + locationId + '#DT#' + dateAppointment[0:10]}, 
-                                    "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')}, 
-                                },
-                                "UpdateExpression": "SET AVAILABLE = AVAILABLE - :increment",
-                                "ExpressionAttributeValues": { 
-                                    ":increment": {"N": str(1)},
-                                    ":nocero": {"N": str(0)}
-                                },
-                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND AVAILABLE > :nocero",
-                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                                }
-                            }
-                    else:
-                        #put
-                        recordset = {
-                        "Put": {
-                            "TableName": "TuCita247",
-                            "Item": {
-                                "PKID": {"S": 'LOC#' + locationId + '#DT#' + dateAppointment[0:10]}, 
-                                "SKID": {"S": 'HR#'+data['AppoHour'].replace(':','-')},
-                                "AVAILABLE": {"N": str(numCustomer-1)}
-                            },
-                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
-                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-                            }
-                        }
-                    logger.info(recordset)
-                    items.append(recordset)
-
-                    logger.info(items)
-                    response = dynamodb.transact_write_items(
-                        TransactItems = items
-                    )
-                    statusCode = 200
-                    body = json.dumps({'Message': 'Appointment saved successfully', 'Code': 200})
-
-                if validAppo == 1 and booking == "1":
+                if validAppo == 1:
                     recordset = {}
                     items = []
                     appoId = str(uuid.uuid4()).replace("-","")
@@ -583,6 +456,7 @@ def lambda_handler(event, context):
                                 "BUSINESS_NAME": {"S": businessName},
                                 "BUSINESS_ADDR": {"S": businessAddr},
                                 "DATE_APPO": {"S": dateAppointment},
+                                "DATE_OPE": {"S": dateOpeRes},
                                 "DOOR": {"S": door},
                                 "ON_BEHALF": {"N": str(onbehalf)},
                                 "PEOPLE_QTY": {"N": str(guest)},

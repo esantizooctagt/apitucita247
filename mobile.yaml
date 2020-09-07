@@ -52,6 +52,24 @@ Resources:
             Method: post
             ApiId: !Ref HttpApi
 
+  PostMobileEmailFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostMobileEmail
+      CodeUri: postMobileEmail/
+      Handler: postMobileEmail.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamoSNS
+      Layers:
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/email/{email}
+            Method: post
+            ApiId: !Ref HttpApi
+
   GetAdsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -546,6 +564,25 @@ Resources:
           Type: HttpApi
           Properties:
             Path: /mobile/appointment
+            Method: post
+            ApiId: !Ref HttpApi
+      
+  PostMobileApposFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostMobileAppos
+      CodeUri: postMobileAppos/
+      Handler: postMobileAppos.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/appointments
             Method: post
             ApiId: !Ref HttpApi
 

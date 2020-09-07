@@ -20,8 +20,8 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 def lambda_handler(event, context):
     response = ''
     verifCode = 0
-    verifCode = 123456
-    #random.randint(100000, 999999)
+    verifCode = random.randint(100000, 999999)
+    
     data = json.loads(event['body'])
     to_number = event['pathParameters']['number']
     playerId = data['PlayerId']
