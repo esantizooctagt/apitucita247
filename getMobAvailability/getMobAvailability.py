@@ -51,6 +51,13 @@ def findService(serviceId, servs):
     item = 0
     return item
 
+def findServiceTime(serviceId, servs):
+    for item in servs:
+        if item['ServiceId'] == serviceId:
+            return int(item['TimeService'])
+    item = 0
+    return item
+
 def findUsedHours(time, hours, serviceId, interval):
     count = 0
     for item in hours:
@@ -59,6 +66,24 @@ def findUsedHours(time, hours, serviceId, interval):
                 count = count + int(item['People'])
             if item['Hour'] == time:
                 count = count + int(item['People'])
+    return count
+
+def findAvailability(time, hours, serviceId, interval, services):
+    count = 0
+    for item in hours:
+        if item['ServiceId'] == serviceId:
+            if item['Hour'] < time and item['Hour']+interval >= time:
+                count = count + int(item['People'])
+            if item['Hour'] == time:
+                count = count + int(item['People'])
+        if item['ServiceId'] != serviceId:
+            newInterval = findServiceTime(item['ServiceId'], services)
+            if item['Hour'] < time and item['Hour']+newInterval-1 >= time:
+                count = -1
+                break
+            if item['Hour'] == time:
+                count = -1
+                break
     return count
 
 def searchHours(time, hours):
@@ -209,7 +234,8 @@ def lambda_handler(event, context):
                 for serv in json_dynamodb.loads(getServices['Items']):
                     recordset = {
                         'ServiceId': serv['SKID'].replace('SER#',''),
-                        'CustomerPerTime': int(serv['CUSTOMER_PER_TIME'])
+                        'CustomerPerTime': int(serv['CUSTOMER_PER_TIME']),
+                        'TimeService': int(serv['TIME_SERVICE'])
                     }
                     services.append(recordset)
 
@@ -272,19 +298,19 @@ def lambda_handler(event, context):
                             ':key02': {'S': '1#DT#'+dateStd}
                         }
                     )
-                    for hours in json_dynamodb.loads(getAppos['Items']):
-                        timeBooking = int(hours['GSI1SK'].replace('1#DT#'+dateStd+'-','')[0:2])
+                    for hrsData in json_dynamodb.loads(getAppos['Items']):
+                        timeBooking = int(hrsData['GSI1SK'].replace('1#DT#'+dateStd+'-','')[0:2])
                         recordset = {
                             'Hour': timeBooking,
-                            'ServiceId': hours['SERVICEID'],
-                            'People': hours['PEOPLE_QTY']
+                            'ServiceId': hrsData['SERVICEID'],
+                            'People': hrsData['PEOPLE_QTY']
                         }
-                        resAppo = findHoursAppo(timeBooking, hoursBooks, hours['SERVICEID'])
+                        resAppo = findHoursAppo(timeBooking, hoursBooks, hrsData['SERVICEID'])
                         if resAppo == '':
                             hoursBooks.append(recordset)
                         else:
                             hoursBooks.remove(resAppo)
-                            recordset['People'] = int(hours['PEOPLE_QTY'])+int(resAppo['People']) 
+                            recordset['People'] = int(hrsData['PEOPLE_QTY'])+int(resAppo['People']) 
                             hoursBooks.append(recordset)
 
                     #OBTIENE LAS CITAS EN RESERVA DE UN DIA
@@ -385,43 +411,42 @@ def lambda_handler(event, context):
                                     'Cancel': 0
                                 }
                                 hoursData.append(recordset)
-                    
-                    logger.info(hoursData)
+                    # logger.info(hoursBooks)
                     for item in dateAppo:
-                        ini = Decimal(item['I'])
-                        fin = Decimal(item['F'])
+                        ini = int(item['I'])
+                        fin = int(item['F'])
                         scale = 10
-                        for h in range(int(scale*ini), int(scale*fin), int(scale*bucket)):
-                            if (h/scale).is_integer():
-                                hStd = str(math.trunc(h/scale)).zfill(2) + ':00'
-                                res = math.trunc(h/scale) if math.trunc(h/scale) < 13 else math.trunc(h/scale)-12
-                                h = str(res).zfill(2) + ':00 ' + 'AM' if math.trunc(h/scale) < 13 else str(res).zfill(2) + ':00 ' + 'PM'
-                            else:
-                                hStd = str(math.trunc(h/scale)).zfill(2) + ':30'
-                                res = math.trunc(h/scale) if math.trunc(h/scale) < 13 else math.trunc(h/scale)-12
-                                h = str(res).zfill(2) + ':30 ' + 'AM' if math.trunc(h/scale) < 13 else  str(res).zfill(2) + ':30 ' + 'PM'
-                            available = numCustomer
-                            for x in hoursData:
-                                if x['Hour'] == hStd:
-                                    if x['ServiceId'] == serviceId:
-                                        available = int(x['Available'])
-                                        break
+                        for h in range(ini, fin):
+                            hStd = str(h).zfill(2) + ':00'
+                            res = h if h < 13 else h-12
+                            h = str(res).zfill(2) + ':00 ' + 'AM' if h < 12 else str(res).zfill(2) + ':00 ' + 'PM'
+                            count = findAvailability(int(hStd[0:2]), hoursBooks, serviceId, bucket-1, services)
+                            # logger.info("evaluando " + str(int(hStd[0:2])) + " conteo " + str(count) + " service " + serviceId)
+                            if count > -1:
+                                time24hr = int(hStd[0:2])
+                                res = range(1, int(bucket))
+                                for citas in res:
+                                    nextHr = time24hr+citas
+                                    newHr = str(nextHr).rjust(2,'0')+'-00'
+                                    # logger.info("eval next hour " + str(nextHr))
+                                    getApp = searchHours(nextHr, hoursBooks)
+                                    if getApp != '':
+                                        if getApp['ServiceId'] != serviceId:
+                                            count = numCustomer
+                                            break
                                     else:
-                                        available = 0
-                                        break
-                            if int(available) > 0:
-                                if currHour != '':
-                                    if int(hStd.replace(':','')) > int(currHour.replace(':','')):
-                                        recordset = {
-                                            'Hour': h,
-                                            'Available': available
-                                        }
-                                        hours.append(recordset)
-                                else:
+                                        if availableHour(nextHr, newHr, dateAppo, locationId, providerId, serviceId, appoDate) == False:
+                                            count = numCustomer
+                                            break
+                                    tempCount = findAvailability(nextHr, hoursBooks, serviceId, bucket-1, services)
+                                    if tempCount > count:
+                                        count = tempCount
+                                # logger.info("eval next hour " + str(nextHr) + "-- h " + str(h) + " nex hour available " + str(numCustomer-count))
+                                if numCustomer-count > 0:
                                     recordset = {
-                                        'Hour': h,
-                                        'Available': available
-                                    }
+                                            'Hour': h,
+                                            'Available': numCustomer-count
+                                        }
                                     hours.append(recordset)
 
                 statusCode = 200
