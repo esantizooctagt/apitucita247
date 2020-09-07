@@ -308,7 +308,7 @@ def lambda_handler(event, context):
                         }
                     )
                     for res in json_dynamodb.loads(getReservas['Items']):
-                        timeBooking = int(res['GSI1SK'].replace('1#DT#'+appoDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                        timeBooking = int(str(res['DATE_APPO'][-5:])[0:2])
                         recordset = {
                             'Hour': timeBooking,
                             'ServiceId': res['SERVICEID'],
@@ -578,6 +578,8 @@ def lambda_handler(event, context):
                             "Item": {
                                 "PKID": {"S": 'RES#CUS#'+customerId}, 
                                 "SKID": {"S": 'APPO#'+appoId}, 
+                                "NAME": {"S": name},
+                                "PHONE": {"S": phone},
                                 "BUSINESS_NAME": {"S": businessName},
                                 "BUSINESS_ADDR": {"S": businessAddr},
                                 "DATE_APPO": {"S": dateAppointment},

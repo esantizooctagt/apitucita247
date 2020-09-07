@@ -198,7 +198,7 @@ def lambda_handler(event, context):
                         }
                     )
                     for res in json_dynamodb.loads(getReservas['Items']):
-                        timeBooking = int(res['GSI1SK'].replace('1#DT#'+nextDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                        timeBooking = int(str(res['DATE_APPO'][-5:])[0:2])
                         recordset = {
                             'Time': timeBooking,
                             'ServiceId': res['SERVICEID'],
