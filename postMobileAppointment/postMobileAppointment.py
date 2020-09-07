@@ -137,7 +137,6 @@ def lambda_handler(event, context):
         onbehalf = data['OnBehalf']
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%m-%d-%Y')
         hourDate = data['AppoHour']
-        purpose = data['Purposes']
         booking = data['Booking']
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
 
@@ -460,7 +459,6 @@ def lambda_handler(event, context):
                                 "PEOPLE_QTY": {"N": str(guest)},
                                 "DISABILITY": {"N": str(disability) if disability != '' else None},
                                 "QRCODE": {"S": qrCode},
-                                "PURPOSE": {"S": purpose},
                                 "TYPE": {"N": "1"},
                                 "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
                                 "GSI1SK": {"S": '1#DT#' + dateAppointment}, 
