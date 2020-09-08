@@ -477,7 +477,6 @@ def lambda_handler(event, context):
                                         break
                             if validAppo == 0:
                                 break
-
                 #PROCEDE A GUARDAR LA CITA
                 if validAppo == 1:
                     recordset = {}
@@ -517,7 +516,6 @@ def lambda_handler(event, context):
                     )
                     statusCode = 200
                     body = json.dumps({'Message': 'Appointment saved successfully', 'Code': 200})
-        
         if statusCode == '':
             statusCode = 500
             body = json.dumps({'Message': 'Error !!!', 'Code': 400})
