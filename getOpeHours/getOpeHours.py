@@ -186,7 +186,8 @@ def lambda_handler(event, context):
                             'Time': timeBooking,
                             'ServiceId': hours['SERVICEID'],
                             'People': hours['PEOPLE_QTY'],
-                            'TimeService': cxTime
+                            'TimeService': cxTime,
+                            'Cancel': 0
                         }
                         resAppo = findHoursAppo(timeBooking, hoursBooks, hours['SERVICEID'])
                         if resAppo == '':
@@ -214,7 +215,8 @@ def lambda_handler(event, context):
                             'Time': timeBooking,
                             'ServiceId': res['SERVICEID'],
                             'People': res['PEOPLE_QTY'],
-                            'TimeService': cxTime
+                            'TimeService': cxTime,
+                            'Cancel': 0
                         }
                         resAppo = findHoursAppo(timeBooking, hoursBooks, res['SERVICEID'])
                         if resAppo == '':
@@ -234,79 +236,94 @@ def lambda_handler(event, context):
                         },
                         ScanIndexForward=True
                     )
-                    ## extraer datos de horas en vez del summarize y traer el dato del tiempo del servicio y a parte el flujo para extraer cancelaciones
-                    for item in json_dynamodb.loads(getAvailability['Items']):
-                        custPerTime = 0
-                        if 'SERVICEID' in item:
-                            custPerTime = findService(item['SERVICEID'], services)
-                        
-                        if (int(item['TIME_SERVICE']) > 1):
-                            times = range(0, item['TIME_SERVICE'])
-                            changes = range(0, item['TIME_SERVICE'])
-                            timeInterval = []
-                            #CONSOLIDA HORAS DE BOOKINGS
-                            for hr in times:
-                                count = 0
-                                newTime = str(int(item['SKID'].replace('HR#','')[0:2])+hr)
-                                time24hr = int(newTime) 
-                                newTime = newTime.rjust(2,'0')+':'+item['SKID'].replace('HR#','')[3:5]
+                    for cancel in json_dynamodb.loads(getAvailability['Items']):
+                        if int(cancel['CANCEL']) == 1:
+                            recordset = {
+                                'Time': int(cancel['SKID'].replace('HR#','')[0:2]),
+                                'ServiceId': '',
+                                'People': 0,
+                                'TimeService': 0,
+                                'Cancel': 1
+                            }
+                            timeExists = findHours(cancel['SKID'].replace('HR#','').replace('-',':'), hoursBooks)
+                            if timeExists == '':
+                                hoursBooks.append(recordset)
+                            else:
+                                hoursBooks.remove(timeExists)
+                                hoursBooks.append(recordset)
+                    
+                    for item in hoursBooks:
+                        if item['Cancel'] == 1:
+                            timeExists = findHours(str(item['Time']).rjust(2,'0')+':00', hoursData)
+                            if timeExists != '':
+                                hoursData.remove(timeExists)
 
-                                count = findUsedHours(time24hr, hoursBooks, item['SERVICEID'], int(item['TIME_SERVICE'])-1)
-                                res = range(1, int(item['TIME_SERVICE']))
-                                for citas in res:
-                                    nextHr = time24hr+citas
-                                    newHr = str(nextHr).rjust(2,'0')+'-'+item['SKID'].replace('HR#','')[3:5]
-                                    getApp = findHours(nextHr, hoursBooks)
-                                    if getApp != '':
-                                        if getApp['ServiceId'] != item['SERVICEID']:
-                                            count = custPerTime
-                                            break
-                                    else:
-                                        if availableHour(nextHr, newHr, dayHours, locationId, providerId, item['SERVICEID'], nextDate) == False:
-                                            count = custPerTime
-                                            break
-                                    tempCount = findUsedHours(nextHr, hoursBooks, item['SERVICEID'], int(item['TIME_SERVICE'])-1)
-                                    if tempCount > count:
-                                        count = tempCount
-                                            
-                                recordset = {
-                                    'Time': newTime,
-                                    'TimeService': item['TIME_SERVICE'],
-                                    'ServiceId': item['SERVICEID'],
-                                    'Bucket': custPerTime,
-                                    'Available': custPerTime-count,
-                                    'Used': count,
-                                    'Cancel': 0
-                                }
-                                hoursData.append(recordset)
+                            recordset = {
+                                'Time': str(item['Time']).rjust(2,'0')+':00',
+                                'TimeService': 1,
+                                'ServiceId': '',
+                                'Bucket': 0,
+                                'Available': 0,
+                                'Used': 0,
+                                'Cancel': 1
+                            }
+                            hoursData.append(recordset)
                         else:
-                            if int(item['CANCEL']) == 1:
-                                timeExists = findHours(item['SKID'].replace('HR#','').replace('-',':'), hoursData)
-                                if timeExists != '':
-                                    hoursData.remove(timeExists)
-
-                                recordset = {
-                                    'Time': item['SKID'].replace('HR#','').replace('-',':'),
-                                    'TimeService': 1,
-                                    'ServiceId': '',
-                                    'Bucket': 0,
-                                    'Available': 0,
-                                    'Used': 0,
-                                    'Cancel': 1
-                                }
-                                hoursData.append(recordset)
+                            custPerTime = 0
+                            if 'ServiceId' in item:
+                                custPerTime = findService(item['ServiceId'], services)
+                            
+                            if (int(item['TimeService']) > 1):
+                                times = range(0, item['TimeService'])
+                                changes = range(0, item['TimeService'])
+                                timeInterval = []
+                                #CONSOLIDA HORAS DE BOOKINGS
+                                for hr in times:
+                                    count = 0
+                                    newTime = str(int(item['Time'])+hr)
+                                    time24hr = int(newTime) 
+                                    newTime = newTime.rjust(2,'0')+':00'
+    
+                                    count = findUsedHours(time24hr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)
+                                    res = range(1, int(item['TimeService']))
+                                    for citas in res:
+                                        nextHr = time24hr+citas
+                                        newHr = str(nextHr).rjust(2,'0')+'-00'
+                                        getApp = findHours(nextHr, hoursBooks)
+                                        if getApp != '':
+                                            if getApp['ServiceId'] != item['ServiceId']:
+                                                count = custPerTime
+                                                break
+                                        else:
+                                            if availableHour(nextHr, newHr, dayHours, locationId, providerId, item['ServiceId'], nextDate) == False:
+                                                count = custPerTime
+                                                break
+                                        tempCount = findUsedHours(nextHr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)
+                                        if tempCount > count:
+                                            count = tempCount
+                                                
+                                    recordset = {
+                                        'Time': newTime,
+                                        'TimeService': item['TimeService'],
+                                        'ServiceId': item['ServiceId'],
+                                        'Bucket': custPerTime,
+                                        'Available': custPerTime-count,
+                                        'Used': count,
+                                        'Cancel': 0
+                                    }
+                                    hoursData.append(recordset)
                             else:
                                 recordset = {
-                                    'Time': item['SKID'].replace('HR#','').replace('-',':'),
-                                    'TimeService': item['TIME_SERVICE'],
-                                    'ServiceId': item['SERVICEID'],
+                                    'Time': str(item['Time']).rjust(2,'0')+':00',
+                                    'TimeService': item['TimeService'],
+                                    'ServiceId': item['ServiceId'],
                                     'Bucket': custPerTime,
-                                    'Available': item['AVAILABLE'],
-                                    'Used': custPerTime-int(item['AVAILABLE']),
+                                    'Available': custPerTime-item['People'],
+                                    'Used': int(item['People']),
                                     'Cancel': 0
                                 }
                                 hoursData.append(recordset)
-                                    
+
                     ini = 0
                     fin = 0
                     interval = 1

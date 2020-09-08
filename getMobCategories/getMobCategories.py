@@ -42,7 +42,8 @@ def lambda_handler(event, context):
                 'CategoryId': row['PKID'].replace('CAT#',''),
                 'Name': row['NAME_ENG'] if language.upper() == 'EN' else row['NAME_ESP'],
                 'Icon': row['ICON'],
-                'Imagen': row['IMG_CAT']
+                'Imagen': row['IMG_CAT'],
+                'Qty': row['QTY']
             }
             records.append(recordset)
         

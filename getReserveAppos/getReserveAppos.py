@@ -36,6 +36,7 @@ def lambda_handler(event, context):
             recordset = {
                 'AppointmentId': item['SKID'].replace('APPO#',''),
                 'NameBusiness': item['BUSINESS_NAME'],
+                'ServiceName': item['SERVICE_NAME'],
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
                 'PeopleQty': item['PEOPLE_QTY'] if 'PEOPLE_QTY' in item else 0,
                 'Address': item['BUSINESS_ADDR'],
