@@ -28,67 +28,54 @@ def lambda_handler(event, context):
         
     try:
         email = event['pathParameters']['email']
-        existe = 0
-        verCode = ''
-        getEmail = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :email',
-            ExpressionAttributeValues={
-                ':email': {'S': 'EMAIL#'+email}
-            }
-        )
-        for row in json_dynamodb.loads(getEmail['Items']):
-            existe = 1
+        
+        code = 0
+        code = str(random.randint(100000, 999999))
+        verCode = hashlib.md5(code.encode("utf")).hexdigest()
+        #EMAIL
+        SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+        RECIPIENT = email
+        SUBJECT = "Tu Cita 24/7 Validation Account"
+        BODY_TEXT = ("Your Cita 24/7 ID Verification Code is: " + code)
+                    
+        # The HTML body of the email.
+        BODY_HTML = """<html>
+        <head></head>
+        <body>
+        <h1>Tu Cita 24/7</h1>
+        <p>Your Cita 24/7 ID Verification Code is: """ + code + """</p>
+        </body>
+        </html>"""
 
-        if existe == 0:
-            code = 0
-            code = str(random.randint(100000, 999999))
-            verCode = hashlib.md5(code.encode("utf")).hexdigest()
-            #EMAIL
-            SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
-            RECIPIENT = email
-            SUBJECT = "Tu Cita 24/7 Validation Account"
-            BODY_TEXT = ("Your Cita 24/7 ID Verification Code is: " + code)
-                        
-            # The HTML body of the email.
-            BODY_HTML = """<html>
-            <head></head>
-            <body>
-            <h1>Tu Cita 24/7</h1>
-            <p>Your Cita 24/7 ID Verification Code is: """ + code + """</p>
-            </body>
-            </html>"""
+        CHARSET = "UTF-8"
 
-            CHARSET = "UTF-8"
-
-            response = ses.send_email(
-                Destination={
-                    'ToAddresses': [
-                        RECIPIENT,
-                    ],
-                },
-                Message={
-                    'Body': {
-                        'Html': {
-                            'Charset': CHARSET,
-                            'Data': BODY_HTML,
-                        },
-                        'Text': {
-                            'Charset': CHARSET,
-                            'Data': BODY_TEXT,
-                        },
-                    },
-                    'Subject': {
+        response = ses.send_email(
+            Destination={
+                'ToAddresses': [
+                    RECIPIENT,
+                ],
+            },
+            Message={
+                'Body': {
+                    'Html': {
                         'Charset': CHARSET,
-                        'Data': SUBJECT,
+                        'Data': BODY_HTML,
+                    },
+                    'Text': {
+                        'Charset': CHARSET,
+                        'Data': BODY_TEXT,
                     },
                 },
-                Source=SENDER
-            )
+                'Subject': {
+                    'Charset': CHARSET,
+                    'Data': SUBJECT,
+                },
+            },
+            Source=SENDER
+        )
 
         statusCode = 200
-        body = json.dumps({'Message': 'Email send successfully', 'Existe': existe, 'VerificationCode': code, 'Code': 200})
+        body = json.dumps({'Message': 'Email send successfully', 'VerificationCode': code, 'Code': 200})
 
         if statusCode == '':
             statusCode = 500
