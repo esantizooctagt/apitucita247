@@ -209,7 +209,13 @@ def lambda_handler(event, context):
                 bodyStr = 'You can go to the nearest entrance to check in'
                 sms.publish(
                     PhoneNumber="+"+to_number,
-                    Message=bodyStr
+                    Message=bodyStr,
+                    MessageAttributes={
+                            'AWS.SNS.SMS.SMSType': {
+                            'DataType': 'String',
+                            'StringValue': 'Transactional'
+                        }
+                    }
                 )
                 
             if preference == 2 and email != '':

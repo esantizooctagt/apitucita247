@@ -204,7 +204,13 @@ def lambda_handler(event, context):
                         bodyStr = 'Your appointment was cancelled by the business'
                         sms.publish(
                             PhoneNumber="+"+to_number,
-                            Message=bodyStr
+                            Message=bodyStr,
+                            MessageAttributes={
+                                    'AWS.SNS.SMS.SMSType': {
+                                    'DataType': 'String',
+                                    'StringValue': 'Transactional'
+                                }
+                            }
                         )
                         
                     if preference == 2 and email != '':

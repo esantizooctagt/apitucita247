@@ -501,7 +501,9 @@ def lambda_handler(event, context):
                                 "SERVICE_NAME": {"S": servName},
                                 "DISABILITY": {"N": str(disability) if disability != '' else None},
                                 "GSI1PK": {"S": 'RES#BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId}, 
-                                "GSI1SK": {"S": '1#DT#' + dateAppointment[0:10]}
+                                "GSI1SK": {"S": '1#DT#' + dateAppointment[0:10]},
+                                "GSI2PK": {"S": dateOpeRes},
+                                "GSI2SK": {"S": dateOpeRes}
                             },
                             "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"

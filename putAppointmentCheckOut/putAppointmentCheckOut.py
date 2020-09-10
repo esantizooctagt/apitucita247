@@ -259,7 +259,13 @@ def lambda_handler(event, context):
                     bodyStr = 'Please fill the next poll ' + link
                     sms.publish(
                         PhoneNumber="+"+to_number,
-                        Message=bodyStr
+                        Message=bodyStr,
+                        MessageAttributes={
+                                'AWS.SNS.SMS.SMSType': {
+                                'DataType': 'String',
+                                'StringValue': 'Transactional'
+                            }
+                        }
                     ) 
 
                 if preference == 2 and email != '':

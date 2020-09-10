@@ -30,7 +30,13 @@ def lambda_handler(event, context):
     try:
         sms.publish(
             PhoneNumber="+"+to_number,
-            Message=bodyStr
+            Message=bodyStr,
+            MessageAttributes={
+                    'AWS.SNS.SMS.SMSType': {
+                    'DataType': 'String',
+                    'StringValue': 'Transactional'
+                }
+            }
         )
         details = dynamodb.query(
             TableName="TuCita247",
