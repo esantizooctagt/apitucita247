@@ -27,7 +27,7 @@ def lambda_handler(event, context):
 
         details = dynamodb.query(
             TableName="TuCita247",
-            TableIndex="TuCita247_CustAppos",
+            IndexName="TuCita247_CustAppos",
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='GSI2PK = :pkid AND GSI2SK <= :currTime',
             ExpressionAttributeValues={
@@ -35,8 +35,7 @@ def lambda_handler(event, context):
                 ':currTime': {'S': currTime}
             }
         )
-        recordset = {}
-        record = []
+
         table = dynamodbQuery.Table('TuCita247')
         for item in json_dynamodb.loads(details['Items']):
             details = table.delete_item(
@@ -47,7 +46,7 @@ def lambda_handler(event, context):
             )
 
         statusCode = 200
-        body = json.dumps({'Appointments': record, 'Code': 200})
+        body = json.dumps({'OnHold': 'Success', 'Code': 200})
 
     except Exception as e:
         statusCode = 500
