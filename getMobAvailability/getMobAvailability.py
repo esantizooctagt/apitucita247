@@ -166,9 +166,12 @@ def lambda_handler(event, context):
         services = []
         hours = []
         currHour = ''
+        isCurrDay = 0
 
         if appoDate.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
             currHour = today.strftime("%H:%M")
+            currHour = int(str(currHour)[0:2])
+            isCurrDay = 1
 
         #STATUS DEL PAQUETE ADQUIRIDO 1 ACTIVO Y TRAE TOTAL DE NUMERO DE CITAS
         statPlan = dynamodb.query(
@@ -370,6 +373,20 @@ def lambda_handler(event, context):
                             else:
                                 hoursBooks.remove(timeExists)
                                 hoursBooks.append(recordset)
+                        if int(cancel['AVAILABLE']) == 1 and int(cancel['AVAILABLE']) == 0 and cancel['SERVICEID'] == '':
+                            recordset = {
+                                'Hour': int(cancel['SKID'].replace('HR#','')[0:2]),
+                                'ServiceId': '',
+                                'People': 0,
+                                'TimeService': 0,
+                                'Cancel': 0
+                            }
+                            timeExists = findHours(cancel['SKID'].replace('HR#','').replace('-',':'), hoursBooks)
+                            if timeExists == '':
+                                hoursBooks.append(recordset)
+                            else:
+                                hoursBooks.remove(timeExists)
+                                hoursBooks.append(recordset)
 
                     for item in hoursBooks:
                         if item['Cancel'] == 1:
@@ -465,12 +482,21 @@ def lambda_handler(event, context):
                                         count = tempCount
                                 # logger.info("eval next hour " + str(nextHr) + "-- h " + str(h) + " nex hour available " + str(numCustomer-count))
                                 if numCustomer-count > 0:
-                                    recordset = {
-                                            'Hour': h,
-                                            'Available': numCustomer-count
-                                        }
-                                    hours.append(recordset)
-
+                                    if isCurrDay == 1:
+                                        newH = int(h[0:2])+12 if h[-2:] == 'PM' and int(h[0:2]) < 12 else int(h[0:2])
+                                        if newH > currHour:
+                                            recordset = {
+                                                'Hour': h,
+                                                'Available': numCustomer-count
+                                            }
+                                            hours.append(recordset)
+                                    else:
+                                        recordset = {
+                                                'Hour': h,
+                                                'Available': numCustomer-count
+                                            }
+                                        hours.append(recordset)
+                
                 statusCode = 200
                 body = json.dumps({'Hours': hours, 'Code': 200})
         
