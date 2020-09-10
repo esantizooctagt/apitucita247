@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         if lastItem == '_':
             lastItem = ''
         else:
-           lastItem = {'PKID': {'S': 'BUS#' + businessId },'SKID': {'S': 'METADATA'}}
+          lastItem = {'PKID': {'S': 'BUS#'+lastItem.split('.')[0] },'SKID': {'S': 'METADATA'}, 'GSI1PK': {'S': 'PARENT#BUS'}, 'GSI1SK': {'S': 'CAT#'+categoryId+'#SUB#'+lastItem.split('.')[1]+'#'+lastItem.split('.')[0]}}
 
         if businessId != '_' and categoryId == '_':
             response = dynamodb.query(
@@ -58,7 +58,7 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
-                    ExclusiveStartKey= lastItem,
+                    ExclusiveStartKey=lastItem,
                     KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :categoryId)',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'PARENT#BUS'},
@@ -82,14 +82,13 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
-                    ExclusiveStartKey= lastItem,
+                    ExclusiveStartKey=lastItem,
                     KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :categoryId)',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'PARENT#BUS'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId) + '#SUB#' + str(subcategoryId)}
                     }
                 )
-
         recordset = {}
         business = []
         for row in json_dynamodb.loads(response['Items']):
@@ -109,7 +108,6 @@ def lambda_handler(event, context):
             number = 0
             for item in json_dynamodb.loads(locsNumber['Items']):
                 number = number + 1
-
             recordset = {
                 'Business_Id': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME'],
@@ -124,7 +122,9 @@ def lambda_handler(event, context):
         
         if 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
-            lastItem = lastItem['PKID'].replace('BUS#','')
+            lastItem = lastItem['PKID'].replace('BUS#','')+'.'+lastItem['GSI1SK'].split('#')[3]
+        else:
+            lastItem = ''
 
         statusCode = 200
         body = json.dumps({'Code': 200, 'LastItem': lastItem, 'Business': business})
