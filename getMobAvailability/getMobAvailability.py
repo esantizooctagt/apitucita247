@@ -373,7 +373,7 @@ def lambda_handler(event, context):
                             else:
                                 hoursBooks.remove(timeExists)
                                 hoursBooks.append(recordset)
-                        if int(cancel['AVAILABLE']) == 1 and int(cancel['AVAILABLE']) == 0 and cancel['SERVICEID'] == '':
+                        if int(cancel['AVAILABLE']) == 1 and int(cancel['CANCEL']) == 0 and cancel['SERVICEID'] == '':
                             recordset = {
                                 'Hour': int(cancel['SKID'].replace('HR#','')[0:2]),
                                 'ServiceId': '',
