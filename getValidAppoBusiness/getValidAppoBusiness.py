@@ -33,8 +33,7 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
-        data = json.loads(event['body'])
-        businessId = data['businessId']
+        businessId = event['pathParameters']['businessId']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -65,8 +64,8 @@ def lambda_handler(event, context):
                 numberAppos = stat['AVAILABLE']
 
         if statusPlan == 0:
-            statusCode = 404
-            body = json.dumps({'Message': 'Disabled plan', 'Code': 400})
+            statusCode = 200
+            body = json.dumps({'Message': 'Disabled plan', 'Code': 404})
         else:
             if numberAppos == 0:
                 #CITAS DISPONIBLES DE PAQUETES ADQUIRIDOS QUE VENCEN A FUTURO
@@ -87,7 +86,7 @@ def lambda_handler(event, context):
 
             #SIN DISPONIBILIDAD DE CITAS
             if numberAppos == 0:
-                statusCode = 404
+                statusCode = 200
                 body = json.dumps({'Message': 'No appointments available', 'Code': 400})
             else:
                 statusCode = 200

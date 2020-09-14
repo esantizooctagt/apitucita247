@@ -96,6 +96,7 @@ def lambda_handler(event, context):
                         'LocationId': locationId,
                         'Providers': providers,
                         'Door': door,
+                        'Name': item['NAME'],
                         'MaxCustomers': item['MAX_CUSTOMER'],
                         'ManualCheckOut': item['MANUAL_CHECK_OUT']
                     }

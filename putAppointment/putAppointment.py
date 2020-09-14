@@ -206,7 +206,7 @@ def lambda_handler(event, context):
             if preference == 1 and mobile != '':
                 #SMS
                 to_number = mobile
-                bodyStr = 'You can go to the nearest entrance to check in'
+                bodyStr = 'You can come to the nearest entrance to check in'
                 sms.publish(
                     PhoneNumber="+"+to_number,
                     Message=bodyStr,
