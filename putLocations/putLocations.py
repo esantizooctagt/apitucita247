@@ -49,8 +49,8 @@ def lambda_handler(event, context):
                             "GEOLOCATION": {"S": str(locs['Geolocation'])},
                             "PARENT_LOCATION": {"S": str(locs['ParentLocation'])},
                             "MAX_CUSTOMER": {"N": str(locs['MaxConcurrentCustomer'])},
-                            "BUCKET_INTERVAL": {"N": str(locs['BucketInterval'])},
-                            "CUSTOMER_PER_BUCKET": {"N": str(locs['TotalCustPerBucketInter'])},
+                            # "BUCKET_INTERVAL": {"N": str(locs['BucketInterval'])},
+                            # "CUSTOMER_PER_BUCKET": {"N": str(locs['TotalCustPerBucketInter'])},
                             "MANUAL_CHECK_OUT": {"N": str(locs['ManualCheckOut'])},
                             "DOORS": {"S": str(locs['Doors'])},
                             "STATUS": {"N": str(locs['Status'])}
@@ -60,6 +60,8 @@ def lambda_handler(event, context):
                     },
                 }
             else:
+                # CUSTOMER_PER_BUCKET = :customerPerBucket, 
+                # BUCKET_INTERVAL = :bucketInterval, 
                 locations = {
                     "Update":{
                         "TableName":"TuCita247",
@@ -67,7 +69,7 @@ def lambda_handler(event, context):
                             "PKID": {"S": 'BUS#'+businessId},
                             "SKID": {"S": 'LOC#'+locs['LocationId']}
                         },
-                        "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, BUCKET_INTERVAL = :bucketInterval, CUSTOMER_PER_BUCKET = :customerPerBucket, DOORS = :doors, #s = :status, MANUAL_CHECK_OUT = :manualCheckOut",
+                        "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, DOORS = :doors, #s = :status, MANUAL_CHECK_OUT = :manualCheckOut",
                         "ExpressionAttributeNames": {"#n":"NAME", "#s":"STATUS"},
                         "ExpressionAttributeValues": {
                             ":name": {"S": str(locs['Name'])},

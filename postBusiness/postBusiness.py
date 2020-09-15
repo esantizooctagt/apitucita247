@@ -150,7 +150,9 @@ def lambda_handler(event, context):
                     "GSI3PK": {"S": 'LINK#' + data['TuCitaLink']},
                     "GSI3SK": {"S": 'BUS#' + businessId},
                     "GSI4PK": {"S": 'SEARCH'},
-                    "GSI4SK": {"S": 'SEARCH'}
+                    "GSI4SK": {"S": 'SEARCH'},
+                    "GSI5PK": {"S": 'METADATA'},
+                    "GSI5SK": {"S": 'BUS#'+businessId}
                 },
                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"

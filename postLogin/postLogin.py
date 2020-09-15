@@ -111,6 +111,7 @@ def lambda_handler(event, context):
     try:
         data = json.loads(event['body'])
         email = data['Email']
+        superAdm = 0
         
         key = secreKey.encode()
         ct_b64 = data['Password'] 
@@ -156,11 +157,11 @@ def lambda_handler(event, context):
             if user != None:
                 business, error = getBusiness(user['PKID'].replace('BUS#',''))
                 if business != None:
+                    superAdm = int(user['SUPER_ADMIN']) if 'SUPER_ADMIN' in user else 0
                     recordset = {
                         'User_Id': user['USERID'],
                         'Email': user['GSI1PK'].replace('EMAIL#',''),
                         'Is_Admin': int(user['IS_ADMIN']),
-                        'Super_Admin': int(user['SUPER_ADMIN']) if 'SUPER_ADMIN' in user else 0,
                         'Business_Id': user['PKID'].replace('BUS#',''),
                         'Avatar': user['AVATAR'] if 'AVATAR' in user else '',
                         'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
@@ -169,7 +170,7 @@ def lambda_handler(event, context):
                         'UsrCog': userNameCognito
                     }
 
-                    result = { 'Code': 100, 'user' : recordset, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"], 'refresh': resp["AuthenticationResult"]["RefreshToken"] }
+                    result = { 'Code': 100, 'user' : recordset, 'super_admin': superAdm, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"], 'refresh': resp["AuthenticationResult"]["RefreshToken"] }
                     statusCode = 200
                     body = json.dumps(result)
                 else:

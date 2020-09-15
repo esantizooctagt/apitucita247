@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: TuCita 247 Admin Backend
+
+Parameters:
+  UserPoolId:
+    Type: String
+    Description: User poolID for Cognito provider
+  Audience:
+    Type: String
+    Description: Client id for user pool
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 128
+    Runtime: python3.8
+    Environment:
+        Variables:
+            devCors: "http://localhost:4200"
+            prodCors: "https://console.tucita247.com"
+    VpcConfig:
+      SecurityGroupIds: 
+        - sg-04131f24
+        # !Ref SecurityGroupIds
+      SubnetIds: 
+        - subnet-a0a8a79e
+        - subnet-d5599ff4
+        - subnet-24916a42
+        - subnet-297ac727
+        # - !Ref VpcSubnetIds
+    
+Resources:
+  HttpApi:
+    ApiId: HttpApi
+    Type: AWS::Serverless::HttpApi
+    Name: TuCita247Admin
+    Properties:  
+      Domain:
+        DomainName: apiadmin.tucita247.com
+        CertificateArn: arn:aws:acm:us-east-1:821843840552:certificate/91a63656-8adc-479c-96a4-1345641cf20b
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId: Z05029142564P6F9HXWMB
+      Auth:
+        # DefaultAuthorizer: CognitoAuth
+        Authorizers:
+          CognitoAuth:
+            # AuthorizationScopes:
+            #   - email
+            IdentitySource: "$request.header.Authorization"
+            JwtConfiguration:
+              issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${AWS::Region}_${UserPoolId}
+              audience:
+                - !Ref Audience
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - PUT
+          - PATCH
+          - DELETE
+          - POST
+        AllowOrigins:
+          - http://localhost:4200
+          - http://127.0.0.1:8000
+          - https://tucita247.local
+          - https://console.tucita247.com
+          - https://tucita247.com
+        AllowHeaders:
+          - content-type
+          - authorization
+        MaxAge: "10"
+        AllowCredentials: True
+  
+  GetBusinessAdminFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetBusinessAdmin
+      CodeUri: getBusinessAdmin/
+      Handler: getBusinessAdmin.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /business/admin
+            Method: get
+            ApiId: !Ref HttpApi

@@ -79,8 +79,8 @@ def lambda_handler(event, context):
                         "GEOLOCATION": {"S": str(data['Geolocation'])},
                         "PARENT_LOCATION": {"S": str(data['ParentLocation'])},
                         "MAX_CUSTOMER": {"N": str(data['MaxConcurrentCustomer'])},
-                        "BUCKET_INTERVAL": {"N": str(data['BucketInterval'])},
-                        "CUSTOMER_PER_BUCKET": {"N": str(data['TotalCustPerBucketInter'])},
+                        # "BUCKET_INTERVAL": {"N": str(data['BucketInterval'])},
+                        # "CUSTOMER_PER_BUCKET": {"N": str(data['TotalCustPerBucketInter'])},
                         "MANUAL_CHECK_OUT": {"N": str(data['ManualCheckOut'])},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
@@ -95,6 +95,8 @@ def lambda_handler(event, context):
                 },
             }
         else:
+            # CUSTOMER_PER_BUCKET = :customerPerBucket, 
+            # BUCKET_INTERVAL = :bucketInterval, 
             locationId = data['LocationId']
             recordset = {
                 "Update": {
@@ -103,8 +105,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'BUS#' + data['BusinessId']},
                         "SKID": {"S": 'LOC#' + locationId}
                     },
-
-                    "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, BUCKET_INTERVAL = :bucketInterval, CUSTOMER_PER_BUCKET = :customerPerBucket, DOORS = :doors, #s = :status, MANUAL_CHECK_OUT = :manualCheckOut",
+                    "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, DOORS = :doors, #s = :status, MANUAL_CHECK_OUT = :manualCheckOut",
                     "ExpressionAttributeNames": {"#n":"NAME", "#s":"STATUS"},
                     "ExpressionAttributeValues": {
                         ":name": {"S": str(data['Name'])},
