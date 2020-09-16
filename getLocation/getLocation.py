@@ -39,7 +39,7 @@ def lambda_handler(event, context):
                 ':locations': {'S': 'LOC#' + locationId}
             }
         )
-        recordset = {}
+        recordset = ''
         for row in json_dynamodb.loads(response['Items']):
             sectors = dynamodb.query(
                 TableName="TuCita247",

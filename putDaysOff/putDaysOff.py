@@ -77,7 +77,7 @@ def lambda_handler(event, context):
                 for serv in json_dynamodb.loads(servs['Items']):
                     response = table.update_item(
                         Key={
-                            'PKID': 'BUS#' + businessId + '#' + locId,
+                            'PKID': 'BUS#' + businessId + '#LOC#' + locId,
                             'SKID': serv['SKID']
                         },
                         UpdateExpression="SET DAYS_OFF = list_append(DAYS_OFF,:dateope)",
@@ -118,7 +118,7 @@ def lambda_handler(event, context):
             for serv in json_dynamodb.loads(servs['Items']):
                 response = table.update_item(
                     Key={
-                        'PKID': 'BUS#' + businessId + '#' + locationId,
+                        'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
                         'SKID': serv['SKID']
                     },
                     UpdateExpression="SET DAYS_OFF = list_append(DAYS_OFF,:dateope)",
@@ -258,7 +258,7 @@ def lambda_handler(event, context):
                 indexServ = getIndexServ.index(dateSpec)
                 response = table.update_item(
                     Key={
-                        'PKID': 'BUS#' + businessId + '#' + locationId,
+                        'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
                         'SKID': serv['SKID']
                     },
                     UpdateExpression="REMOVE DAYS_OFF[" + str(indexServ) + "]",

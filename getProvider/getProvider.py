@@ -39,6 +39,7 @@ def lambda_handler(event, context):
             },
             Limit =1
         )
+        recordset = ''
         for item in json_dynamodb.loads(provider['Items']):
             recordset = {
                 'ProviderId': item['SKID'].replace('PRO#',''),

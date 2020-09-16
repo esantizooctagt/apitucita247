@@ -37,6 +37,7 @@ def lambda_handler(event, context):
                 ':role': {'S': 'ROL#' + roleId}
             }
         )
+        recordset = ''
         items = json_dynamodb.loads(response['Items'])
         for row in items:
             recordset = {

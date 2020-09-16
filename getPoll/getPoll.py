@@ -37,6 +37,7 @@ def lambda_handler(event, context):
             },
             Limit =1
         )
+        recordset = ''
         for item in json_dynamodb.loads(master['Items']):
             recordset = {
                 'PollId': item['GSI1SK'].replace('POLL#',''),
