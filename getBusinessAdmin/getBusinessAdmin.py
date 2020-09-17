@@ -41,9 +41,29 @@ def lambda_handler(event, context):
         recordset = {}
         record = []
         for row in json_dynamodb.loads(response['Items']):
+            isAdmin = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :user )',
+                FilterExpression='IS_ADMIN = :isAdm',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': row['PKID']},
+                    ':user': {'S': 'USER#'},
+                    ':isAdm': {'N': str(1)}
+                }
+            )
+            email = ''
+            user = ''
+            for item in json_dynamodb.loads(isAdmin['Items']):
+                email = item['GSI1PK'].replace('EMAIL#','')
+                user = item['SKID'].replace('USER#','')
+                break
+
             recordset = {
                 'BusinessId': row['PKID'].replace('BUS#',''),
-                'Name': row['NAME']
+                'Name': row['NAME'],
+                'Email': email,
+                'UserId': user
             }
             record.append(recordset)
             

@@ -167,7 +167,9 @@ def lambda_handler(event, context):
                         'Role_Id': '' if int(user['IS_ADMIN']) == 1 else user['ROLEID'],
                         'Language': user['LANGUAGE'] if 'LANGUAGE' in user else '',
                         'Business_Name': business['NAME'],
-                        'UsrCog': userNameCognito
+                        'UsrCog': userNameCognito,
+                        'User_Adm': '',
+                        'Email_Adm': ''
                     }
 
                     result = { 'Code': 100, 'user' : recordset, 'super_admin': superAdm, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"], 'refresh': resp["AuthenticationResult"]["RefreshToken"] }
