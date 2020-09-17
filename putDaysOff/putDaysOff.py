@@ -29,7 +29,6 @@ def lambda_handler(event, context):
         cors = os.environ['prodCors']
     else:
         cors = os.environ['devCors']
-        
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
