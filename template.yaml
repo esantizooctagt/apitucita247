@@ -1022,7 +1022,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /locations/cities/{country}/{language}
+            Path: /locations/cities/{country}/{language}/{city}
             Method: get
             ApiId: !Ref HttpApi
         

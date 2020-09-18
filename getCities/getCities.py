@@ -37,30 +37,11 @@ def lambda_handler(event, context):
     try:
         country = event['pathParameters']['country']
         language = event['pathParameters']['language']
+        city = event['pathParameters']['city']
 
-        response = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :country AND begins_with ( SKID , :city )',
-            ExpressionAttributeValues={
-                ':country': {'S': 'COUNTRY#' + country},
-                ':city': {"S": 'CITY#'}
-            }
-        )
-        for row in json_dynamodb.loads(response['Items']):
-            recordset = {
-                'CityId': row['SKID'].replace('CITY#',''),
-                'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
-            }
-            records.append(recordset)
-        
-        lastItem = ''
-        while 'LastEvaluatedKey' in response:
-            lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
-
+        if city == '_':
             response = dynamodb.query(
                 TableName="TuCita247",
-                ExclusiveStartKey= lastItem,
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :country AND begins_with ( SKID , :city )',
                 ExpressionAttributeValues={
@@ -68,11 +49,74 @@ def lambda_handler(event, context):
                     ':city': {"S": 'CITY#'}
                 }
             )
-            for row in json_dynamodb.loads(response['Items']):
+        else:
+            response = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :city AND begins_with ( SKID , :sector )',
+                ExpressionAttributeValues={
+                    ':city': {'S': 'COUNTRY#' + country + '#CITY#' + city},
+                    ':sector': {"S": 'SECTOR#'}
+                }
+            )
+        first = 0
+        for row in json_dynamodb.loads(response['Items']):
+            if city == '_':
                 recordset = {
                     'CityId': row['SKID'].replace('CITY#',''),
                     'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
                 }
+            else:
+                if first == 0:
+                        first == 1
+                        recordset = {
+                            'SectorId': '',
+                            'Name': 'Select Sector' if language == 'EN' else 'Seleccione Sector'
+                        }
+                        records.append(recordset)
+
+                recordset = {
+                    'SectorId': row['SKID'].replace('SECTOR#',''),
+                    'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
+                }
+            records.append(recordset)
+        
+        lastItem = ''
+        while 'LastEvaluatedKey' in response:
+            lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
+            if city == '_':
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    ExclusiveStartKey= lastItem,
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :country AND begins_with ( SKID , :city )',
+                    ExpressionAttributeValues={
+                        ':country': {'S': 'COUNTRY#' + country},
+                        ':city': {"S": 'CITY#'}
+                    }
+                )
+            else:
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    ExclusiveStartKey= lastItem,
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :city AND begins_with ( SKID , :sector )',
+                    ExpressionAttributeValues={
+                        ':city': {'S': 'COUNTRY#' + country + '#CITY#' + city},
+                        ':sector': {"S": 'SECTOR#'}
+                    }
+                )
+            for row in json_dynamodb.loads(response['Items']):
+                if city == '_':
+                    recordset = {
+                        'CityId': row['SKID'].replace('CITY#',''),
+                        'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
+                    }
+                else:
+                    recordset = {
+                        'SectorId': row['SKID'].replace('SECTOR#',''),
+                        'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
+                    }
                 records.append(recordset)
         
         statusCode = 200
