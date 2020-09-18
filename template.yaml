@@ -2083,6 +2083,6 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /business/valid/{businessId}
+            Path: /business/valid/{businessId}/{locationId}/{providerId}/{serviceId}/{appoDate}/{appoHour}
             Method: get
             ApiId: !Ref HttpApi
