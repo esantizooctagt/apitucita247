@@ -80,6 +80,19 @@ def lambda_handler(event, context):
         today = datetime.datetime.now(tz=country_date)
         dueDate = (today + datetime.timedelta(days=31)).strftime("%Y-%m-%d")
 
+        cities = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :country AND SKID = :city',
+            ExpressionAttributeValues={
+                ':country': {'S': 'COUNTRY#' + data['Country']},
+                ':city': {"S": 'CITY#' + data['City']}
+            }
+        )
+        cityName = ''
+        for city in json_dynamodb.loads(cities['Items']):
+            cityName = city['NAME_ENG']
+
         items = []
         rows = {
             "Put": {
@@ -124,7 +137,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA'},
                     "ADDRESS": {"S": data['Address']},
-                    "CITY": {"S": data['City']},
+                    "CITY": {"S": cityName},
                     "COUNTRY": {"S": data['Country']},
                     "CATEGORYID": {"S": data['CategoryId']},
                     "EMAIL": {"S": data['Email']},
@@ -202,7 +215,7 @@ def lambda_handler(event, context):
                         "SKID": {"S": 'LOC#'+locationId},
                         "NAME": {"S": str(item['Name'])},
                         "CITY": {"S": str(item['City'])},
-                        # "SECTOR": {"S": str(item['Sector'])},
+                        "SECTOR": {"S": str(item['Sector'])},
                         "ADDRESS": {"S": str(item['Address'])},
                         "DOORS": {"S": 'MAIN DOOR'},
                         "GEOLOCATION": {"S": str(item['Geolocation'])},
@@ -352,7 +365,7 @@ def lambda_handler(event, context):
             <head></head>
             <body>
             <h1>Tu Cita 24/7</h1>
-            <p>Your Cita 24/7 account is already created, click the link to activate it https://console.tucita247.com/en/verification/""" + userId + """/0 your temp password is: """ + passDecrypt + """</p>
+            <p>Your Cita 24/7 account is already created, click the link to activate it <a href='https://console.tucita247.com/en/verification/""" + userId + """/0'>Click here</a> or copy and paste this link https://console.tucita247.com/en/verification/""" + userId + """/0 your temp password is: """ + passDecrypt + """</p>
             </body>
             </html>"""
 
