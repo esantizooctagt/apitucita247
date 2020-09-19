@@ -59,7 +59,13 @@ def lambda_handler(event, context):
                     ':sector': {"S": 'SECTOR#'}
                 }
             )
-        first = 0
+        if city != '_':
+            recordset = {
+                'SectorId': '',
+                'Name': 'None' if language == 'EN' else 'Ninguno'
+            }
+            records.append(recordset)
+            
         for row in json_dynamodb.loads(response['Items']):
             if city == '_':
                 recordset = {
@@ -67,14 +73,6 @@ def lambda_handler(event, context):
                     'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']
                 }
             else:
-                if first == 0:
-                        first == 1
-                        recordset = {
-                            'SectorId': '',
-                            'Name': 'Select Sector' if language == 'EN' else 'Seleccione Sector'
-                        }
-                        records.append(recordset)
-
                 recordset = {
                     'SectorId': row['SKID'].replace('SECTOR#',''),
                     'Name': row['NAME_ENG'] if language == 'EN' else row['NAME_ESP']

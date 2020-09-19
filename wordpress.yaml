@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: TuCita 247 WP
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 128
+    Runtime: python3.8
+    Environment:
+        Variables:
+            devCors: "http://tucita247.local"
+            prodCors: "https://tucita247.com"
+    VpcConfig:
+      SecurityGroupIds: 
+        - sg-04131f24
+        # !Ref SecurityGroupIds
+      SubnetIds: 
+        - subnet-a0a8a79e
+        - subnet-d5599ff4
+        - subnet-24916a42
+        - subnet-297ac727
+        # - !Ref VpcSubnetIds
+
+Resources:
+  HttpApi:
+    ApiId: HttpApi
+    Type: AWS::Serverless::HttpApi
+    Name: TuCita247WP
+    Properties:
+      Domain:
+        DomainName: apiwp.tucita247.com
+        CertificateArn: arn:aws:acm:us-east-1:821843840552:certificate/91a63656-8adc-479c-96a4-1345641cf20b
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId: Z05029142564P6F9HXWMB
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - PUT
+          - PATCH
+          - DELETE
+          - POST
+        AllowOrigins:
+          - https://tucita247.local
+          - https://tucita247.com
+        AllowHeaders:
+          - content-type
+          - authorization
+        MaxAge: "10"
+        AllowCredentials: True
+
+  GetCategoriesWPFilterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetCategoriesWP
+      CodeUri: getCategoriesWP/
+      Handler: getCategoriesWP.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /categories/{language}
+            Method: get
+            ApiId: !Ref HttpApi
+
+  PutPlansWPFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutPlansWP
+      CodeUri: putPlansWP/
+      Handler: putPlansWP.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:requests:7
+      VpcConfig: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /subscriptions
+            Method: put
+            ApiId: !Ref HttpApi
+
+  # GetCitiesFunction:
+  #     Type: AWS::Serverless::Function
+  #     Properties:
+  #       FunctionName: GetCities
+  #       CodeUri: getCities/
+  #       Handler: getCities.lambda_handler
+  #       Role: arn:aws:iam::821843840552:role/LambdaDynamo
+  #       Layers: 
+  #         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+  #         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+  #         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+  #       Events:
+  #         RootGet:
+  #           Type: HttpApi
+  #           Properties:
+  #             Path: /locations/cities/{country}/{language}/{city}
+  #             Method: get
+  #             ApiId: !Ref HttpApi
