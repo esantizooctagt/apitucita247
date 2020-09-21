@@ -141,7 +141,7 @@ def lambda_handler(event, context):
                     "COUNTRY": {"S": data['Country']},
                     "CATEGORYID": {"S": data['CategoryId']},
                     "EMAIL": {"S": data['Email']},
-                    "LONGDESCRIPTION": {"S": str(data['Description'])},
+                    "SHORTDESCRIPTION": {"S": str(data['Description'])},
                     # "FACEBOOK": {"S": data['Facebook']},
                     "GEOLOCATION": {"S": data['Geolocation']},
                     # "INSTAGRAM": {"S": data['Instagram']},
@@ -157,7 +157,7 @@ def lambda_handler(event, context):
                     "ZIPCODE": {"S": data['ZipCode']},
                     "STATUS": {"N": str(1)},
                     "PARENTBUSINESS": {"N": str(0)},
-                    "GSI1PK": {"S": 'PARENT#BUS'},
+                    "GSI1PK": {"S": 'BUS#CAT'},
                     "GSI1SK": {"S": str(data['CategoryId'])+'#'+businessId},
                     "GSI2PK": {"S": 'PLAN#' + data['Plan']},
                     "GSI2SK": {"S": 'BUS#' + businessId},
@@ -358,14 +358,14 @@ def lambda_handler(event, context):
             SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
             RECIPIENT = data['Email']
             SUBJECT = "Tu Cita 24/7 - Welcome Email"
-            BODY_TEXT = ("Your Cita 24/7 account is already created, click the link to activate it https://console.tucita247.com/en/verification/" + userId + "/0 your temp password is: " + passDecrypt)
+            BODY_TEXT = ("Your Cita 24/7 account is already created, click the link to activate it https://console.tucita247.com/en/verification/" + userId + "/0/"+passDecrypt+" ")
             
             # The HTML body of the email.
             BODY_HTML = """<html>
             <head></head>
             <body>
             <h1>Tu Cita 24/7</h1>
-            <p>Your Cita 24/7 account is already created, click the link to activate it <a href='https://console.tucita247.com/en/verification/""" + userId + """/0'>Click here</a> or copy and paste this link https://console.tucita247.com/en/verification/""" + userId + """/0 your temp password is: """ + passDecrypt + """</p>
+            <p>Your Cita 24/7 account is already created, click the link to activate it <a href='https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """'>Click here</a> or copy and paste this link https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """</p>
             </body>
             </html>"""
 

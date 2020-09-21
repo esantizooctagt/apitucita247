@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         if lastItem == '_':
             lastItem = ''
         else:
-          lastItem = {'PKID': {'S': 'BUS#'+lastItem.split('.')[0] },'SKID': {'S': 'METADATA'}, 'GSI1PK': {'S': 'PARENT#BUS'}, 'GSI1SK': {'S': 'CAT#'+categoryId+'#SUB#'+lastItem.split('.')[1]+'#'+lastItem.split('.')[0]}}
+          lastItem = {'PKID': {'S': 'BUS#'+lastItem.split('.')[0] },'SKID': {'S': 'METADATA'}, 'GSI1PK': {'S': 'BUS#CAT'}, 'GSI1SK': {'S': 'CAT#'+categoryId+'#SUB#'+lastItem.split('.')[1]+'#'+lastItem.split('.')[0]}}
 
         if businessId != '_' and categoryId == '_':
             response = dynamodb.query(
@@ -49,7 +49,7 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :categoryId)',
                     ExpressionAttributeValues={
-                        ':businessId': {'S': 'PARENT#BUS'},
+                        ':businessId': {'S': 'BUS#CAT'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId)}
                     }
                 )
@@ -61,7 +61,7 @@ def lambda_handler(event, context):
                     ExclusiveStartKey=lastItem,
                     KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :categoryId)',
                     ExpressionAttributeValues={
-                        ':businessId': {'S': 'PARENT#BUS'},
+                        ':businessId': {'S': 'BUS#CAT'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId)}
                     }
                 )
@@ -73,7 +73,7 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :categoryId)',
                     ExpressionAttributeValues={
-                        ':businessId': {'S': 'PARENT#BUS'},
+                        ':businessId': {'S': 'BUS#CAT'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId) + '#SUB#' + str(subcategoryId)}
                     }
                 )
@@ -85,7 +85,7 @@ def lambda_handler(event, context):
                     ExclusiveStartKey=lastItem,
                     KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :categoryId)',
                     ExpressionAttributeValues={
-                        ':businessId': {'S': 'PARENT#BUS'},
+                        ':businessId': {'S': 'BUS#CAT'},
                         ':categoryId': {'S': 'CAT#' + str(categoryId) + '#SUB#' + str(subcategoryId)}
                     }
                 )

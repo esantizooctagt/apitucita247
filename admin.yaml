@@ -90,3 +90,45 @@ Resources:
             Path: /business/admin
             Method: get
             ApiId: !Ref HttpApi
+
+GetUsersAdminFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetUsersAdmin
+      CodeUri: getUsersAdmin/
+      Handler: getUsersAdmin.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /users/{businessId}/{perPage}/{searchValue}/{lastItem}
+            Method: get
+            ApiId: !Ref HttpApi
+
+GetUserAdminFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetUserAdmin
+      CodeUri: getUserAdmin/
+      Handler: getUserAdmin.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /user/{id}/{businessId}
+            Method: get
+            ApiId: !Ref HttpApi

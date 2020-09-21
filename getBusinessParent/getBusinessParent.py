@@ -30,9 +30,9 @@ def lambda_handler(event, context):
     try:
         response = dynamodb.query(
             TableName="TuCita247",
-            IndexName="TuCita247_Index",
+            IndexName="TuCita247_Parent",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :business',
+            KeyConditionExpression='GSI7PK = :business',
             ExpressionAttributeValues={
                 ':business': {'S': 'PARENT#BUS'}
             }
@@ -50,10 +50,10 @@ def lambda_handler(event, context):
 
             response = dynamodb.query(
                 TableName="TuCita247",
-                IndexName="TuCita247_Index",
+                IndexName="TuCita247_Parent",
                 ExclusiveStartKey= lastItem,
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='GSI1PK = :business',
+                KeyConditionExpression='GSI7PK = :business',
                 ExpressionAttributeValues={
                     ':business': {'S': 'PARENT#BUS'}
                 }
