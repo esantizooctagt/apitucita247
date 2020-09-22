@@ -89,6 +89,7 @@ def lambda_handler(event, context):
                             "IS_ADMIN": {"N": "0"},
                             "ROLEID": {"S": data['RoleId']},
                             "USERID": {"S": userId },
+                            "SUPER_ADMIN": {"N": "0"},
                             "STATUS": {"N": "3"}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",

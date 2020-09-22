@@ -109,6 +109,7 @@ def lambda_handler(event, context):
                     "PHONE": {"S": data['User_Phone'] if data['User_Phone'] != '' else None},
                     "IS_ADMIN": {"N": str(1)},
                     "USERID": {"S": userId },
+                    "SUPER_ADMIN": {"N": str(0)},
                     "STATUS": {"N": "1"}
                 },
                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",

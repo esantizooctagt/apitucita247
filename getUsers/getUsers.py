@@ -36,12 +36,12 @@ def lambda_handler(event, context):
         if search == '_':
             search = ''
             e = {'#s': 'STATUS'}
-            a = {':businessId': {'S': 'BUS#' + businessId},':userId': {'S': 'USER#'},':stat' : {'N': '2'}}
-            f = '#s < :stat'
+            a = {':businessId': {'S': 'BUS#' + businessId}, ':userId': {'S': 'USER#'}, ':stat': {'N': '2'}, ':super':{'N': '0'}}
+            f = '#s < :stat and SUPER_ADMIN = :super'
         else:
             e = {'#s': 'STATUS','#n': 'FIRST_NAME'}
-            a = {':businessId': {'S': 'BUS#' + businessId},':userId': {'S': 'USER#'},':search': {'S': search}, ':stat' : {'N': '2'}}
-            f = '#s < :stat AND contains ( #n , :search )'
+            a = {':businessId': {'S': 'BUS#' + businessId}, ':userId': {'S': 'USER#'}, ':search': {'S': search}, ':stat': {'N': '2'}, ':super':{'N': '0'}}
+            f = '#s < :stat AND contains ( #n , :search ) and SUPER_ADMIN = :super'
             
         if lastItem == '_':
             lastItem = ''

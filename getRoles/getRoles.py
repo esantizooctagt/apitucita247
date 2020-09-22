@@ -14,7 +14,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -34,12 +34,12 @@ def lambda_handler(event, context):
         salir = 0
 
         e = {'#s': 'STATUS'}
-        a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':roles': {'S':'ROL#'}}
-        f = '#s < :stat'
+        # a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':roles': {'S':'ROL#'}, ':super': {'N': '0'}}
+        f = '#s < :stat and SUPER_ADMIN = :super'
         if search != '_':
             e = {'#s': 'STATUS', '#n': 'NAME'}
-            f = '#s < :stat and begins_with (#n , :search)'
-            a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':roles': {'S':'ROL#'}, ':search': {'S': search}}
+            f = '#s < :stat and begins_with (#n , :search) and SUPER_ADMIN = :super'
+            # a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':roles': {'S':'ROL#'}, ':search': {'S': search}, ':super': {'N': '0'}}
 
         if lastItem == '_':
             lastItem = ''
@@ -60,7 +60,8 @@ def lambda_handler(event, context):
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId},
                         ':role': {'S': 'ROL#'},
-                        ':stat' : {'N': '2'}
+                        ':stat' : {'N': '2'},
+                        ':super': {'N': '0'}
                     },
                     Limit=items
                 )
@@ -75,7 +76,8 @@ def lambda_handler(event, context):
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId},
                         ':role': {'S': 'ROL#'},
-                        ':stat' : {'N': '2'}
+                        ':stat' : {'N': '2'},
+                        ':super': {'N': '0'}
                     },
                     Limit=items
                 )

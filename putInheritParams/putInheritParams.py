@@ -17,7 +17,8 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
+dynamodbQuery = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
     
 def lambda_handler(event, context):
@@ -58,25 +59,74 @@ def lambda_handler(event, context):
                 )
         else:
             if providerId == '_':
-                response = table.update_item(
-                    Key={
-                        'PKID': 'BUS#' + businessId,
-                        'SKID': 'LOC#' + locationId
-                    },
-                    UpdateExpression="SET PARENTHOURS = :value",
-                    ExpressionAttributeValues={':value': value},
-                    ReturnValues="UPDATED_NEW"
-                )
+                if value == 0:
+                    response = table.update_item(
+                        Key={
+                            'PKID': 'BUS#' + businessId,
+                            'SKID': 'LOC#' + locationId
+                        },
+                        UpdateExpression="SET PARENTHOURS = :value",
+                        ExpressionAttributeValues={':value': value},
+                        ReturnValues="UPDATED_NEW"
+                    )
+                else:
+                    business = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': 'BUS#' + businessId},
+                            ':metadata': {"S": 'METADATA'}
+                        }
+                    )
+                    opeHours = ''
+                    for bus in json_dynamodb.loads(business['Items']):
+                        opeHours = bus['OPERATIONHOURS']
+
+                    response = table.update_item(
+                        Key={
+                            'PKID': 'BUS#' + businessId,
+                            'SKID': 'LOC#' + locationId
+                        },
+                        UpdateExpression="SET PARENTHOURS = :value, OPERATIONHOURS = :opeHours",
+                        ExpressionAttributeValues={':value': value, ':opeHours': opeHours},
+                        ReturnValues="UPDATED_NEW"
+                    )
             else:
-                response = table.update_item(
-                    Key={
-                        'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
-                        'SKID': 'PRO#' + providerId
-                    },
-                    UpdateExpression="SET PARENTHOURS = :value",
-                    ExpressionAttributeValues={':value': value},
-                    ReturnValues="UPDATED_NEW"
-                )
+                if value == 0:
+                    response = table.update_item(
+                        Key={
+                            'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
+                            'SKID': 'PRO#' + providerId
+                        },
+                        UpdateExpression="SET PARENTHOURS = :value",
+                        ExpressionAttributeValues={':value': value},
+                        ReturnValues="UPDATED_NEW"
+                    )
+                else:
+                    locs = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': 'BUS#' + businessId},
+                            ':metadata': {"S": 'LOC#' + locationId}
+                        }
+                    )
+                    opeHours = ''
+                    for loc in json_dynamodb.loads(locs['Items']):
+                        opeHours = loc['OPERATIONHOURS']
+
+                    response = table.update_item(
+                        Key={
+                            'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
+                            'SKID': 'PRO#' + providerId
+                        },
+                        UpdateExpression="SET PARENTHOURS = :value, OPERATIONHOURS = :opeHours",
+                        ExpressionAttributeValues={':value': value, ':opeHours': opeHours},
+                        ReturnValues="UPDATED_NEW"
+                    )
+                    
         statusCode = 200
         body = json.dumps({'Message': 'Update data successfully', 'Code': 200})
     except Exception as e:
