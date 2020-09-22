@@ -56,6 +56,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#'+data['BusinessId']},
                     "SKID": {"S": 'ROL#' + roleId },
                     "NAME": {"S": data['Name']},
+                    "SUPER_ADMIN": {"N": '1'},
                     "STATUS": {"N": "1"}
                 },
                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
