@@ -32,7 +32,7 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             IndexName="TuCita247_Parent",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI7PK = :business',
+            KeyConditionExpression='GSI8PK = :business',
             ExpressionAttributeValues={
                 ':business': {'S': 'PARENT#BUS'}
             }
@@ -53,7 +53,7 @@ def lambda_handler(event, context):
                 IndexName="TuCita247_Parent",
                 ExclusiveStartKey= lastItem,
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='GSI7PK = :business',
+                KeyConditionExpression='GSI8PK = :business',
                 ExpressionAttributeValues={
                     ':business': {'S': 'PARENT#BUS'}
                 }
