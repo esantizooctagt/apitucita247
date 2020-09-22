@@ -34,12 +34,19 @@ def lambda_handler(event, context):
         salir = 0
 
         e = {'#s': 'STATUS'}
-        a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':roles': {'S':'ROL#'}, ':super': {'N': '1'}}
+        a = {':businessId': {'S': 'BUS#' + businessId}, 
+             ':stat': {'N': '2'}, 
+             ':role': {'S':'ROL#'}, 
+             ':super': {'N': '1'}}
         f = '#s < :stat and SUPER_ADMIN = :super'
         if search != '_':
             e = {'#s': 'STATUS', '#n': 'NAME'}
             f = '#s < :stat and begins_with (#n , :search) and SUPER_ADMIN = :super'
-            a = {':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':roles': {'S':'ROL#'}, ':search': {'S': search}, ':super': {'N': '1'}}
+            a = {':businessId': {'S': 'BUS#' + businessId}, 
+                 ':stat': {'N': '2'}, 
+                 ':roles': {'S':'ROL#'}, 
+                 ':search': {'S': search},
+                 ':super': {'N': '1'}}
 
         if lastItem == '_':
             lastItem = ''
@@ -57,11 +64,7 @@ def lambda_handler(event, context):
                     KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :role )',
                     ExpressionAttributeNames=e,
                     FilterExpression=f,
-                    ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#' + businessId},
-                        ':role': {'S': 'ROL#'},
-                        ':stat' : {'N': '2'}
-                    },
+                    ExpressionAttributeValues=a,
                     Limit=items
                 )
             else:
@@ -72,11 +75,7 @@ def lambda_handler(event, context):
                     KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :role )',
                     ExpressionAttributeNames=e,
                     FilterExpression=f,
-                    ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#' + businessId},
-                        ':role': {'S': 'ROL#'},
-                        ':stat' : {'N': '2'}
-                    },
+                    ExpressionAttributeValues=a,
                     Limit=items
                 )
         recordset = {}
@@ -99,9 +98,9 @@ def lambda_handler(event, context):
 
         statusCode = 200
         body = json.dumps(resultSet)
-    except: #Exception as e:
+    except Exception as e:
         statusCode = 500
-        body = json.dumps({'Message': 'Error on request try again'})
+        body = json.dumps({'Message': 'Error on request try again ' + str(e)})
 
     response = {
         'statusCode' : statusCode,

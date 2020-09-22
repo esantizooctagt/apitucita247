@@ -36,7 +36,7 @@ def lambda_handler(event, context):
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
                 ':userId': {'S': 'USER#' + userId},
-                ':super': {'M': str(1)}
+                ':super': {'N': str(1)}
             }
         )
         recordset = ''
