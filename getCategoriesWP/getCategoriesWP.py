@@ -21,9 +21,13 @@ def lambda_handler(event, context):
     records =[]
     stage = event['headers']
     if stage['origin'] != "http://tucita247.local":
-        cors = os.environ['prodCors']
+        if stage['origin'] == "https://tucita247.com":
+            cors = os.environ['prodCors']
+        else:
+            cors = os.environ['prodWCors']
     else:
         cors = os.environ['devCors']
+    # cors = "*"
         
     try:
         language = event['pathParameters']['language']

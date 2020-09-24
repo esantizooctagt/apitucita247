@@ -11,6 +11,7 @@ Globals:
         Variables:
             devCors: "http://tucita247.local"
             prodCors: "https://tucita247.com"
+            prodWCors: "https://www.tucita247.com"
     VpcConfig:
       SecurityGroupIds: 
         - sg-04131f24
@@ -42,11 +43,12 @@ Resources:
           - DELETE
           - POST
         AllowOrigins:
-          - https://tucita247.local
           - https://tucita247.com
+          - https://tucita247.local
+          - https://www.tucita247.com
         AllowHeaders:
+          - origin
           - content-type
-          - authorization
         MaxAge: "10"
         AllowCredentials: True
 
