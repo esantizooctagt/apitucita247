@@ -169,7 +169,8 @@ def lambda_handler(event, context):
                         'Business_Name': business['NAME'],
                         'UsrCog': userNameCognito,
                         'User_Adm': '',
-                        'Email_Adm': ''
+                        'Email_Adm': '',
+                        'Role_Adm':  user['ROLE_ADMIN'] if 'ROLE_ADMIN' in user else ''
                     }
 
                     result = { 'Code': 100, 'user' : recordset, 'super_admin': superAdm, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"], 'refresh': resp["AuthenticationResult"]["RefreshToken"] }

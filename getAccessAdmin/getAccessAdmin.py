@@ -25,38 +25,28 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
-        userId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
+        roleId = event['pathParameters']['roleId']
 
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND SKID = :userId',
-            FilterExpression='SUPER_ADMIN = :super',
+            KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :access)',
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
-                ':userId': {'S': 'USER#' + userId},
-                ':super': {'N': str(1)}
+                ':access': {'S': 'ACCESS#' + roleId + '#'}
             }
         )
-        recordset = ''
+        access = []
         for row in response['Items']:
-            record = json_dynamodb.loads(row)
             recordset = {
-                'User_Id': record['USERID'],
-                'Email': record['GSI1PK'].replace('EMAIL#',''),
-                'First_Name': record['FIRST_NAME'],
-                'Last_Name': record['LAST_NAME'],
-                'Avatar': record['AVATAR'] if "AVATAR" in record else '',
-                'Phone': record['PHONE'],
-                'Business_Id': record['PKID'].replace('BUS#',''),
-                'Status': record['STATUS'],
-                'Role_Id': record['ROLE_ADMIN'],
-                'Language': '' if "LANGUAGE" not in record else record['LANGUAGE']
+                'AppId': row['SKID'].replace('ACCESS#' + roleId + '#', ''),
+                'Access': row['LEVEL_ACCESS'] 
             }
+            access.append(recordset)
+
         statusCode = 200
-        body = json.dumps(recordset)
-                    
+        body = json.dumps({'Code': 200, 'Access': access})                    
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again'})

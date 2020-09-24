@@ -37,7 +37,7 @@ def lambda_handler(event, context):
                 'PKID': 'BUS#' + businessId,
                 'SKID': 'USER#' + userId
             },
-            UpdateExpression="set FIRST_NAME = :firstName, LAST_NAME = :lastName, PHONE = :phone, ROLEID = :role, #s = :status",
+            UpdateExpression="set FIRST_NAME = :firstName, LAST_NAME = :lastName, PHONE = :phone, ROLE_ADMIN = :role, #s = :status",
             ExpressionAttributeNames=e,
             ExpressionAttributeValues={
                 ':firstName': data['First_Name'],
