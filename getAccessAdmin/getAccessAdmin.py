@@ -38,7 +38,7 @@ def lambda_handler(event, context):
             }
         )
         access = []
-        for row in response['Items']:
+        for row in json_dynamodb.loads(response['Items']):
             recordset = {
                 'AppId': row['SKID'].replace('ACCESS#' + roleId + '#', ''),
                 'Access': row['LEVEL_ACCESS'] 

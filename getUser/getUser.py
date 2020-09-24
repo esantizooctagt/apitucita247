@@ -14,7 +14,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -38,8 +38,7 @@ def lambda_handler(event, context):
             }
         )
         recordset = ''
-        for row in response['Items']:
-            record = json_dynamodb.loads(row)
+        for record in json_dynamodb.loads(response['Items']):
             recordset = {
                 'User_Id': record['USERID'],
                 'Email': record['GSI1PK'].replace('EMAIL#',''),

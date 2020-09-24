@@ -40,8 +40,7 @@ def lambda_handler(event, context):
             }
         )
         recordset = ''
-        for row in response['Items']:
-            record = json_dynamodb.loads(row)
+        for record in json_dynamodb.loads(response['Items']):
             recordset = {
                 'User_Id': record['USERID'],
                 'Email': record['GSI1PK'].replace('EMAIL#',''),
@@ -51,7 +50,7 @@ def lambda_handler(event, context):
                 'Phone': record['PHONE'],
                 'Business_Id': record['PKID'].replace('BUS#',''),
                 'Status': record['STATUS'],
-                'Role_Id': record['ROLE_ADMIN'],
+                'Role_Id': record['ROLE_ADMIN'] if 'ROLE_ADMIN' in record else '',
                 'Language': '' if "LANGUAGE" not in record else record['LANGUAGE']
             }
         statusCode = 200
