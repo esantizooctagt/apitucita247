@@ -70,7 +70,7 @@ def lambda_handler(event, context):
                         ReturnValues="UPDATED_NEW"
                     )
                 else:
-                    business = dynamodb.query(
+                    business = dynamodbQuery.query(
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
                         KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
@@ -104,7 +104,7 @@ def lambda_handler(event, context):
                         ReturnValues="UPDATED_NEW"
                     )
                 else:
-                    locs = dynamodb.query(
+                    locs = dynamodbQuery.query(
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
                         KeyConditionExpression='PKID = :businessId AND SKID = :metadata',

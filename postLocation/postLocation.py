@@ -113,8 +113,6 @@ def lambda_handler(event, context):
                         ":geolocation": {"S": str(data['Geolocation'])},
                         ":parentLocation": {"S": str(data['ParentLocation'])},
                         ":maxCustomer": {"N": str(data['MaxConcurrentCustomer'])},
-                        ":bucketInterval": {"N": str(data['BucketInterval'])},
-                        ":customerPerBucket": {"N": str(data['TotalCustPerBucketInter'])},
                         ":manualCheckOut": {"N": str(data['ManualCheckOut'])},
                         ":doors": {"S": str(data['Doors'])},
                         ":status": {"N": str(data['Status'])}
@@ -137,8 +135,8 @@ def lambda_handler(event, context):
                     ":search": {"S": "SEARCH"}
                 },
                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-            }
+                "ReturnValuesOnConditionCheckFailure": "NONE"
+            },
         }
         items.append(cleanNullTerms(business))
 

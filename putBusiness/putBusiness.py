@@ -144,7 +144,7 @@ def lambda_handler(event, context):
                     ":key1": {"S": "BUS#CAT"},
                     ":skey1": {"S": data['CategoryId'] + "#" + businessId},
                     ":key2": {"S": "PARENT#BUS" if parentBusiness == 1 else None},
-                    ":skey2": {"S": "BUS#" + businessId},
+                    ":skey2": {"S": "BUS#" + businessId if parentBusiness == 1 else None},
                     ":zipcode": {"S": data['ZipCode']},
                     ":search": {"S": "SEARCH"}
                 },

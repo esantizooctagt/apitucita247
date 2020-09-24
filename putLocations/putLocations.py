@@ -79,8 +79,8 @@ def lambda_handler(event, context):
                             ":geolocation": {"S": str(locs['Geolocation'])},
                             ":parentLocation": {"S": str(locs['ParentLocation'])},
                             ":maxCustomer": {"N": str(locs['MaxConcurrentCustomer'])},
-                            ":bucketInterval": {"N": str(locs['BucketInterval'])},
-                            ":customerPerBucket": {"N": str(locs['TotalCustPerBucketInter'])},
+                            # ":bucketInterval": {"N": str(locs['BucketInterval'])},
+                            # ":customerPerBucket": {"N": str(locs['TotalCustPerBucketInter'])},
                             ":manualCheckOut": {"N": str(locs['ManualCheckOut'])},
                             ":doors": {"S": str(locs['Doors'])},
                             ":status": {"N": str(locs['Status'])}
