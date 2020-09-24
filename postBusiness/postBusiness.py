@@ -324,7 +324,6 @@ def lambda_handler(event, context):
             TransactItems = items
         )
         logger.info(response)
-
         try:
             passDecrypt = get_random_string()
             logger.info(passDecrypt)

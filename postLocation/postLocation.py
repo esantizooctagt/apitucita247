@@ -94,8 +94,6 @@ def lambda_handler(event, context):
                 },
             }
         else:
-            # CUSTOMER_PER_BUCKET = :customerPerBucket, 
-            # BUCKET_INTERVAL = :bucketInterval, 
             locationId = data['LocationId']
             recordset = {
                 "Update": {
