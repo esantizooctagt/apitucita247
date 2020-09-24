@@ -75,12 +75,11 @@ def lambda_handler(event, context):
                         "NAME": {"S": str(data['Name'])},
                         "CITY": {"S": str(data['City'])},
                         "ADDRESS": {"S": str(data['Address'])},
+                        "ZIPCODE": {"S": data['ZipCode']},
                         "SECTOR": {"S": str(data['Sector'])},
                         "GEOLOCATION": {"S": str(data['Geolocation'])},
                         "PARENT_LOCATION": {"S": str(data['ParentLocation'])},
                         "MAX_CUSTOMER": {"N": str(data['MaxConcurrentCustomer'])},
-                        # "BUCKET_INTERVAL": {"N": str(data['BucketInterval'])},
-                        # "CUSTOMER_PER_BUCKET": {"N": str(data['TotalCustPerBucketInter'])},
                         "MANUAL_CHECK_OUT": {"N": str(data['ManualCheckOut'])},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
@@ -105,13 +104,14 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'BUS#' + data['BusinessId']},
                         "SKID": {"S": 'LOC#' + locationId}
                     },
-                    "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, DOORS = :doors, #s = :status, MANUAL_CHECK_OUT = :manualCheckOut",
+                    "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, ZIPCODE = :zipcode, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, DOORS = :doors, #s = :status, MANUAL_CHECK_OUT = :manualCheckOut",
                     "ExpressionAttributeNames": {"#n":"NAME", "#s":"STATUS"},
                     "ExpressionAttributeValues": {
                         ":name": {"S": str(data['Name'])},
                         ":city": {"S": str(data['City'])},
                         ":sector": {"S": str(data['Sector'])},
                         ":address": {"S": str(data['Address'])},
+                        ":zipcode": {"S": str(data['ZipCode'])},
                         ":geolocation": {"S": str(data['Geolocation'])},
                         ":parentLocation": {"S": str(data['ParentLocation'])},
                         ":maxCustomer": {"N": str(data['MaxConcurrentCustomer'])},
@@ -127,6 +127,23 @@ def lambda_handler(event, context):
             }
         items.append(cleanNullTerms(recordset))
         
+        business = {
+            "Update":{
+                "TableName":"TuCita247",
+                "Key":{
+                    "PKID": {"S": 'BUS#'+data['BusinessId']},
+                    "SKID": {"S": 'METADATA'}
+                },
+                "UpdateExpression": "SET GSI4PK = :search, GSI4PK = :search",
+                "ExpressionAttributeValues": {
+                    ":search": {"S": "SEARCH"}
+                },
+                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+            }
+        }
+        items.append(cleanNullTerms(business))
+
         logger.info(items)
         response = dynamodb.transact_write_items(
             TransactItems = items

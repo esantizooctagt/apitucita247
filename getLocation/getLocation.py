@@ -63,6 +63,7 @@ def lambda_handler(event, context):
                 'Name': row['NAME'] if 'NAME' in row else '',
                 'Address': row['ADDRESS'] if 'ADDRESS' in row else '',
                 'City': row['CITY'] if 'CITY' in row else '',
+                'ZipCode': row['ZIPCODE'] if 'ZIPCODE' in row else '',
                 'Sector': row['SECTOR'] if 'SECTOR' in row else '0',
                 'Geolocation': row['GEOLOCATION'] if 'GEOLOCATION' in row else '',
                 'ParentLocation': row['PARENT_LOCATION'] if 'PARENT_LOCATION' in row else '',

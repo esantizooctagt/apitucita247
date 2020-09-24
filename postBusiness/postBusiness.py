@@ -218,6 +218,7 @@ def lambda_handler(event, context):
                         "CITY": {"S": str(item['City'])},
                         "SECTOR": {"S": str(item['Sector'])},
                         "ADDRESS": {"S": str(item['Address'])},
+                        "ZIPCODE": {"S": data['ZipCode']},
                         "DOORS": {"S": 'MAIN DOOR'},
                         "GEOLOCATION": {"S": str(item['Geolocation'])},
                         "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
