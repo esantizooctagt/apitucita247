@@ -70,6 +70,9 @@ def lambda_handler(event, context):
                 'Phone': row['PHONE'] if 'PHONE' else '',
                 'ShortDescript': row['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' else '',
                 'WebSite': row['WEBSITE'] if 'WEBSITE' else '',
+                'Instagram': row['INSTAGRAM'] if 'INSTAGRAM' else '',
+                'Twitter': row['TWITTER'] if 'TWITTER' else '',
+                'Facebook': row['FACEBOOK'] if 'FACEBOOK' else '',
                 'Locs': locs
             }
             
