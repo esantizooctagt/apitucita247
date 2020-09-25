@@ -32,8 +32,8 @@ def lambda_handler(event, context):
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         providerId = event['pathParameters']['providerId']
-        value = event['pathParameters']['value']
-        tipo = event['pathParameters']['tipo']
+        value = int(event['pathParameters']['value'])
+        tipo = int(event['pathParameters']['tipo'])
 
         table = dynamodb.Table('TuCita247')
         if tipo == 1:

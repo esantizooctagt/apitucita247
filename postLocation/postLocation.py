@@ -130,7 +130,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#'+data['BusinessId']},
                     "SKID": {"S": 'METADATA'}
                 },
-                "UpdateExpression": "SET GSI4PK = :search, GSI4PK = :search",
+                "UpdateExpression": "SET GSI4PK = :search, GSI4SK = :search",
                 "ExpressionAttributeValues": {
                     ":search": {"S": "SEARCH"}
                 },
