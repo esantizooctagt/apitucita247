@@ -65,14 +65,14 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME'],
-                'Imagen': row['IMGLINK'] if 'IMGLINK' else '',
-                'LongDescrip': row['LONGDESCRIPTION'] if 'LONGDESCRIPTION' else '',
-                'Phone': row['PHONE'] if 'PHONE' else '',
-                'ShortDescript': row['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' else '',
-                'WebSite': row['WEBSITE'] if 'WEBSITE' else '',
-                'Instagram': row['INSTAGRAM'] if 'INSTAGRAM' else '',
-                'Twitter': row['TWITTER'] if 'TWITTER' else '',
-                'Facebook': row['FACEBOOK'] if 'FACEBOOK' else '',
+                'Imagen': row['IMGLINK'] if 'IMGLINK' in row else '',
+                'LongDescrip': row['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in row else '',
+                'Phone': row['PHONE'] if 'PHONE' in row else '',
+                'ShortDescript': row['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in row else '',
+                'WebSite': row['WEBSITE'] if 'WEBSITE' in row else '',
+                'Instagram': row['INSTAGRAM'] if 'INSTAGRAM' in row else '',
+                'Twitter': row['TWITTER'] if 'TWITTER' in row else '',
+                'Facebook': row['FACEBOOK'] if 'FACEBOOK' in row else '',
                 'Locs': locs
             }
             
