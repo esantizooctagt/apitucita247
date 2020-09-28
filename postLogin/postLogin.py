@@ -158,13 +158,19 @@ def lambda_handler(event, context):
                 business, error = getBusiness(user['PKID'].replace('BUS#',''))
                 if business != None:
                     superAdm = int(user['SUPER_ADMIN']) if 'SUPER_ADMIN' in user else 0
+                    isAdmin = ''
+                    isAdminVal = ''
+                    if 'IS_ADMIN' in user:
+                        isAdmin = '' if int(user['IS_ADMIN']) == 1 else user['ROLEID']
+                        isAdminVal = int(user['IS_ADMIN']) if 'IS_ADMIN' in user else ''
+                    
                     recordset = {
                         'User_Id': user['USERID'],
                         'Email': user['GSI1PK'].replace('EMAIL#',''),
-                        'Is_Admin': int(user['IS_ADMIN']) if 'IS_ADMIN' in user else '',
+                        'Is_Admin': isAdminVal,
                         'Business_Id': user['PKID'].replace('BUS#',''),
                         'Avatar': user['AVATAR'] if 'AVATAR' in user else '',
-                        'Role_Id': '' if int(user['IS_ADMIN']) == 1 and 'IS_ADMIN' in user else user['ROLEID'] if 'ROLEID' in user else '',
+                        'Role_Id': isAdmin,
                         'Language': user['LANGUAGE'] if 'LANGUAGE' in user else '',
                         'Business_Name': business['NAME'],
                         'UsrCog': userNameCognito,

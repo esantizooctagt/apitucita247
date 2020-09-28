@@ -350,6 +350,10 @@ def lambda_handler(event, context):
                     {   
                         'Name': 'custom:isAdmin',
                         'Value': '1'
+                    },
+                    {
+                        'Name': 'email_verified',
+                        'Value': 'True'
                     }
                 ]
             )

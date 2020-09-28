@@ -42,7 +42,7 @@ def lambda_handler(event, context):
                 Username=email,
             )
             statusCode = 200
-            body = json.dumps({'Message': 'Email send successfully'})
+            body = json.dumps({'Message': 'Email send successfully', 'Code': 200})
 
         except client.exceptions.UserNotFoundException:
             statusCode = 404
@@ -62,7 +62,7 @@ def lambda_handler(event, context):
 
     except Exception as e:
         statusCode = 500
-        body = json.dumps({'Message': 'Error on request try again ' + str(e)})
+        body = json.dumps({'Code': 500, 'Message': 'Error on request try again ' + str(e)})
 
     response = {
         'statusCode' : statusCode,
