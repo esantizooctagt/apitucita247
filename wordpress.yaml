@@ -52,7 +52,7 @@ Resources:
         MaxAge: "10"
         AllowCredentials: True
 
-  GetCategoriesWPFilterFunction:
+  GetCategoriesWPFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: GetCategoriesWP
