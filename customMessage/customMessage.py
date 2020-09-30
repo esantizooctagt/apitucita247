@@ -13,7 +13,7 @@ def lambda_handler(event, context):
         userId = event['request']['userAttributes']['custom:userId']
         code = event['request']['codeParameter']
         event['response']['emailSubject'] = "Welcome to Tu Cita 24/7";
-        event['response']['emailMessage'] = "Thank you for signing up. click here https://console.tucita247.com/en/verification/" + userId + "/" + code + " to activate your account.";
+        event['response']['emailMessage'] = "Thank you for signing up. Copy and paste this link https://console.tucita247.com/en/verification/" + userId + "/" + code + " or <a href='https://console.tucita247.com/en/verification/" + userId + "/" + code + "'>Click here</a> to activate your account.";
     if event['triggerSource'] == 'CustomMessage_ResendCode':
         userId = event['request']['userAttributes']['custom:userId']
         code = event['request']['codeParameter']
