@@ -35,6 +35,21 @@ def lambda_handler(event, context):
         recordset = {}
         records = []
         for row in json_dynamodb.loads(locations['Items']):
+            cityData = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :country AND SKID = :city',
+                ExpressionAttributeValues={
+                    ':country': {'S': 'COUNTRY#PRI'},
+                    ':city': {'S': 'CITY#'+ row['CITY']}
+                }
+            )
+            cityESP = ''
+            cityENG = ''
+            for item in json_dynamodb.loads(cityData['Items']):
+                cityESP = item['NAME_ESP']
+                cityENG = item['NAME_ENG']
+
             recordset = {
                 'BusinessId': row['PKID'].replace('BUS#',''),
                 'LocationId': row['SKID'].replace('LOC#',''),
@@ -42,7 +57,9 @@ def lambda_handler(event, context):
                 'Address': row['ADDRESS'] if 'ADDRESS' in row else '',
                 'Geolocation': row['GEOLOCATION'] if 'GEOLOCATION' in row else '',
                 'Status': row['STATUS'] if 'STATUS' in row else 0,
-                'Door': row['DOORS'] if 'DOORS' in row else ''
+                'Door': row['DOORS'] if 'DOORS' in row else '',
+                'City_ENG': cityENG,
+                'City_ESP': cityESP
             }
             records.append(recordset)
         

@@ -22,7 +22,7 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):    
     try:
-        today = datetime.datetime.now()-datetime.timedelta(hours=0,minutes=30)
+        today = datetime.datetime.now()-datetime.timedelta(hours=0,minutes=5)
         currTime = today.strftime("%Y-%m-%d-%H-%M-%S")
 
         details = dynamodb.query(

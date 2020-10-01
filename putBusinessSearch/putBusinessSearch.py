@@ -27,13 +27,6 @@ search = boto3.client('cloudsearchdomain', endpoint_url="https://search-tucita24
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
-    stage = event['headers']
-
-    if stage['origin'] != "http://localhost:4200":
-        cors = os.environ['prodCors']
-    else:
-        cors = os.environ['devCors']
-    
     try:
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
@@ -119,7 +112,7 @@ def lambda_handler(event, context):
         'statusCode' : statusCode,
         'headers' : {
             "content-type" : "application/json",
-            "access-control-allow-origin" : cors
+            "access-control-allow-origin" : "*"
         },
         'body' : body
     }
