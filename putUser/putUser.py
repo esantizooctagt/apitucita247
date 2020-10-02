@@ -14,7 +14,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -37,13 +37,14 @@ def lambda_handler(event, context):
                 'PKID': 'BUS#' + businessId,
                 'SKID': 'USER#' + userId
             },
-            UpdateExpression="set FIRST_NAME = :firstName, LAST_NAME = :lastName, PHONE = :phone, ROLEID = :role, #s = :status",
+            UpdateExpression="set FIRST_NAME = :firstName, LAST_NAME = :lastName, PHONE = :phone, ROLEID = :role, LOCATIONID = :locationId, #s = :status",
             ExpressionAttributeNames=e,
             ExpressionAttributeValues={
                 ':firstName': data['First_Name'],
                 ':lastName': data['Last_Name'],
                 ':phone': data['Phone'].replace('(','').replace(')','').replace('-','').replace(' ',''),
                 ':role': data['RoleId'],
+                ':locationId': data['LocationId'],
                 ':status': data['Status']
             }
             # ReturnValues="UPDATED_NEW"

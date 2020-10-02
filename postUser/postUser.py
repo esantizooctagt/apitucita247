@@ -24,7 +24,7 @@ secreKey = 'K968G66S4dC1Y5tNA5zKGT5KIjeMcpc8'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def get_secret_hash(username):
@@ -88,6 +88,7 @@ def lambda_handler(event, context):
                             "PHONE": {"S": data['Phone'].replace('(','').replace(')','').replace('-','').replace(' ','')},
                             "IS_ADMIN": {"N": "0"},
                             "ROLEID": {"S": data['RoleId']},
+                            "LOCATIONID": {"S": data['LocationId']},
                             "USERID": {"S": userId },
                             "SUPER_ADMIN": {"N": "0"},
                             "STATUS": {"N": "3"}

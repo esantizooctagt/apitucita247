@@ -30,6 +30,7 @@ def lambda_handler(event, context):
 
     try:
         businessId = event['pathParameters']['id']
+        language = event['pathParameters']['language']
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -41,24 +42,38 @@ def lambda_handler(event, context):
         )
         itemsbusiness = json_dynamodb.loads(response['Items'])
        
-        # response = dynamodb.query(
-        #     TableName="TuCita247",
-        #     ReturnConsumedCapacity='TOTAL',
-        #     KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :category )',
-        #     ExpressionAttributeValues={
-        #         ':businessId': {'S': 'BUS#' + businessId},
-        #         ':category': {'S': 'CAT#'}
-        #     }
-        # )
-        # items = json_dynamodb.loads(response['Items'])
-        # records = []
-        # recordset1 = {}
-        # for row in items:
-        #     recordset1 = {
-        #         'CategoryId': row['SKID'].replace('CAT#',''),
-        #         'Name': row['NAME']
-        #     } 
-        #     records.append(recordset1)
+        response = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :category )',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':category': {'S': 'CAT#'}
+            }
+        )
+        items = json_dynamodb.loads(response['Items'])
+        records = []
+        recordset1 = {}
+        for row in items:
+            dataCat = row['GSI1SK'].split('#')
+            catName = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :cat AND SKID = :sub',
+                ExpressionAttributeValues={
+                    ':cat': {'S': 'CAT#' + dataCat[1]},
+                    ':sub': {'S': 'CAT#' + dataCat[1] if len(dataCat) <= 3 else 'SUB#'+dataCat[3]}
+                }
+            )
+            nameCatego = ''
+            for name in json_dynamodb.loads(catName['Items']):
+                nameCatego = name['NAME_ENG'] if language == 'EN' else name['NAME_ESP']
+
+            recordset1 = {
+                'CategoryId': 'CAT#' + dataCat[1] if len(dataCat) <= 3 else 'CAT#' + dataCat[1] + '#SUB#'+dataCat[3],
+                'Name': nameCatego
+            } 
+            records.append(recordset1)
         
         recordset = {}
         for row in itemsbusiness:
@@ -81,7 +96,7 @@ def lambda_handler(event, context):
                 'Instagram': row['INSTAGRAM'] if 'INSTAGRAM' in row else '',
                 'Email': row['EMAIL'] if 'EMAIL' in row else '',
                 'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else '',
-                'CategoryId': row['CATEGORYID'],
+                'Categories': records,
                 'Tags': row['TAGS'] if 'TAGS' in row else '',
                 'Reasons': row['REASONS'] if 'REASONS' in row else '',
                 'ApposPurpose': row['APPOINTMENTS_PURPOSE'] if 'APPOINTMENTS_PURPOSE' in row else '',

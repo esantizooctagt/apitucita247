@@ -94,6 +94,7 @@ def lambda_handler(event, context):
             cityName = city['NAME_ENG']
 
         items = []
+        locationId = str(uuid.uuid4()).replace("-","")
         rows = {
             "Put": {
                 "TableName": "TuCita247",
@@ -109,6 +110,8 @@ def lambda_handler(event, context):
                     "PHONE": {"S": data['User_Phone'] if data['User_Phone'] != '' else None},
                     "IS_ADMIN": {"N": str(1)},
                     "USERID": {"S": userId },
+                    "LOCATIONID": {"S": locationId },
+                    "DOOR": {"S": 'MAIN DOOR'},
                     "SUPER_ADMIN": {"N": str(0)},
                     "STATUS": {"N": "1"}
                 },
@@ -135,12 +138,30 @@ def lambda_handler(event, context):
             "Put": {
                 "TableName": "TuCita247",
                 "Item": {
+                    "PKID": {"S": 'BUS#'+businessId},
+                    "SKID": {"S": data['CategoryId']},
+                    "GSI1PK": {"S": 'BUS#CAT'},
+                    "GSI1SK": {"S": data['CategoryId']+'#'+businessId},
+                    # "GSI1PK": {"S": 'CAT#'+row['CategoryId'].split('#')[0]},
+                    # "GSI1SK": {"S": 'SUB#'+row['CategoryId'].split('#')[1]},
+                    # "NAME": {"S": str(row['Name'])}
+                },
+                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+            }
+        }
+        items.append(cleanNullTerms(rows))
+
+        rows = {
+            "Put": {
+                "TableName": "TuCita247",
+                "Item": {
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA'},
                     "ADDRESS": {"S": data['Address']},
                     "CITY": {"S": cityName},
                     "COUNTRY": {"S": data['Country']},
-                    "CATEGORYID": {"S": data['CategoryId']},
+                    # "CATEGORYID": {"S": data['CategoryId']},
                     "EMAIL": {"S": data['Email']},
                     "SHORTDESCRIPTION": {"S": str(data['Description'])},
                     # "FACEBOOK": {"S": data['Facebook']},
@@ -207,7 +228,6 @@ def lambda_handler(event, context):
         items.append(cleanNullTerms(rows))
 
         for item in data['Locations']:
-            locationId = str(uuid.uuid4()).replace("-","")
             locations = {
                 "Put":{
                     "TableName":"TuCita247",

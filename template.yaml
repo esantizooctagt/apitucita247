@@ -456,7 +456,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/{id}
+            Path: /business/{id}/{language}
             Method: get
             ApiId: !Ref HttpApi
         
