@@ -17,6 +17,13 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def findBusiness(business, businessId):
+    for item in business:
+        if item['Business_Id'] == businessId:
+            return 1
+    item = 0
+    return item
+
 def lambda_handler(event, context):
     try:
         categoryId = event['pathParameters']['categoryId']
@@ -108,17 +115,30 @@ def lambda_handler(event, context):
             number = 0
             for item in json_dynamodb.loads(locsNumber['Items']):
                 number = number + 1
-            recordset = {
-                'Business_Id': row['PKID'].replace('BUS#',''),
-                'Name': row['NAME'],
-                'LongDescription': row['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in row else '',
-                'ShortDescription': row['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in row else '',
-                'Imagen': row['IMGBUSINESS'] if 'IMGBUSINESS' in row else '',
-                'Location_No': number,
-                'Categories': records,
-                'Status': row['STATUS']
-            }
-            business.append(recordset)
+
+            existe = findBusiness(business, row['PKID'].replace('BUS#',''))
+            if existe == 0:
+                bus = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': row['PKID']},
+                        ':metadata': {'S': 'METADATA'}
+                    }
+                )
+                for item in json_dynamodb.loads(bus['Items']):
+                    recordset = {
+                        'Business_Id': item['PKID'].replace('BUS#',''),
+                        'Name': item['NAME'],
+                        'LongDescription': item['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in item else '',
+                        'ShortDescription': item['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in item else '',
+                        'Imagen': item['IMGBUSINESS'] if 'IMGBUSINESS' in item else '',
+                        'Location_No': number,
+                        'Categories': records,
+                        'Status': item['STATUS']
+                    }
+                    business.append(recordset)
         
         if 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])

@@ -14,7 +14,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -54,7 +54,7 @@ def lambda_handler(event, context):
         items = []
         for row in json_dynamodb.loads(response['Items']):
             encontro = 0
-            for cat in data['Categories']:
+            for cat in  json.loads(data['Categories']):
                 if cat['CategoryId'] == row['SKID']:
                     encontro =1
                     break
@@ -72,7 +72,7 @@ def lambda_handler(event, context):
                 }
                 items.append(deletes)
 
-        for row in data['Categories']:
+        for row in json.loads(data['Categories']):
             encontro = 0
             for catego in json_dynamodb.loads(response['Items']):
                 if (catego['SKID'] == row['CategoryId']):
@@ -121,7 +121,8 @@ def lambda_handler(event, context):
                     "SKID": {"S": 'METADATA' }
                 },
                 # CATEGORYID = :categoryId, 
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, REASONS = :reasons, GSI4PK = :search, GSI4SK = :search, GSI1PK = :key1, GSI1SK = :skey1" + (", GSI8PK = :key2, GSI8SK = :skey2" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
+                # , GSI1PK = :key1, GSI1SK = :skey1
+                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, REASONS = :reasons, GSI4PK = :search, GSI4SK = :search" + (", GSI8PK = :key2, GSI8SK = :skey2" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
                 "ExpressionAttributeNames": { '#n': 'NAME' },
                 "ExpressionAttributeValues": { 
                     ":longDescrip": {"S": data['LongDescription']},
@@ -142,8 +143,8 @@ def lambda_handler(event, context):
                     ":reasons": {"S": data['Reasons']},
                     ":tucitalink": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
                     # ":categoryId": {"S": data['CategoryId']},
-                    ":key1": {"S": "BUS#CAT"},
-                    ":skey1": {"S": data['CategoryId'] + "#" + businessId},
+                    # ":key1": {"S": "BUS#CAT"},
+                    # ":skey1": {"S": data['CategoryId'] + "#" + businessId},
                     ":key2": {"S": "PARENT#BUS" if parentBusiness == 1 else None},
                     ":skey2": {"S": "BUS#" + businessId if parentBusiness == 1 else None},
                     ":zipcode": {"S": data['ZipCode']},
