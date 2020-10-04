@@ -119,7 +119,6 @@ def lambda_handler(event, context):
                     },
                     Limit=10
                 )
-
         record = []
         recordset = {}
         for row in json_dynamodb.loads(response['Items']):

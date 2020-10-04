@@ -23,7 +23,8 @@ from Crypto.Cipher import AES
 from hashlib import md5
 
 import os
-#REGION = 'us-east-1'
+
+REGION = 'us-east-1'
 
 secreKey = 'K968G66S4dC1Y5tNA5zKGT5KIjeMcpc8'
 AUTH_KEY = 'INQXG2DJMVZDER3PJ5BVIQKHKQZDAMRQ'
@@ -31,7 +32,11 @@ AUTH_KEY = 'INQXG2DJMVZDER3PJ5BVIQKHKQZDAMRQ'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+cognitoId = os.environ['cognitoId']
+cognitoClientId = os.environ['cognitoClientId']
+cognitoSecret = os.environ['cognitoSecret']
+
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def default(self, o):
@@ -43,8 +48,8 @@ def default(self, o):
     return super(DecimalEncoder, self).default(o)
         
 def get_secret_hash(username):
-    msg = username + '52k0o8239mueu31uu5fihccbbf'
-    dig = hmac.new(str('1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt').encode('utf-8'), 
+    msg = username + cognitoClientId
+    dig = hmac.new(str(cognitoSecret).encode('utf-8'), 
         msg = str(msg).encode('utf-8'), digestmod=hashlib.sha256).digest()
     d2 = base64.b64encode(dig).decode()
     return d2
@@ -55,8 +60,8 @@ def initiate_auth(client, username, password):
         error = ''
         auth = ''
         resp = client.admin_initiate_auth(
-                UserPoolId = 'us-east-1_gXhBD4bsG',
-                ClientId = '52k0o8239mueu31uu5fihccbbf',
+                UserPoolId = cognitoId,
+                ClientId = cognitoClientId,
                 AuthFlow = 'ADMIN_NO_SRP_AUTH',
                 AuthParameters = {
                     'USERNAME': username,
@@ -176,7 +181,8 @@ def lambda_handler(event, context):
                         'UsrCog': userNameCognito,
                         'User_Adm': '',
                         'Email_Adm': '',
-                        'Role_Adm':  user['ROLE_ADMIN'] if 'ROLE_ADMIN' in user else ''
+                        'Role_Adm':  user['ROLE_ADMIN'] if 'ROLE_ADMIN' in user else '',
+                        'Business_Adm': user['PKID'].replace('BUS#','') if 'ROLE_ADMIN' in user else ''
                     }
 
                     result = { 'Code': 100, 'user' : recordset, 'super_admin': superAdm, 'token' : resp["AuthenticationResult"]["IdToken"], 'access': resp["AuthenticationResult"]["AccessToken"], 'refresh': resp["AuthenticationResult"]["RefreshToken"] }

@@ -24,13 +24,17 @@ secreKey = 'K968G66S4dC1Y5tNA5zKGT5KIjeMcpc8'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-dynamodbTable = boto3.client('dynamodb', region_name='us-east-1')
+cognitoId = os.environ['cognitoId']
+cognitoClientId = os.environ['cognitoClientId']
+cognitoSecret = os.environ['cognitoSecret']
+
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
+dynamodbTable = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def get_secret_hash(username):
-    msg = username + '52k0o8239mueu31uu5fihccbbf'
-    dig = hmac.new(str('1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt').encode('utf-8'),
+    msg = username + cognitoClientId
+    dig = hmac.new(str(cognitoSecret).encode('utf-8'),
         msg = str(msg).encode('utf-8'), digestmod=hashlib.sha256).digest()
     d2 = base64.b64encode(dig).decode()
     return d2
@@ -97,7 +101,7 @@ def lambda_handler(event, context):
                 try:
                     client = boto3.client('cognito-idp')
                     response = client.confirm_sign_up(
-                                    ClientId='52k0o8239mueu31uu5fihccbbf',
+                                    ClientId=cognitoClientId,
                                     SecretHash=get_secret_hash(email),
                                     Username= email,
                                     ConfirmationCode=code,
@@ -105,7 +109,7 @@ def lambda_handler(event, context):
                                 )
                     
                     resp = client.admin_set_user_password(
-                                    UserPoolId='us-east-1_gXhBD4bsG',
+                                    UserPoolId=cognitoId,
                                     Username=email,
                                     Password=password,
                                     Permanent=True
@@ -148,7 +152,7 @@ def lambda_handler(event, context):
             try:
                 client = boto3.client('cognito-idp')
                 response = client.resend_confirmation_code(
-                    ClientId='52k0o8239mueu31uu5fihccbbf',
+                    ClientId=cognitoClientId,
                     SecretHash=get_secret_hash(email),
                     Username=email
                 )
