@@ -25,6 +25,10 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+cognitoId = os.environ['cognitoId']
+cognitoClientId = os.environ['cognitoClientId']
+cognitoSecret = os.environ['cognitoSecret']
+
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 ses = boto3.client('ses',region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
@@ -41,8 +45,8 @@ def cleanNullTerms(d):
    return clean
 
 def get_secret_hash(username):
-    msg = username + '52k0o8239mueu31uu5fihccbbf'
-    dig = hmac.new(str('1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt').encode('utf-8'), 
+    msg = username + cognitoClientId
+    dig = hmac.new(str(cognitoSecret).encode('utf-8'), 
         msg = str(msg).encode('utf-8'), digestmod=hashlib.sha256).digest()
     d2 = base64.b64encode(dig).decode()
     return d2
@@ -350,7 +354,7 @@ def lambda_handler(event, context):
             
             client = boto3.client('cognito-idp')
             response = client.admin_create_user(
-                UserPoolId='us-east-1_gXhBD4bsG',
+                UserPoolId=cognitoId,
                 Username=data['Email'],
                 TemporaryPassword=passDecrypt,
                 MessageAction='SUPPRESS',

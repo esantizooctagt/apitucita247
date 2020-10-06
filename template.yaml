@@ -118,6 +118,11 @@ Resources:
       CodeUri: postForgotPassword/
       Handler: postForgotPassword.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Environment:
+        Variables:
+          cognitoId: "us-east-1_gXhBD4bsG"
+          cognitoClientId: "52k0o8239mueu31uu5fihccbbf"
+          cognitoSecret: "1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt"
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
@@ -137,6 +142,11 @@ Resources:
       CodeUri: putResetPassword/
       Handler: putResetPassword.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Environment:
+        Variables:
+          cognitoId: "us-east-1_gXhBD4bsG"
+          cognitoClientId: "52k0o8239mueu31uu5fihccbbf"
+          cognitoSecret: "1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt"
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
@@ -345,6 +355,11 @@ Resources:
       CodeUri: postUser/
       Handler: postUser.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Environment:
+        Variables:
+          cognitoId: "us-east-1_gXhBD4bsG"
+          cognitoClientId: "52k0o8239mueu31uu5fihccbbf"
+          cognitoSecret: "1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt"
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
@@ -1451,6 +1466,11 @@ Resources:
       CodeUri: putRefreshToken/
       Handler: putRefreshToken.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Environment:
+        Variables:
+          cognitoId: "us-east-1_gXhBD4bsG"
+          cognitoClientId: "52k0o8239mueu31uu5fihccbbf"
+          cognitoSecret: "1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt"
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
@@ -1492,6 +1512,11 @@ Resources:
       CodeUri: postBusiness/
       Handler: postBusiness.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Environment:
+        Variables:
+          cognitoId: "us-east-1_gXhBD4bsG"
+          cognitoClientId: "52k0o8239mueu31uu5fihccbbf"
+          cognitoSecret: "1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt"
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
@@ -1985,6 +2010,9 @@ Resources:
       CodeUri: putBusinessSearch/
       Handler: putBusinessSearch.lambda_handler
       Role: arn:aws:iam::821843840552:role/LambdaDynamoSearch
+      Environment:
+        Variables:
+          cloudSearch: "https://search-tucita247-djl3mvkaapbmo5zjxat7pcnepu.us-east-1.cloudsearch.amazonaws.com"
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1

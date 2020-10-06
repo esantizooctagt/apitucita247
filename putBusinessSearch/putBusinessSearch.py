@@ -20,8 +20,10 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
-dynamodbData = boto3.resource('dynamodb', region_name='us-east-1')
+cloudSearch = os.environ['cloudSearch']
+
+dynamodb = boto3.client('dynamodb', region_name=REGION)
+dynamodbData = boto3.resource('dynamodb', region_name=REGION)
 search = boto3.client('cloudsearchdomain', endpoint_url="https://search-tucita247-djl3mvkaapbmo5zjxat7pcnepu.us-east-1.cloudsearch.amazonaws.com")
 
 logger.info("SUCCESS: Connection to DynamoDB succeeded")

@@ -14,7 +14,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)   
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -43,6 +43,21 @@ def lambda_handler(event, context):
                 Limit = 1
             )
             for loc in json_dynamodb.loads(location['Items']):
+                cityData = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :country AND SKID = :city',
+                    ExpressionAttributeValues={
+                        ':country': {'S': 'COUNTRY#PRI'},
+                        ':city': {'S': 'CITY#'+ loc['CITY']}
+                    }
+                )
+                cityESP = ''
+                cityENG = ''
+                for item in json_dynamodb.loads(cityData['Items']):
+                    cityESP = item['NAME_ESP']
+                    cityENG = item['NAME_ENG']
+                    
                 locAddress = loc['ADDRESS'] if 'ADDRESS' in loc else ''
 
                 NameLoc = loc['NAME'] if 'NAME' in loc else ''
@@ -71,7 +86,9 @@ def lambda_handler(event, context):
                 'Geolocation': Geolocation,
                 'Status': Status,
                 'Door': Door,
-                'BusinessId': businessId
+                'BusinessId': businessId,
+                'City_ENG': cityENG,
+                'City_ESP': cityESP
             }
             recordset = {}
             for business in json_dynamodb.loads(business['Items']):

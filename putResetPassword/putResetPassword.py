@@ -24,12 +24,16 @@ secreKey = 'K968G66S4dC1Y5tNA5zKGT5KIjeMcpc8'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodbTable = boto3.client('dynamodb', region_name='us-east-1')
+cognitoId = os.environ['cognitoId']
+cognitoClientId = os.environ['cognitoClientId']
+cognitoSecret = os.environ['cognitoSecret']
+
+dynamodbTable = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def get_secret_hash(username):
-    msg = username + '52k0o8239mueu31uu5fihccbbf'
-    dig = hmac.new(str('1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt').encode('utf-8'), 
+    msg = username + cognitoClientId
+    dig = hmac.new(str(cognitoSecret).encode('utf-8'), 
         msg = str(msg).encode('utf-8'), digestmod=hashlib.sha256).digest()
     d2 = base64.b64encode(dig).decode()
     return d2
@@ -90,7 +94,7 @@ def lambda_handler(event, context):
         client = boto3.client('cognito-idp')
         if int(code) != 0:
             client.confirm_forgot_password(
-                ClientId='52k0o8239mueu31uu5fihccbbf',
+                ClientId=cognitoClientId,
                 SecretHash=get_secret_hash(userName),
                 Username=userName,
                 ConfirmationCode=code,
@@ -98,7 +102,7 @@ def lambda_handler(event, context):
             )
         else:
             response = client.admin_set_user_password(
-                UserPoolId='us-east-1_gXhBD4bsG',
+                UserPoolId=cognitoId,
                 Username=userName,
                 Password=passDecrypt.decode('utf-8'),
                 Permanent=True

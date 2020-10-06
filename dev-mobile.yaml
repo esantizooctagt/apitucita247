@@ -115,6 +115,9 @@ Resources:
       CodeUri: getResultSearch/
       Handler: getResultSearch.lambda_handler
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
+      Environment:
+        Variables:
+          cloudSearch: "https://search-dev-tucita247-6tfdgrmlbjsqzmro2dtgz75rlm.us-east-1.cloudsearch.amazonaws.com"
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
         # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
