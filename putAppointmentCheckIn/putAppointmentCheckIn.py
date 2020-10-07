@@ -48,7 +48,7 @@ def lambda_handler(event, context):
         status = data['Status']
         dateAppo = data['DateAppo']
         qty = data['Guests']
-        qrCode = data['qrCode'] if 'qrCode' in data else ''
+        qrCode = data['qrCode'].upper() if 'qrCode' in data else ''
         businessId = data['BusinessId'] if 'BusinessId' in data else ''
         locationId = data['LocationId'] if 'LocationId' in data else ''
         providerId = data['ProviderId'] if 'ProviderId' in data else ''

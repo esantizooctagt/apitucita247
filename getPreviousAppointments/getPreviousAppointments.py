@@ -35,20 +35,36 @@ def lambda_handler(event, context):
         initDate = dateAppo[0:10]+'-00-00'
         n = {'#t': 'TYPE'}
         f = '#t = :type'
-        response = dynamodb.query(
-            TableName="TuCita247",
-            IndexName="TuCita247_Index",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :initDate AND :gsi1sk',
-            ExpressionAttributeNames=n,
-            FilterExpression=f,
-            ExpressionAttributeValues={
-                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
-                ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
-                ':initDate': {'S': str(status) +'#DT#' + initDate},
-                ':type': {'N': str(1)}
-            }
-        )   
+        if providerId != '0':
+            response = dynamodb.query(
+                TableName="TuCita247",
+                IndexName="TuCita247_Index",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :initDate AND :gsi1sk',
+                ExpressionAttributeNames=n,
+                FilterExpression=f,
+                ExpressionAttributeValues={
+                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
+                    ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
+                    ':initDate': {'S': str(status) +'#DT#' + initDate},
+                    ':type': {'N': str(1)}
+                }
+            )
+        else:
+            response = dynamodb.query(
+                TableName="TuCita247",
+                IndexName="TuCita247_Index09",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :initDate AND :gsi9sk',
+                ExpressionAttributeNames=n,
+                FilterExpression=f,
+                ExpressionAttributeValues={
+                    ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                    ':gsi9sk': {'S': str(status) +'#DT#' + dateAppo},
+                    ':initDate': {'S': str(status) +'#DT#' + initDate},
+                    ':type': {'N': str(1)}
+                }
+            )
 
         record = []
         recordset = {}
@@ -56,7 +72,7 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': businessId,
                 'LocationId': locationId,
-                'ProviderId': providerId,
+                'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#'),
                 'AppointmentId': row['PKID'].replace('APPO#',''),
                 'ClientId': row['GSI2PK'].replace('CUS#',''),
                 'Name': row['NAME'],
@@ -82,29 +98,45 @@ def lambda_handler(event, context):
                 appoId = lastItem['PKID'].replace('APPO#','')
                 lastItem = lastItem['GSI1SK']
                 lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},'GSI1SK': {'S': lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
-
-            response = dynamodb.query(
-                TableName="TuCita247",
-                IndexName="TuCita247_Index",
-                ReturnConsumedCapacity='TOTAL',
-                ExclusiveStartKey= lastItem,
-                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :initDate AND :gsi1sk',
-                FilterExpression=f,
-                ExpressionAttributeNames=n,
-                ExpressionAttributeValues={
-                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
-                    ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
-                    ':initDate': {'S': str(status) +'#DT#' + initDate},
-                    ':type': {'N': str(1)}
-                },
-            )
+            if providerId != '0':
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    IndexName="TuCita247_Index",
+                    ReturnConsumedCapacity='TOTAL',
+                    ExclusiveStartKey= lastItem,
+                    KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :initDate AND :gsi1sk',
+                    FilterExpression=f,
+                    ExpressionAttributeNames=n,
+                    ExpressionAttributeValues={
+                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
+                        ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
+                        ':initDate': {'S': str(status) +'#DT#' + initDate},
+                        ':type': {'N': str(1)}
+                    },
+                )
+            else:
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    IndexName="TuCita247_Index09",
+                    ReturnConsumedCapacity='TOTAL',
+                    ExclusiveStartKey= lastItem,
+                    KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :initDate AND :gsi9sk',
+                    FilterExpression=f,
+                    ExpressionAttributeNames=n,
+                    ExpressionAttributeValues={
+                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                        ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
+                        ':initDate': {'S': str(status) +'#DT#' + initDate},
+                        ':type': {'N': str(1)}
+                    },
+                )
 
             recordset = {}
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'BusinessId': businessId,
                     'LocationId': locationId,
-                    'ProviderId': providerId,
+                    'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#'),
                     'AppointmentId': row['PKID'].replace('APPO#',''),
                     'ClientId': row['GSI2PK'].replace('CUS#',''),
                     'Name': row['NAME'],

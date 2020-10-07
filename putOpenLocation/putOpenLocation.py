@@ -19,7 +19,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -33,7 +33,6 @@ def lambda_handler(event, context):
         statusCode = ''
         locationId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
-        providerId = event['pathParameters']['providerId']
         
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -42,11 +41,11 @@ def lambda_handler(event, context):
         table = dynamodb.Table('TuCita247')
         response = table.update_item(
             Key={
-                'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
-                'SKID': 'PRO#' + providerId
+                'PKID': 'BUS#' + businessId,
+                'SKID': 'LOC#' + locationId
             },
-            UpdateExpression="SET OPEN_DATE = :actualDate, PEOPLE_CHECK_IN = :qty, #o = :open", #, CLOSED_DATE = :closed
-            ExpressionAttributeValues= {':actualDate': dateOpe, ':qty': 0, ':open': 1, ':initVal': 0}, #, ':open': 1, ':closed': '',
+            UpdateExpression="SET OPEN_DATE = :actualDate, PEOPLE_CHECK_IN = :qty, #o = :open",
+            ExpressionAttributeValues= {':actualDate': dateOpe, ':qty': 0, ':open': 1, ':initVal': 0},
             ExpressionAttributeNames={'#o': 'OPEN'},
             ConditionExpression='attribute_not_exists(#o) OR #o = :initVal',
             ReturnValues="UPDATED_NEW"

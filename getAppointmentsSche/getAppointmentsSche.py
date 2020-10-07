@@ -14,7 +14,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -31,16 +31,28 @@ def lambda_handler(event, context):
         providerId = event['pathParameters']['providerId']
         dateAppoIni = event['pathParameters']['dateAppoIni']
 
-        response = dynamodb.query(
-            TableName="TuCita247",
-            IndexName="TuCita247_Index",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK = :gsi1sk_ini',
-            ExpressionAttributeValues={
-                ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
-                ':gsi1sk_ini': {'S': '1#DT#' + dateAppoIni}
-            }
-        )
+        if providerId != '0':
+            response = dynamodb.query(
+                TableName="TuCita247",
+                IndexName="TuCita247_Index",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK = :gsi1sk_ini',
+                ExpressionAttributeValues={
+                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
+                    ':gsi1sk_ini': {'S': '1#DT#' + dateAppoIni}
+                }
+            )
+        else:
+            response = dynamodb.query(
+                TableName="TuCita247",
+                IndexName="TuCita247_Index09",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK = :gsi9sk_ini',
+                ExpressionAttributeValues={
+                    ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                    ':gsi9sk_ini': {'S': '1#DT#' + dateAppoIni}
+                }
+            )
 
         record = []
         recordset = {}
@@ -48,7 +60,7 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': businessId,
                 'LocationId': locationId,
-                'ProviderId': providerId,
+                'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#'),
                 'AppointmentId': row['PKID'].replace('APPO#',''),
                 'ClientId': row['GSI2PK'].replace('CUS#',''),
                 'Name': row['NAME'],
@@ -69,24 +81,36 @@ def lambda_handler(event, context):
         lastItem = ''
         while 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
-            
-            response = dynamodb.query(
-                TableName="TuCita247",
-                IndexName="TuCita247_Index",
-                ExclusiveStartKey= lastItem,
-                ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK = :gsi1sk_ini',
-                ExpressionAttributeValues={
-                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
-                    ':gsi1sk_ini': {'S': '1#DT#' + dateAppoIni}
-                }
-            )
+            if providerId != '0':
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    IndexName="TuCita247_Index",
+                    ExclusiveStartKey= lastItem,
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK = :gsi1sk_ini',
+                    ExpressionAttributeValues={
+                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
+                        ':gsi1sk_ini': {'S': '1#DT#' + dateAppoIni}
+                    }
+                )
+            else:
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    IndexName="TuCita247_Index09",
+                    ExclusiveStartKey= lastItem,
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK = :gsi9sk_ini',
+                    ExpressionAttributeValues={
+                        ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                        ':gsi9sk_ini': {'S': '1#DT#' + dateAppoIni}
+                    }
+                )
             recordset = {}
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'BusinessId': businessId,
                     'LocationId': locationId,
-                    'ProviderId': providerId,
+                    'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#'),
                     'AppointmentId': row['PKID'].replace('APPO#',''),
                     'ClientId': row['GSI2PK'].replace('CUS#',''),
                     'Name': row['NAME'],

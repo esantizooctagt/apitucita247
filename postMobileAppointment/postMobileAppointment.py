@@ -25,7 +25,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -517,7 +517,9 @@ def lambda_handler(event, context):
                                 "GSI2PK": {"S": 'CUS#' + customerId},
                                 "GSI2SK": {"S": '1#DT#' + dateAppointment},
                                 "GSI3PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#' + dateAppointment[0:10]}, 
-                                "GSI3SK": {"S": 'QR#' + qrCode}
+                                "GSI3SK": {"S": 'QR#' + qrCode},
+                                "GSI9PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
+                                "GSI9SK": {"S": '1#DT#' + dateAppointment}, 
                             },
                             "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"

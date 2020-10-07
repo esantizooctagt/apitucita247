@@ -776,7 +776,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/opehours/{businessId}/{locationId}/{providerId}
+            Path: /business/opehours/{businessId}/{locationId}
             Method: get
             ApiId: !Ref HttpApi
   
@@ -923,7 +923,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/open/{id}/{businessId}/{providerId}
+            Path: /location/open/{id}/{businessId}
             Method: put
             ApiId: !Ref HttpApi
           
@@ -944,7 +944,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/closed/{id}/{businessId}/{providerId}
+            Path: /location/closed/{id}/{businessId}
             Method: put
             ApiId: !Ref HttpApi
 

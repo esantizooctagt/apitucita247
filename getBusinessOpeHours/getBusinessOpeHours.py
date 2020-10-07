@@ -20,7 +20,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -34,7 +34,6 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        providerId = event['pathParameters']['providerId']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -43,17 +42,16 @@ def lambda_handler(event, context):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND SKID = :providerId',
+            KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
             ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                ':providerId': {'S': 'PRO#' + providerId}
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':locationId': {'S': 'LOC#' + locationId}
             }
         )
 
         record = []
         recordset = {}
-        locations = json_dynamodb.loads(response['Items'])
-        for row in locations:
+        for row in json_dynamodb.loads(response['Items']):
             daysOff = row['DAYS_OFF'] if 'DAYS_OFF' in row else []
             opeHours = json.loads(row['OPERATIONHOURS']) if 'OPERATIONHOURS' in row else ''
         

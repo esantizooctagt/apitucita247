@@ -53,56 +53,108 @@ def lambda_handler(event, context):
         for row in json_dynamodb.loads(response['Items']):
             locationId = row['LOCATIONID'] if 'LOCATIONID' in row else ''
             door = row['DOOR'] if 'DOOR' in row else ''
+            locations = []
             if locationId != '':
-                serv = dynamodb.query(
-                    TableName="TuCita247",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :key01',
-                    ExpressionAttributeValues={
-                        ':key01': {'S': 'BUS#' + businessId + '#LOC#' + locationId}
-                    }
-                )
-                for result in json_dynamodb.loads(serv['Items']):
-                    if 'OPEN_DATE' in result and 'OPEN' in result:
-                        if result['OPEN_DATE'][0:10] < dateOpe and result['OPEN'] == 1:
-                            open = 1
-                            closed = 1
-                        if result['OPEN_DATE'][0:10] == dateOpe or result['OPEN_DATE'] == '':
-                            open = result['OPEN']
-                            closed = 0
-                    else:
-                        open = 0
-                        closed = 0
-
-                    recordset = {
-                        'ProviderId': result['SKID'].replace('PRO#',''),
-                        'Name': result['NAME'],
-                        'Open': open,
-                        'Closed': closed
-                    }
-                    providers.append(recordset)
-        
                 locs = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
                     ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#' + businessId },
-                        ':locationId': {'S': 'LOC#'+ locationId }
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':locationId': {'S': 'LOC#' + locationId}
                     }
                 )
-                for item in json_dynamodb.loads(locs['Items']):
+                for loc in json_dynamodb.loads(locs['Items']):
+                    provs = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :locationId)',
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': 'BUS#' + businessId + '#LOC#'+ locationId },
+                            ':locationId': {'S': 'PRO#' }
+                        }
+                    )
+                    for item in json_dynamodb.loads(provs['Items']):
+                        recordset = {
+                            'ProviderId': item['SKID'].replace('PRO#',''),
+                            'Name': item['NAME']
+                        }
+                        providers.append(recordset)
+
+                    if 'OPEN_DATE' in loc and 'OPEN' in loc:
+                        if loc['OPEN_DATE'][0:10] < dateOpe and loc['OPEN'] == 1:
+                            open = 1
+                            closed = 1
+                        if loc['OPEN_DATE'][0:10] == dateOpe or loc['OPEN_DATE'] == '':
+                            open = loc['OPEN']
+                            closed = 0
+                    else:
+                        open = 0
+                        closed = 0
+                    
                     recordset = {
                         'LocationId': locationId,
                         'Providers': providers,
                         'Door': door,
-                        'Name': item['NAME'],
-                        'MaxCustomers': item['MAX_CUSTOMER'],
-                        'ManualCheckOut': item['MANUAL_CHECK_OUT']
+                        'Name': loc['NAME'],
+                        'MaxCustomers': loc['MAX_CUSTOMER'],
+                        'ManualCheckOut': loc['MANUAL_CHECK_OUT'],
+                        'Open': open,
+                        'Closed': closed
                     }
-    
+                    locations.append(recordset)
+            else:
+                locs = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId AND begin_with(SKID, :locs)',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + businessId },
+                        ':locs': {'S': 'LOC#'}
+                    }
+                )
+                for loc in json_dynamodb.loads(locs['Items']):
+                    if 'OPEN_DATE' in loc and 'OPEN' in loc:
+                        if loc['OPEN_DATE'][0:10] < dateOpe and loc['OPEN'] == 1:
+                            open = 1
+                            closed = 1
+                        if loc['OPEN_DATE'][0:10] == dateOpe or loc['OPEN_DATE'] == '':
+                            open = loc['OPEN']
+                            closed = 0
+                    else:
+                        open = 0
+                        closed = 0
+
+                    serv = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :key01 AND begin_with(SKID, :provs)',
+                        ExpressionAttributeValues={
+                            ':key01': {'S': 'BUS#' + businessId + '#' + loc['SKID']},
+                            ':provs': {'S': 'PRO#'}
+                        }
+                    )
+                    for result in json_dynamodb.loads(serv['Items']):
+                        recordset = {
+                            'ProviderId': result['SKID'].replace('PRO#',''),
+                            'Name': result['NAME']
+                        }
+                        providers.append(recordset)
+
+                    recordset = {
+                        'LocationId': loc['SKID'].replace('LOC#',''),
+                        'Providers': providers,
+                        'Door': door,
+                        'Name': loc['NAME'],
+                        'MaxCustomers': loc['MAX_CUSTOMER'],
+                        'ManualCheckOut': loc['MANUAL_CHECK_OUT'],
+                        'Open': open,
+                        'Closed': closed
+                    }
+                    locations.append(recordset)
+
             statusCode = 200
-            body = json.dumps({'Code': 200, 'Locs': recordset})
+            body = json.dumps({'Code': 200, 'Locs': locations})
     
         if statusCode == '':
             statusCode = 500

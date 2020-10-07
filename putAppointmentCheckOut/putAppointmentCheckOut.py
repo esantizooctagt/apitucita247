@@ -41,7 +41,7 @@ def lambda_handler(event, context):
         existe = 0
         data = json.loads(event['body'])
         status = data['Status']
-        qrCode = data['qrCode']
+        qrCode = data['qrCode'].upper()
         businessId = data['BusinessId']
         locationId = data['LocationId']
         providerId = data['ProviderId']
