@@ -1,5 +1,4 @@
 import sys
-import requests
 import logging
 import json
 
