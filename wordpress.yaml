@@ -8,10 +8,10 @@ Globals:
     MemorySize: 128
     Runtime: python3.8
     Environment:
-        Variables:
-            devCors: "http://tucita247.local"
-            prodCors: "https://tucita247.com"
-            prodWCors: "https://www.tucita247.com"
+      Variables:
+        devCors: "http://tucita247.local"
+        prodCors: "https://tucita247.com"
+        prodWCors: "https://www.tucita247.com"
     VpcConfig:
       SecurityGroupIds: 
         - sg-04131f24
@@ -51,6 +51,31 @@ Resources:
           - content-type
         MaxAge: "10"
         AllowCredentials: True
+
+  PostBusinessWPFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PostBusinessWP
+      CodeUri: postBusinessWP/
+      Handler: postBusinessWP.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaCognitoDB
+      Environment:
+        Variables:
+          cognitoId: "us-east-1_gXhBD4bsG"
+          cognitoClientId: "52k0o8239mueu31uu5fihccbbf"
+          cognitoSecret: "1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt"
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /business
+            Method: post
+            ApiId: !Ref HttpApi
 
   GetCategoriesWPFunction:
     Type: AWS::Serverless::Function
