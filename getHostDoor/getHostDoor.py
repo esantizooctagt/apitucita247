@@ -49,7 +49,6 @@ def lambda_handler(event, context):
         recordset = {}
         locationId = ''
         door = '' 
-        providers = []
         for row in json_dynamodb.loads(response['Items']):
             locationId = row['LOCATIONID'] if 'LOCATIONID' in row else ''
             door = row['DOOR'] if 'DOOR' in row else ''
@@ -64,6 +63,7 @@ def lambda_handler(event, context):
                         ':locationId': {'S': 'LOC#' + locationId}
                     }
                 )
+                providers = []
                 for loc in json_dynamodb.loads(locs['Items']):
                     provs = dynamodb.query(
                         TableName="TuCita247",
@@ -107,7 +107,7 @@ def lambda_handler(event, context):
                 locs = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND begin_with(SKID, :locs)',
+                    KeyConditionExpression='PKID = :businessId AND begins_with(SKID, :locs)',
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId },
                         ':locs': {'S': 'LOC#'}
@@ -128,12 +128,13 @@ def lambda_handler(event, context):
                     serv = dynamodb.query(
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
-                        KeyConditionExpression='PKID = :key01 AND begin_with(SKID, :provs)',
+                        KeyConditionExpression='PKID = :key01 AND begins_with(SKID, :provs)',
                         ExpressionAttributeValues={
                             ':key01': {'S': 'BUS#' + businessId + '#' + loc['SKID']},
                             ':provs': {'S': 'PRO#'}
                         }
                     )
+                    providers = []
                     for result in json_dynamodb.loads(serv['Items']):
                         recordset = {
                             'ProviderId': result['SKID'].replace('PRO#',''),

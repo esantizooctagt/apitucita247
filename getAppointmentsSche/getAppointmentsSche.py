@@ -60,7 +60,7 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': businessId,
                 'LocationId': locationId,
-                'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#'),
+                'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#',''),
                 'AppointmentId': row['PKID'].replace('APPO#',''),
                 'ClientId': row['GSI2PK'].replace('CUS#',''),
                 'Name': row['NAME'],
@@ -110,7 +110,7 @@ def lambda_handler(event, context):
                 recordset = {
                     'BusinessId': businessId,
                     'LocationId': locationId,
-                    'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#'),
+                    'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#',''),
                     'AppointmentId': row['PKID'].replace('APPO#',''),
                     'ClientId': row['GSI2PK'].replace('CUS#',''),
                     'Name': row['NAME'],

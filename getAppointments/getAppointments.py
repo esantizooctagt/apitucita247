@@ -101,11 +101,11 @@ def lambda_handler(event, context):
                         Limit = 30
                     )
         else:
-            lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
             if typeAppo != '_':
                 n = {'#t': 'TYPE'}
                 f = '#t = :type'
                 if providerId != '0':
+                    lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
                     response = dynamodb.query(
                         TableName="TuCita247",
                         IndexName="TuCita247_Index",
@@ -123,6 +123,7 @@ def lambda_handler(event, context):
                         Limit = 30
                     )
                 else:
+                    lastItem = {'GSI9PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI9SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
                     response = dynamodb.query(
                         TableName="TuCita247",
                         IndexName="TuCita247_Index09",
@@ -141,6 +142,7 @@ def lambda_handler(event, context):
                     )
             else:
                 if providerId != '0':
+                    lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId },'GSI1SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
                     response = dynamodb.query(
                         TableName="TuCita247",
                         IndexName="TuCita247_Index",
@@ -155,6 +157,7 @@ def lambda_handler(event, context):
                         Limit = 30
                     )
                 else:
+                    lastItem = {'GSI9PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId },'GSI9SK': {'S': str(status) + '#DT#' + lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
                     response = dynamodb.query(
                         TableName="TuCita247",
                         IndexName="TuCita247_Index09",
@@ -175,7 +178,7 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': businessId,
                 'LocationId': locationId,
-                'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#'),
+                'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#',''),
                 'AppointmentId': row['PKID'].replace('APPO#',''),
                 'ClientId': row['GSI2PK'].replace('CUS#',''),
                 'Name': row['NAME'],
@@ -198,7 +201,10 @@ def lambda_handler(event, context):
         if 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
             appoId = lastItem['PKID'].replace('APPO#','')
-            lastItem = lastItem['GSI1SK']
+            if providerId != '0':
+                lastItem = lastItem['GSI1SK']
+            else:
+                lastItem = lastItem['GSI9SK']
 
         resultSet = { 
             'Code': 200,

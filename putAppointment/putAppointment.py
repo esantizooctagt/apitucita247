@@ -82,7 +82,7 @@ def lambda_handler(event, context):
                     'PKID': 'APPO#' + appointmentId,
                     'SKID': 'APPO#' + appointmentId
                 },
-                UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02" + (", TIMECHEK = :dateope" if str(status) == "2" else ""),
+                UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, GSI9SK = :key01" + (", TIMECHEK = :dateope" if str(status) == "2" else ""),
                 ExpressionAttributeNames=e,
                 ExpressionAttributeValues=v,
                 ReturnValues="UPDATED_NEW"
@@ -144,7 +144,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'APPO#' + appointmentId}, 
                         "SKID": {"S": 'APPO#' + appointmentId}, 
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, REASONID = :reason, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, TIMECANCEL = :dateope",
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, REASONID = :reason, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, GSI9SK = :key01, TIMECANCEL = :dateope",
                     "ExpressionAttributeValues": { 
                         ":status": {"N": str(status)}, 
                         ":key01": {"S": str(status) + '#DT#' + str(dateAppo)}, 

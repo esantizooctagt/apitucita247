@@ -22,7 +22,7 @@ logger.setLevel(logging.INFO)
 
 sms = boto3.client('sns')
 email = boto3.client('ses',region_name=REGION)
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -37,6 +37,7 @@ def lambda_handler(event, context):
         appointmentId = ''
         dateAppo = ''
         timeCheckIn = ''
+        pollId = ''
         qty = 0
         existe = 0
         data = json.loads(event['body'])
@@ -76,7 +77,7 @@ def lambda_handler(event, context):
             qty = row['PEOPLE_QTY']
             customerId = row['GSI2PK'].replace('CUS#','')
             timeCheckIn = row['TIMECHECKIN'] + '-000000' if 'TIMECHECKIN' in row else ''
-            providerId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#')
+            providerId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#','')
 
         if appointmentId != '':
             items = []
@@ -108,7 +109,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": appointmentId}, 
                         "SKID": {"S": appointmentId}
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKOUT = :dateOpe", 
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, GSI9SK = :key, TIMECHECKOUT = :dateOpe", 
                     "ExpressionAttributeValues": {
                         ":status": {"N": str(status)}, 
                         ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 

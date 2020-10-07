@@ -14,7 +14,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -72,7 +72,7 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': businessId,
                 'LocationId': locationId,
-                'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#'),
+                'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#',''),
                 'AppointmentId': row['PKID'].replace('APPO#',''),
                 'ClientId': row['GSI2PK'].replace('CUS#',''),
                 'Name': row['NAME'],
@@ -94,10 +94,10 @@ def lambda_handler(event, context):
         lastItem = ''
         while 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
-            if lastItem:
-                appoId = lastItem['PKID'].replace('APPO#','')
-                lastItem = lastItem['GSI1SK']
-                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},'GSI1SK': {'S': lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
+            # if lastItem:
+            #     appoId = lastItem['PKID'].replace('APPO#','')
+            #     lastItem = lastItem['GSI1SK']
+            #     lastItem = {'GSI1PK': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},'GSI1SK': {'S': lastItem }, 'SKID': {'S': 'APPO#' + appoId}, 'PKID': {'S': 'APPO#' + appoId}}
             if providerId != '0':
                 response = dynamodb.query(
                     TableName="TuCita247",
@@ -124,8 +124,8 @@ def lambda_handler(event, context):
                     FilterExpression=f,
                     ExpressionAttributeNames=n,
                     ExpressionAttributeValues={
-                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                        ':gsi1sk': {'S': str(status) +'#DT#' + dateAppo},
+                        ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                        ':gsi9sk': {'S': str(status) +'#DT#' + dateAppo},
                         ':initDate': {'S': str(status) +'#DT#' + initDate},
                         ':type': {'N': str(1)}
                     },
@@ -136,7 +136,7 @@ def lambda_handler(event, context):
                 recordset = {
                     'BusinessId': businessId,
                     'LocationId': locationId,
-                    'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#'),
+                    'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#',''),
                     'AppointmentId': row['PKID'].replace('APPO#',''),
                     'ClientId': row['GSI2PK'].replace('CUS#',''),
                     'Name': row['NAME'],
