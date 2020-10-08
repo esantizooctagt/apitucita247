@@ -35,29 +35,12 @@ def lambda_handler(event, context):
         qty = int(event['pathParameters']['qtyGuests'])
 
         items = []
-        # recordset = {
-        #     "Update": {
-        #         "TableName": "TuCita247",
-        #         "Key": {
-        #             "PKID": {"S": 'BUS#' + businessId}, 
-        #             "SKID": {"S": 'LOC#' + locationId}, 
-        #         },
-        #         "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
-        #         "ExpressionAttributeValues": { 
-        #             ":increment": {"N": str(qty)}
-        #         },
-        #         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-        #         "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-        #     }
-        # }
-        # items.append(recordset)
-
         recordset = {
             "Update": {
                 "TableName": "TuCita247",
                 "Key": {
-                    "PKID": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-                    "SKID": {"S": 'PRO#' + providerId}, 
+                    "PKID": {"S": 'BUS#' + businessId}, 
+                    "SKID": {"S": 'LOC#' + locationId}, 
                 },
                 "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
                 "ExpressionAttributeValues": { 
@@ -68,6 +51,23 @@ def lambda_handler(event, context):
             }
         }
         items.append(recordset)
+
+        # recordset = {
+        #     "Update": {
+        #         "TableName": "TuCita247",
+        #         "Key": {
+        #             "PKID": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
+        #             "SKID": {"S": 'PRO#' + providerId}, 
+        #         },
+        #         "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
+        #         "ExpressionAttributeValues": { 
+        #             ":increment": {"N": str(qty)}
+        #         },
+        #         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+        #         "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+        #     }
+        # }
+        # items.append(recordset)
 
         tranAppo = dynamodb.transact_write_items(
             TransactItems = items

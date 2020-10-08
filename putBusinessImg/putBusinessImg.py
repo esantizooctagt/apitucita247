@@ -19,7 +19,7 @@ logger.setLevel(logging.INFO)
 
 s3 = boto3.client('s3')
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def put_object(bucket_name, object_name, file, tipo):

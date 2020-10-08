@@ -20,7 +20,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -38,10 +38,10 @@ def lambda_handler(event, context):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND begins_with( SKID, :locationId)',
+            KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
             ExpressionAttributeValues={
-                ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                ':locationId': {'S': 'PRO#'}
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':locationId': {'S': '#LOC#' + locationId}
             }
         )
 
