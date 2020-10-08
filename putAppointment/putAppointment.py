@@ -176,7 +176,12 @@ def lambda_handler(event, context):
 
         logger.info(response)
         #PASA A PRE-CHECK O CANCELACION IN Y ENVIA NOTIFICACION POR SNS A SMS y CORREO, ONESIGNAL (PUSH NOTIFICATION)
+        textMess = ''
         if status == 2 or status == 5:
+            if status == 2:
+                textMess = 'you can come to the nearest door'
+            else:
+                textMess = 'your appointment was cancelled'
             # GET USER PREFERENCE NOTIFICATION
             response = dynamodbQuery.query(
                 TableName="TuCita247",
@@ -187,10 +192,10 @@ def lambda_handler(event, context):
                     ':key': {'S': 'CUS#' + customerId}
                 }
             )
-            preference = ''
+            preference = 0
             playerId = ''
             for row in json_dynamodb.loads(response['Items']):
-                preference = row['PREFERENCES'] if 'PREFERENCES' in row else ''
+                preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                 mobile = row['PKID'].replace('MOB#','')
                 email = row['EMAIL'] if 'EMAIL' in row else ''
                 playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
@@ -200,13 +205,13 @@ def lambda_handler(event, context):
                 header = {"Content-Type": "application/json; charset=utf-8"}
                 payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
                         "include_player_ids": [playerId],
-                        "contents": {"en": "You can go to the nearest entrance to check in"}}
+                        "contents": {"en": textMess + ' Push'}}
                 req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
-            if preference == 1 and mobile != '':
+            if preference == 1 and mobile != '00000000000':
                 #SMS
                 to_number = mobile
-                bodyStr = 'You can come to the nearest entrance to check in'
+                bodyStr = textMess + ' SMS'
                 sms.publish(
                     PhoneNumber="+"+to_number,
                     Message=bodyStr,

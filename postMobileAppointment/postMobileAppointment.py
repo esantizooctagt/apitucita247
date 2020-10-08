@@ -676,11 +676,10 @@ def lambda_handler(event, context):
                                 ':key': {'S': 'CUS#' + customerId}
                             }
                         )
-                        preference = ''
+                        preference = 0
                         playerId = ''
                         for row in json_dynamodb.loads(response['Items']):
-                            preference = row['PREFERENCES'] if 'PREFERENCES' in row else ''
-                            mobile = row['PKID'].replace('MOB#','')
+                            preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                             email = row['EMAIL'] if 'EMAIL' in row else ''
                             playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                         
@@ -689,13 +688,13 @@ def lambda_handler(event, context):
                             header = {"Content-Type": "application/json; charset=utf-8"}
                             payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
                                     "include_player_ids": [playerId],
-                                    "contents": {"en": "You can go to the nearest entrance to check in"}}
+                                    "contents": {"en": "Your appointment was saved new Push"}}
                             req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
-
-                        if preference == 1 and mobile != '':
+                        
+                        if preference == 1:
                             #SMS
-                            to_number = mobile
-                            bodyStr = 'You can come to the nearest entrance to check in'
+                            to_number = phone
+                            bodyStr = 'SMS Message your appointment saved'
                             sms.publish(
                                 PhoneNumber="+"+to_number,
                                 Message=bodyStr,
@@ -712,14 +711,14 @@ def lambda_handler(event, context):
                             SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
                             RECIPIENT = email
                             SUBJECT = "Tu Cita 24/7 Check-In"
-                            BODY_TEXT = ("You can yo to the nearest entrance to check in")
+                            BODY_TEXT = ("Email your appointment saved")
                                         
                             # The HTML body of the email.
                             BODY_HTML = """<html>
                             <head></head>
                             <body>
                             <h1>Tu Cita 24/7</h1>
-                            <p>You can yo to the nearest entrance to check in</p>
+                            <p>Email your appointment saved</p>
                             </body>
                             </html>"""
 
