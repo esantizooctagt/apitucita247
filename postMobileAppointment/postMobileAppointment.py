@@ -1,5 +1,6 @@
 import sys
 import logging
+import requests
 import json
 
 import boto3
@@ -26,6 +27,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name=REGION)
+sms = boto3.client('sns')
+ses = boto3.client('ses', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -661,6 +664,91 @@ def lambda_handler(event, context):
                     response = dynamodb.transact_write_items(
                         TransactItems = items
                     )
+
+                    if phone != '00000000000':
+                        # GET USER PREFERENCE NOTIFICATION
+                        response = dynamodb.query(
+                            TableName="TuCita247",
+                            IndexName="TuCita247_Index",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='GSI1PK = :key AND GSI1SK = :key',
+                            ExpressionAttributeValues={
+                                ':key': {'S': 'CUS#' + customerId}
+                            }
+                        )
+                        preference = ''
+                        playerId = ''
+                        for row in json_dynamodb.loads(response['Items']):
+                            preference = row['PREFERENCES'] if 'PREFERENCES' in row else ''
+                            mobile = row['PKID'].replace('MOB#','')
+                            email = row['EMAIL'] if 'EMAIL' in row else ''
+                            playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
+                        
+                        #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
+                        if playerId != '':
+                            header = {"Content-Type": "application/json; charset=utf-8"}
+                            payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
+                                    "include_player_ids": [playerId],
+                                    "contents": {"en": "You can go to the nearest entrance to check in"}}
+                            req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+
+                        if preference == 1 and mobile != '':
+                            #SMS
+                            to_number = mobile
+                            bodyStr = 'You can come to the nearest entrance to check in'
+                            sms.publish(
+                                PhoneNumber="+"+to_number,
+                                Message=bodyStr,
+                                MessageAttributes={
+                                        'AWS.SNS.SMS.SMSType': {
+                                        'DataType': 'String',
+                                        'StringValue': 'Transactional'
+                                    }
+                                }
+                            )
+                            
+                        if preference == 2 and email != '':
+                            #EMAIL
+                            SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+                            RECIPIENT = email
+                            SUBJECT = "Tu Cita 24/7 Check-In"
+                            BODY_TEXT = ("You can yo to the nearest entrance to check in")
+                                        
+                            # The HTML body of the email.
+                            BODY_HTML = """<html>
+                            <head></head>
+                            <body>
+                            <h1>Tu Cita 24/7</h1>
+                            <p>You can yo to the nearest entrance to check in</p>
+                            </body>
+                            </html>"""
+
+                            CHARSET = "UTF-8"
+
+                            response = ses.send_email(
+                                Destination={
+                                    'ToAddresses': [
+                                        RECIPIENT,
+                                    ],
+                                },
+                                Message={
+                                    'Body': {
+                                        'Html': {
+                                            'Charset': CHARSET,
+                                            'Data': BODY_HTML,
+                                        },
+                                        'Text': {
+                                            'Charset': CHARSET,
+                                            'Data': BODY_TEXT,
+                                        },
+                                    },
+                                    'Subject': {
+                                        'Charset': CHARSET,
+                                        'Data': SUBJECT,
+                                    },
+                                },
+                                Source=SENDER
+                            )
                     statusCode = 200
                     body = json.dumps({'Message': 'Appointment saved successfully', 'Code': 200})
         if statusCode == '':

@@ -175,8 +175,8 @@ def lambda_handler(event, context):
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200, 'Appo': appo})
 
         logger.info(response)
-        #PASA A PRE-CHECK IN Y ENVIA NOTIFICACION POR SNS A SMS y CORREO, ONESIGNAL (PUSH NOTIFICATION)
-        if status == 2:
+        #PASA A PRE-CHECK O CANCELACION IN Y ENVIA NOTIFICACION POR SNS A SMS y CORREO, ONESIGNAL (PUSH NOTIFICATION)
+        if status == 2 or status == 5:
             # GET USER PREFERENCE NOTIFICATION
             response = dynamodbQuery.query(
                 TableName="TuCita247",
