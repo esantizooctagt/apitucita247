@@ -20,6 +20,7 @@ logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 dynamoUpd = boto3.resource('dynamodb', region_name=REGION)
+sns = boto3.client('sns')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -34,7 +35,8 @@ def lambda_handler(event, context):
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
-
+        dateOpe = today.strftime("%Y-%m-%d")
+        # dueDate = (today + datetime.timedelta(days=31)).strftime("%Y-%m-%d-%H-%M-%S")
         timeChat = today.strftime("%d %B, %I:%M %p")
 
         response = dynamodb.query(
@@ -46,8 +48,10 @@ def lambda_handler(event, context):
             }
         )
         getMessage = ''
+        dateAppo = ''
         for row in json_dynamodb.loads(response['Items']):
             getMessage = row['MESSAGES'] if 'MESSAGES' in row else []
+            dateAppo = row['DATE_APPO'][0:10]
 
         conversation = []
         if userType == "1":
@@ -80,6 +84,16 @@ def lambda_handler(event, context):
             }
             # ReturnValues="UPDATED_NEW"
         )
+        # if dateAppo == dateOpe:
+        logger.info("prev envio sns")
+        response = sns.publish(
+            TopicArn='arn:aws:sns:us-east-1:821843840552:tucitaTopic',
+            Subject='MENSAJE',
+            Message=json.dumps({'default': json.dumps({'AppointmentId': appointmentId, 'Chat': conversation})}),
+            MessageStructure='json',
+            MessageAttributes={"TransactionType": {"DataType": "String","StringValue": "MENSAJE"}}
+        )
+        logger.info(response['ResponseMetadata']['HTTPStatusCode'])
 
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
