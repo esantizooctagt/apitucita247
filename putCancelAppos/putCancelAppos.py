@@ -185,7 +185,7 @@ def lambda_handler(event, context):
                     preference = ''
                     playerId = ''
                     for row in json_dynamodb.loads(response['Items']):
-                        preference = row['PREFERENCES'] if 'PREFERENCES' in row else ''
+                        preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                         mobile = row['PKID'].replace('MOB#','')
                         email = row['EMAIL'] if 'EMAIL' in row else ''
                         playerId = row['PLAYERID'] if 'PLAYERID' in row else ''

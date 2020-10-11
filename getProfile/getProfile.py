@@ -9,6 +9,8 @@ import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
+REGION = 'us-east-1'
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
