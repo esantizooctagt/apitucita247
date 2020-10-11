@@ -770,24 +770,24 @@ def lambda_handler(event, context):
                         }
                         items.append(recordset)
 
-                        recordset = {
-                            "Update": {
-                                "TableName": "TuCita247",
-                                "Key": {
-                                    "PKID": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-                                    "SKID": {"S": 'PRO#' + providerId}, 
-                                },
-                                "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
-                                "ExpressionAttributeValues": { 
-                                    ":increment": {"N": str(guests)}
-                                },
-                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                            }
-                        }
-                        items.append(recordset)
+                        # recordset = {
+                        #     "Update": {
+                        #         "TableName": "TuCita247",
+                        #         "Key": {
+                        #             "PKID": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
+                        #             "SKID": {"S": 'PRO#' + providerId}, 
+                        #         },
+                        #         "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
+                        #         "ExpressionAttributeValues": { 
+                        #             ":increment": {"N": str(guests)}
+                        #         },
+                        #         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                        #         "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                        #     }
+                        # }
+                        # items.append(recordset)
                     
-                    # logger.info(items)
+                    logger.info(items)
                     response = dynamodb.transact_write_items(
                         TransactItems = items
                     )

@@ -949,7 +949,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/closed/{id}/{businessId}
+            Path: /location/closed/{id}/{businessId}/{closed}
             Method: put
             ApiId: !Ref HttpApi
 

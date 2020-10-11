@@ -51,7 +51,7 @@ def lambda_handler(event, context):
         qrCode = data['qrCode'].upper() if 'qrCode' in data else ''
         businessId = data['BusinessId'] if 'BusinessId' in data else ''
         locationId = data['LocationId'] if 'LocationId' in data else ''
-        providerId = data['ProviderId'] if 'ProviderId' in data else ''
+        # providerId = data['ProviderId'] if 'ProviderId' in data else ''
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -77,10 +77,7 @@ def lambda_handler(event, context):
             appointmentId = row['PKID'].replace('APPO#','')
             dateAppo = row['DATE_APPO']
             customerId = row['GSI2PK'].replace('CUS#','')
-            service = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#SER#')
-        
-        if service != providerId:
-            appointmentId == ''
+            providerId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#','')
 
         items = []
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
@@ -96,7 +93,7 @@ def lambda_handler(event, context):
                     "ExpressionAttributeValues": {
                         ":status": {"N": "3"}, 
                         ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
-                        ":key2": {"S": '#5' if str(status) == '5' else str(dateAppo)[0:10]}, 
+                        ":key2": {"S": '#5' if str(status) == '5' else  str(status) + '#DT#' + str(dateAppo)[0:10]}, 
                         ":qty": {"N": str(qty)},
                         ":dateOpe": {"S": str(dateOpe)},
                         ":key05": {"S" : 'BUS#' + businessId},
