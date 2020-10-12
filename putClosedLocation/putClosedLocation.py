@@ -21,7 +21,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
-dynamoQr = boto3.client('dynamodb', region_nam=REGION)
+dynamoQr = boto3.client('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
 ses = boto3.client('ses', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
@@ -37,7 +37,7 @@ def lambda_handler(event, context):
         statusCode = ''
         locationId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
-        closed = event['pathParameters']['closed']
+        closed = int(event['pathParameters']['closed'])
         
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -90,8 +90,8 @@ def lambda_handler(event, context):
                         UpdateExpression="SET GSI2SK = :key, GSI1SK = :key, GSI9SK = :key, #s = :stat",
                         ExpressionAttributeNames={'#s': 'STATUS'},
                         ExpressionAttributeValues={
-                            ':chat': {"S": "5#"},
-                            ':stat': {"N": "5#"} 
+                            ':key': {"S": "5#"},
+                            ':stat': {"N": "5"} 
                         }
                         # ReturnValues="UPDATED_NEW"
                     )
