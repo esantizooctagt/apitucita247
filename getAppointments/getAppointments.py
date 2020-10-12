@@ -2,6 +2,10 @@ import sys
 import logging
 import json
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
@@ -26,14 +30,21 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
     
     try:
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
+
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         providerId = event['pathParameters']['providerId']
+        status = event['pathParameters']['status']
+        typeAppo = event['pathParameters']['type']
         dateAppoIni = event['pathParameters']['dateAppoIni']
         dateAppoFin = event['pathParameters']['dateAppoFin']
-        status = event['pathParameters']['status']
+        if status == '1' and typeAppo == '1':
+            dateAppoIni = today.strftime("%Y-%m-%d-%H-%M")
+            dateAppoFin = today.strftime("%Y-%m-%d-23-59")
+        
         lastItem = event['pathParameters']['lastItem']
-        typeAppo = event['pathParameters']['type']
         appoId = event['pathParameters']['appoId']
 
         if lastItem == '_':

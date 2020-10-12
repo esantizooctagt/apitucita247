@@ -25,7 +25,7 @@ dynamoQr = boto3.client('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
 ses = boto3.client('ses', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
-
+#falta cerrar las horas del dia a partir de la fecha/hora
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":

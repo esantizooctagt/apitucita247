@@ -199,7 +199,7 @@ def lambda_handler(event, context):
                 mobile = row['PKID'].replace('MOB#','')
                 email = row['EMAIL'] if 'EMAIL' in row else ''
                 playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-            
+            logger.info('Preference user ' + customerId + ' -- ' + str(preference))
             #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
             if playerId != '':
                 header = {"Content-Type": "application/json; charset=utf-8"}
@@ -208,7 +208,7 @@ def lambda_handler(event, context):
                         "contents": {"en": textMess + ' Push'}}
                 req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
-            if preference == 1 and mobile != '00000000000':
+            if int(preference) == 1 and mobile != '00000000000':
                 #SMS
                 to_number = mobile
                 bodyStr = textMess + ' SMS'
@@ -223,7 +223,7 @@ def lambda_handler(event, context):
                     }
                 )
                 
-            if preference == 2 and email != '':
+            if int(preference) == 2 and email != '':
                 #EMAIL
                 SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
                 RECIPIENT = email

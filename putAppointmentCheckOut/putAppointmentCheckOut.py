@@ -238,14 +238,14 @@ def lambda_handler(event, context):
                     },
                     Limit = 1
                 )
-                preference = ''
+                preference = 0
                 playerId = ''
                 for row in json_dynamodb.loads(response['Items']):
                     preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                     mobile = row['PKID'].replace('MOB#','')
                     email = row['EMAIL'] if 'EMAIL' in row else ''
                     playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-
+                logger.info('Preference user ' + customerId + ' -- ' + str(preference))
                 #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                 if playerId != '':
                     header = {"Content-Type": "application/json; charset=utf-8"}
@@ -254,7 +254,7 @@ def lambda_handler(event, context):
                             "contents": {"en": "You are invited to fill the next poll"}}
                     req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
-                if preference == 1 and mobile != '':
+                if int(preference) == 1 and mobile != '':
                     #SMS
                     to_number = mobile
                     bodyStr = 'Please fill the next poll ' + link
@@ -269,7 +269,7 @@ def lambda_handler(event, context):
                         }
                     ) 
 
-                if preference == 2 and email != '':
+                if int(preference) == 2 and email != '':
                     SENDER = "Tu Cita 24/7 - Service Poll <no-reply@tucita247.com>"
                     RECIPIENT = email
                     SUBJECT = "Tu Cita 24/7 Service Poll"

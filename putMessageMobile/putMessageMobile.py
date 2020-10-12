@@ -20,7 +20,6 @@ logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 dynamoUpd = boto3.resource('dynamodb', region_name=REGION)
-sns = boto3.client('sns')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -84,16 +83,6 @@ def lambda_handler(event, context):
             }
             # ReturnValues="UPDATED_NEW"
         )
-        # if dateAppo == dateOpe:
-        logger.info("prev envio sns")
-        response = sns.publish(
-            TopicArn='arn:aws:sns:us-east-1:821843840552:tucitaTopic',
-            Subject='MENSAJE',
-            Message=json.dumps({'default': json.dumps({'AppointmentId': appointmentId, 'Chat': conversation})}),
-            MessageStructure='json',
-            MessageAttributes={"TransactionType": {"DataType": "String","StringValue": "MENSAJE"}}
-        )
-        logger.info(response['ResponseMetadata']['HTTPStatusCode'])
 
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
