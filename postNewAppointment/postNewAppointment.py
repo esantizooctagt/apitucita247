@@ -793,8 +793,12 @@ def lambda_handler(event, context):
                     )
 
                     appoInfo = {
+                        'Tipo': 'APPO',
+                        'BusinessId': businessId,
+                        'LocationId': locationId,
                         'AppId': appoId,
                         'ClientId': customerId,
+                        'ProviderId': providerId,
                         'Name': name,
                         'Phone': phone,
                         'OnBehalf': 0,
@@ -802,6 +806,7 @@ def lambda_handler(event, context):
                         'Door': door,
                         'Disability': 0 if disability == '' else int(disability),
                         'DateFull': dateAppointment,
+                        'Type': '2' if qrCode == 'VALID' else '1',
                         'DateAppo': str(int(today.strftime("%H"))-12).rjust(2,'0') + ':00 PM' if int(today.strftime("%H")) > 12 else today.strftime("%H").rjust(2,'0') + ':00 AM'
                     }
 

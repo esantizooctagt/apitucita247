@@ -43,6 +43,8 @@ def lambda_handler(event, context):
         if status == '1' and typeAppo == '1':
             dateAppoIni = today.strftime("%Y-%m-%d-%H-%M")
             dateAppoFin = today.strftime("%Y-%m-%d-23-59")
+        if status == '2':
+            dateAppoFin = today.strftime("%Y-%m-%d-23-59")
         
         lastItem = event['pathParameters']['lastItem']
         appoId = event['pathParameters']['appoId']
