@@ -29,19 +29,11 @@ def lambda_handler(event, context):
         businessId = event['pathParameters']['businessId']
         
         table = dynamodb.Table('TuCita247')
-        response = table.update_item(
+        response = table.delete_item(
             Key={
                 'PKID': 'BUS#' + businessId,
                 'SKID': 'USER#' + userId
-            },
-            UpdateExpression="set #s = :status",
-            ExpressionAttributeNames={
-                '#s': 'STATUS'
-            },
-            ExpressionAttributeValues={
-                ':status': 2
             }
-            # ReturnValues="UPDATED_NEW"
         )
         statusCode = 200
         body = json.dumps({'Message': 'User deleted successfully'})
