@@ -5,7 +5,6 @@ import json
 
 import boto3
 import botocore.exceptions 
-from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
@@ -29,7 +28,7 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
 ses = boto3.client('ses', region_name=REGION)
-api_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://1wn0vx0tva.execute-api.us-east-1.amazonaws.com/prod')
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -141,6 +140,8 @@ def lambda_handler(event, context):
         locationId = data['LocationId']
         providerId = data['ProviderId']
         serviceId = data['ServiceId']
+        language = data['Language']
+        businessName = data['BusinessName']
         door = data['Door'] if 'Door' in data else ''
         phone = data['Phone']
         name = data['Name']
@@ -793,7 +794,7 @@ def lambda_handler(event, context):
                         TransactItems = items
                     )
                     sTime = ''
-                    hTime = int(today.strftime("%H"))
+                    hTime = int(str(dateAppointment[-5:])[0:2])
                     if hTime >= 12:
                         if hTime == 12:
                             sTime = str(hTime) + ':00 PM'
@@ -812,34 +813,21 @@ def lambda_handler(event, context):
                         'ProviderId': providerId,
                         'Name': name,
                         'Phone': phone,
-                        'OnBehalf': 0,
+                        'OnBehalf': '0',
                         'Guests': 0 if guests == '' else int(guests),
                         'Door': door,
                         'Disability': 0 if disability == '' else int(disability),
                         'DateFull': dateAppointment,
                         'Type': '2' if qrCode == 'VALID' else '1',
-                        'DateAppo': hTime
+                        'DateAppo': sTime
                     }
 
                     if dateOpe[0:10] == dateAppointment[0:10]:
-                        toConnections = dynamodb.query(
-                            TableName="Messages",
-                            IndexName="Messages_01",
-                            ReturnConsumedCapacity='TOTAL',
-                            KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK, :connection)',
-                            ExpressionAttributeValues={
-                                ':businessId': {'S': businessId},
-                                ':connection': {'S': '1'}
-                            }
+                        lambdaInv.invoke(
+                            FunctionName='PostMessages',
+                            InvocationType='Event',
+                            Payload=json.dumps(appoInfo)
                         )
-                        for item in json_dynamodb.loads(toConnections['Items']):
-                            connectionId = item['PKID']
-                            try:
-                                api_client.post_to_connection(Data=json.dumps(appoInfo), ConnectionId=connectionId)
-                            except ClientError as e:
-                                logger.error(e)
-                                statusCode = 500
-                                body = json.dumps({'Message': str(e), 'Code': 404})
 
                     if phone != '00000000000':
                         # GET USER PREFERENCE NOTIFICATION
@@ -859,18 +847,30 @@ def lambda_handler(event, context):
                             email = row['EMAIL'] if 'EMAIL' in row else ''
                             playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                         logger.info('Preference user ' + customerId + ' -- ' + str(preference))
+
+                        if qrCode == 'VALID':
+                            if language.lower() == "en":
+                                enMsg = 'Your booking at ' + businessName + ' has been confirmed. For more information, click here https://play.google.com/store?hl=en'
+                            else:
+                                enMsg = 'Su cita en ' + businessName + ' ha sido confirmada. Para más información, oprima aquí https://play.google.com/store?hl=en'
+                        else:
+                            if language.lower() == "en":
+                                enMsg = 'Your booking at ' + businessName + ' has been confirmed. For more information, click here https://play.google.com/store?hl=en'
+                            else:
+                                enMsg = 'Su cita en ' + businessName + ' ha sido confirmada. Para más información, oprima aquí https://play.google.com/store?hl=en'
+
                         #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                         if playerId != '':
                             header = {"Content-Type": "application/json; charset=utf-8"}
                             payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
                                     "include_player_ids": [playerId],
-                                    "contents": {"en": "New appointment Push Notfi"}}
+                                    "contents": {"en": enMsg}}
                             req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
                         if int(preference) == 1:
                             #SMS
                             to_number = phone
-                            bodyStr = 'SMS new appointment'
+                            bodyStr = enMsg
                             sms.publish(
                                 PhoneNumber="+"+to_number,
                                 Message=bodyStr,
@@ -887,14 +887,14 @@ def lambda_handler(event, context):
                             SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
                             RECIPIENT = email
                             SUBJECT = "Tu Cita 24/7 Check-In"
-                            BODY_TEXT = ("You can yo to the nearest entrance to check in")
+                            BODY_TEXT = (enMsg)
                                         
                             # The HTML body of the email.
                             BODY_HTML = """<html>
                             <head></head>
                             <body>
                             <h1>Tu Cita 24/7</h1>
-                            <p>You can yo to the nearest entrance to check in</p>
+                            <p>""" + enMsg + """</p>
                             </body>
                             </html>"""
 

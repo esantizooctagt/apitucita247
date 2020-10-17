@@ -48,14 +48,12 @@ def lambda_handler(event, context):
             }
         )
         getMessage = ''
-        dateAppo = ''
         businessId = ''
         locationId = ''
         dateAppointment = ''
         for row in json_dynamodb.loads(response['Items']):
             getMessage = row['MESSAGES'] if 'MESSAGES' in row else []
             dateAppointment = row['DATE_APPO']
-            dateAppo = row['DATE_APPO'][0:10]
             keys = row['GSI1PK'].split('#')
             businessId = keys[1]
             locationId = keys[3]

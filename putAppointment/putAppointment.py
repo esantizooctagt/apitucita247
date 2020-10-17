@@ -24,6 +24,7 @@ dynamodb = boto3.resource('dynamodb', region_name=REGION)
 dynamodbQuery = boto3.client('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
 ses = boto3.client('ses', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -40,6 +41,8 @@ def lambda_handler(event, context):
         businessId = ''
         locationId = ''
         providerId = ''
+        busId = ''
+        locId = ''
 
         data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
@@ -49,6 +52,8 @@ def lambda_handler(event, context):
         guests = data['Guests'] if 'Guests' in data else ''
         reasonId = data['Reason'] if 'Reason' in data else ''
         customerId = data['CustomerId'] if 'CustomerId' in data else ''
+        businessName = data['BusinessName']
+        language = data['Language']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -66,6 +71,8 @@ def lambda_handler(event, context):
             dataId = row['GSI1PK']
             appoData = str(row['DATE_APPO'])[0:10]+'#APPO#'+appointmentId
             if dataId != '':
+                busId = dataId.split('#')[1]
+                locId = dataId.split('#')[3]
                 businessId = 'BUS#'+dataId.split('#')[1]+'#5'
                 locationId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#5'
                 providerId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#5'
@@ -170,6 +177,19 @@ def lambda_handler(event, context):
                 TransactItems = items
             )
             appo = ''
+            
+            data = {
+                'BusinessId': busId,
+                'LocationId': locId,
+                'AppId': appointmentId,
+                'Tipo': 'CANCEL'
+            }
+            if dateOpe[0:10] == dateAppo[0:10]:
+                lambdaInv.invoke(
+                    FunctionName='PostMessages',
+                    InvocationType='Event',
+                    Payload=json.dumps(data)
+                )
 
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200, 'Appo': appo})
@@ -179,10 +199,16 @@ def lambda_handler(event, context):
         textMess = ''
         if status == 2 or status == 5:
             if status == 2:
-                textMess = 'you can come to the nearest door'
+                if language.lower() == "en":
+                    textMess = 'We are ready to serve you. Please proceed to the entrance.'
+                else:
+                    textMess = 'Estamos listos para servirte. Por favor dirígete a la entrada.'
             else:
-                textMess = 'your appointment was cancelled'
-            # GET USER PREFERENCE NOTIFICATION
+                if language.lower() == "en":
+                    textMess = 'Your booking ' + businessName + ' was cancelled. Reason: ' + reasonId
+                else:
+                    textMess = 'Su cita en ' + businessName + ' fue cancelada. Razón: ' + reasonId
+            # GET USER PREFER  ENCE NOTIFICATION
             response = dynamodbQuery.query(
                 TableName="TuCita247",
                 IndexName="TuCita247_Index",
@@ -205,13 +231,13 @@ def lambda_handler(event, context):
                 header = {"Content-Type": "application/json; charset=utf-8"}
                 payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
                         "include_player_ids": [playerId],
-                        "contents": {"en": textMess + ' Push'}}
+                        "contents": {"en": textMess }}
                 req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
             if int(preference) == 1 and mobile != '00000000000':
                 #SMS
                 to_number = mobile
-                bodyStr = textMess + ' SMS'
+                bodyStr = textMess
                 sms.publish(
                     PhoneNumber="+"+to_number,
                     Message=bodyStr,
@@ -228,14 +254,14 @@ def lambda_handler(event, context):
                 SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
                 RECIPIENT = email
                 SUBJECT = "Tu Cita 24/7 Check-In"
-                BODY_TEXT = ("You can yo to the nearest entrance to check in")
+                BODY_TEXT = (textMess)
                             
                 # The HTML body of the email.
                 BODY_HTML = """<html>
                 <head></head>
                 <body>
                 <h1>Tu Cita 24/7</h1>
-                <p>You can yo to the nearest entrance to check in</p>
+                <p>""" + textMess + """</p>
                 </body>
                 </html>"""
 

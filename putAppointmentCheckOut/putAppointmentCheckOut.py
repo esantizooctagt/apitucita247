@@ -46,6 +46,8 @@ def lambda_handler(event, context):
         businessId = data['BusinessId']
         locationId = data['LocationId']
         providerId = data['ProviderId']
+        language = data['Language']
+        businessName = data['BusinessName']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -246,18 +248,22 @@ def lambda_handler(event, context):
                     email = row['EMAIL'] if 'EMAIL' in row else ''
                     playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                 logger.info('Preference user ' + customerId + ' -- ' + str(preference))
+                if language.lower() == "en":
+                    message = 'Thank you for visiting '+ businessName +'. ' + link
+                else:
+                    message = 'Gracias por visitar '+businessName+'. ' + link
                 #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                 if playerId != '':
                     header = {"Content-Type": "application/json; charset=utf-8"}
                     payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
                             "include_player_ids": [playerId],
-                            "contents": {"en": "You are invited to fill the next poll"}}
+                            "contents": {"en": message}}
                     req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
                 if int(preference) == 1 and mobile != '':
                     #SMS
                     to_number = mobile
-                    bodyStr = 'Please fill the next poll ' + link
+                    bodyStr = message
                     sms.publish(
                         PhoneNumber="+"+to_number,
                         Message=bodyStr,
@@ -273,14 +279,14 @@ def lambda_handler(event, context):
                     SENDER = "Tu Cita 24/7 - Service Poll <no-reply@tucita247.com>"
                     RECIPIENT = email
                     SUBJECT = "Tu Cita 24/7 Service Poll"
-                    BODY_TEXT = ("Please fill the next poll " + link)
+                    BODY_TEXT = (message)
                                 
                     # The HTML body of the email.
                     BODY_HTML = """<html>
                     <head></head>
                     <body>
                     <h1>Tu Cita 24/7</h1>
-                    <strong>Please fill the next poll</strong><p>Link """ + link + """</p>
+                    <strong>""" + message + """</p>
                     </body>
                     </html>"""
 

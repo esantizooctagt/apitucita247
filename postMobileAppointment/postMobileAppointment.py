@@ -722,7 +722,7 @@ def lambda_handler(event, context):
                             playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                         logger.info('Preference user ' + customerId + ' -- ' + str(preference))
 
-                        if language == "en":
+                        if language.lower() == "en":
                             enMsg = 'Your booking at ' + businessName + ' has been confirmed. Find more information at Tu Cita 24/7, in Bookings.'
                         else:
                             enMsg = 'Su cita en ' + businessName + ' ha sido confirmada. Encuentra más información en Tu Cita 24/7, en Mis Citas.'

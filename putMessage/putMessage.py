@@ -23,6 +23,7 @@ dynamodb = boto3.client('dynamodb', region_name=REGION)
 dynamoUpd = boto3.resource('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
 ses = boto3.client('ses', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -42,7 +43,7 @@ def lambda_handler(event, context):
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
-
+        dateOpe = today.strftime("%Y-%m-%d")
         timeChat = today.strftime("%d %B, %I:%M %p")
 
         response = dynamodb.query(
@@ -54,8 +55,15 @@ def lambda_handler(event, context):
             }
         )
         getMessage = ''
+        businessId = ''
+        locationId = ''
+        dateAppointment = ''
         for row in json_dynamodb.loads(response['Items']):
             getMessage = row['MESSAGES'] if 'MESSAGES' in row else []
+            dateAppointment = row['DATE_APPO']
+            keys = row['GSI1PK'].split('#')
+            businessId = keys[1]
+            locationId = keys[3]
 
         conversation = []
         if userType == "1":
@@ -87,6 +95,21 @@ def lambda_handler(event, context):
                 ':unread': "U" if userType == "1" else "H" 
             }
         )
+
+        data = {
+            'BusinessId': businessId,
+            'LocationId': locationId,
+            'AppId': appointmentId,
+            'User': 'U',
+            'Tipo': 'MESS'
+        }
+        if dateOpe[0:10] == dateAppointment[0:10] and userType != "1":
+            lambdaInv.invoke(
+                FunctionName='PostMessages',
+                InvocationType='Event',
+                Payload=json.dumps(data)
+            )
+
         phone = ''
         customerId = ''
         response = dynamodb.query(
