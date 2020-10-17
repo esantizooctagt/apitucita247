@@ -29,6 +29,7 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
 ses = boto3.client('ses', region_name=REGION)
+api_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://1wn0vx0tva.execute-api.us-east-1.amazonaws.com/prod')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -791,6 +792,16 @@ def lambda_handler(event, context):
                     response = dynamodb.transact_write_items(
                         TransactItems = items
                     )
+                    sTime = ''
+                    hTime = int(today.strftime("%H"))
+                    if hTime >= 12:
+                        if hTime == 12:
+                            sTime = str(hTime) + ':00 PM'
+                        else:
+                            hTime = hTime-12
+                            sTime = str(hTime).rjust(2,'0') + ':00 PM'
+                    else:
+                        sTime = str(hTime).rjust(2,'0') + ':00 AM'
 
                     appoInfo = {
                         'Tipo': 'APPO',
@@ -807,8 +818,28 @@ def lambda_handler(event, context):
                         'Disability': 0 if disability == '' else int(disability),
                         'DateFull': dateAppointment,
                         'Type': '2' if qrCode == 'VALID' else '1',
-                        'DateAppo': str(int(today.strftime("%H"))-12).rjust(2,'0') + ':00 PM' if int(today.strftime("%H")) > 12 else today.strftime("%H").rjust(2,'0') + ':00 AM'
+                        'DateAppo': hTime
                     }
+
+                    if dateOpe[0:10] == dateAppointment[0:10]:
+                        toConnections = dynamodb.query(
+                            TableName="Messages",
+                            IndexName="Messages_01",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK, :connection)',
+                            ExpressionAttributeValues={
+                                ':businessId': {'S': businessId},
+                                ':connection': {'S': '1'}
+                            }
+                        )
+                        for item in json_dynamodb.loads(toConnections['Items']):
+                            connectionId = item['PKID']
+                            try:
+                                api_client.post_to_connection(Data=json.dumps(appoInfo), ConnectionId=connectionId)
+                            except ClientError as e:
+                                logger.error(e)
+                                statusCode = 500
+                                body = json.dumps({'Message': str(e), 'Code': 404})
 
                     if phone != '00000000000':
                         # GET USER PREFERENCE NOTIFICATION

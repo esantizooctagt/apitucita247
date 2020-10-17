@@ -20,6 +20,7 @@ logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 dynamoUpd = boto3.resource('dynamodb', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -48,9 +49,16 @@ def lambda_handler(event, context):
         )
         getMessage = ''
         dateAppo = ''
+        businessId = ''
+        locationId = ''
+        dateAppointment = ''
         for row in json_dynamodb.loads(response['Items']):
             getMessage = row['MESSAGES'] if 'MESSAGES' in row else []
+            dateAppointment = row['DATE_APPO']
             dateAppo = row['DATE_APPO'][0:10]
+            keys = row['GSI1PK'].split('#')
+            businessId = keys[1]
+            locationId = keys[3]
 
         conversation = []
         if userType == "1":
@@ -83,6 +91,20 @@ def lambda_handler(event, context):
             }
             # ReturnValues="UPDATED_NEW"
         )
+
+        data = {
+            'BusinessId': businessId,
+            'LocationId': locationId,
+            'AppId': appointmentId,
+            'User': 'U',
+            'Tipo': 'MESS'
+        }
+        if dateOpe[0:10] == dateAppointment[0:10]:
+            lambdaInv.invoke(
+                FunctionName='PostMessages',
+                InvocationType='Event',
+                Payload=json.dumps(data)
+            )
 
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})

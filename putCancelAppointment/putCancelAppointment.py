@@ -4,7 +4,6 @@ import json
 
 import boto3
 import botocore.exceptions
-from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
@@ -21,6 +20,7 @@ logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
 dynamodbQuery = boto3.client('dynamodb', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -31,6 +31,8 @@ def lambda_handler(event, context):
         businessId = ''
         locationId = ''
         providerId = ''
+        locId = ''
+        busId = ''
         guests = 0
 
         appointmentId = event['pathParameters']['appointmentId']
@@ -54,6 +56,8 @@ def lambda_handler(event, context):
             guests = int(row['PEOPLE_QTY'])
             appoData = str(row['DATE_APPO'])[0:10]+'#APPO#'+appointmentId
             if dataId != '':
+                busId = dataId.split('#')[1]
+                locId = dataId.split('#')[3]
                 businessId = 'BUS#'+dataId.split('#')[1]+'#5'
                 locationId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#5'
                 providerId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#5'
@@ -114,7 +118,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'APPO#' + appointmentId}, 
                     "SKID": {"S": 'APPO#' + appointmentId}, 
                 },
-                "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, TIMECANCEL = :dateope, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07",
+                "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI9SK = :key01, GSI2SK = :key02, TIMECANCEL = :dateope, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07",
                 "ExpressionAttributeValues": { 
                     ":status": {"N": str(status)}, 
                     ":key01": {"S": str(status) + '#DT#' + str(dateAppo)}, 
@@ -138,6 +142,18 @@ def lambda_handler(event, context):
         response = dynamodbQuery.transact_write_items(
             TransactItems = items
         )
+        data = {
+            'BusinessId': busId,
+            'LocationId': locId,
+            'AppId': appointmentId,
+            'Tipo': 'CANCEL'
+        }
+        if dateOpe[0:10] == dateAppo[0:10]:
+            lambdaInv.invoke(
+                FunctionName='PostMessages',
+                InvocationType='Event',
+                Payload=json.dumps(data)
+            )
 
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})

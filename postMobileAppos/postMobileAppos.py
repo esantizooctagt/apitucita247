@@ -26,6 +26,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -404,6 +405,41 @@ def lambda_handler(event, context):
             response = dynamodb.transact_write_items(
                 TransactItems = items
             )
+            sTime = ''
+            hTime = int(str(hourDate)[0:2])
+            if hTime >= 12:
+                if hTime == 12:
+                    sTime = str(hTime) + ':00 PM'
+                else:
+                    hTime = hTime-12
+                    sTime = str(hTime).rjust(2,'0') + ':00 PM'
+            else:
+                sTime = str(hTime).rjust(2,'0') + ':00 AM'
+
+            appoInfo = {
+                'Tipo': 'APPO',
+                'BusinessId': businessId,
+                'LocationId': locationId,
+                'AppId': appoId,
+                'ClientId': customerId,
+                'ProviderId': providerId,
+                'Name': name,
+                'Phone': phone,
+                'OnBehalf': str(onbehalf),
+                'Guests': 0 if str(guest) == '' else int(guest),
+                'Door': door,
+                'Disability': 0 if disability == '' else int(disability),
+                'DateFull': dateAppointment,
+                'Type': '1',
+                'DateAppo': sTime
+            }
+            if dateOpe[0:10] == dateAppointment[0:10]:
+                lambdaInv.invoke(
+                    FunctionName='PostMessages',
+                    InvocationType='Event',
+                    Payload=json.dumps(appoInfo)
+                )
+
             statusCode = 200
             body = json.dumps({'Message': 'Appointment saved successfully', 'Code': 200})
         

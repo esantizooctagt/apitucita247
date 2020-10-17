@@ -29,6 +29,7 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
 ses = boto3.client('ses', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -145,6 +146,8 @@ def lambda_handler(event, context):
         onbehalf = data['OnBehalf']
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%m-%d-%Y')
         hourDate = data['AppoHour']
+        businessName = data['BusinessName']
+        language = data['Language']
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
@@ -664,6 +667,41 @@ def lambda_handler(event, context):
                     response = dynamodb.transact_write_items(
                         TransactItems = items
                     )
+                    sTime = ''
+                    hTime = int(str(hourDate)[0:2])
+                    if hTime >= 12:
+                        if hTime == 12:
+                            sTime = str(hTime) + ':00 PM'
+                        else:
+                            hTime = hTime-12
+                            sTime = str(hTime).rjust(2,'0') + ':00 PM'
+                    else:
+                        sTime = str(hTime).rjust(2,'0') + ':00 AM'
+
+                    appoInfo = {
+                        'Tipo': 'APPO',
+                        'BusinessId': businessId,
+                        'LocationId': locationId,
+                        'AppId': appoId,
+                        'ClientId': customerId,
+                        'ProviderId': providerId,
+                        'Name': name,
+                        'Phone': phone,
+                        'OnBehalf': str(onbehalf),
+                        'Guests': 0 if str(guest) == '' else int(guest),
+                        'Door': door,
+                        'Disability': 0 if disability == '' else int(disability),
+                        'DateFull': dateAppointment,
+                        'Type': '1',
+                        'DateAppo': sTime
+                    }
+
+                    if dateOpe[0:10] == dateAppointment[0:10]:
+                        lambdaInv.invoke(
+                            FunctionName='PostMessages',
+                            InvocationType='Event',
+                            Payload=json.dumps(appoInfo)
+                        )
 
                     if phone != '00000000000':
                         # GET USER PREFERENCE NOTIFICATION
@@ -684,18 +722,23 @@ def lambda_handler(event, context):
                             playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                         logger.info('Preference user ' + customerId + ' -- ' + str(preference))
 
+                        if language == "en":
+                            enMsg = 'Your booking at ' + businessName + ' has been confirmed. Find more information at Tu Cita 24/7, in Bookings.'
+                        else:
+                            enMsg = 'Su cita en ' + businessName + ' ha sido confirmada. Encuentra más información en Tu Cita 24/7, en Mis Citas.'
+
                         #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                         if playerId != '':
                             header = {"Content-Type": "application/json; charset=utf-8"}
                             payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
                                     "include_player_ids": [playerId],
-                                    "contents": {"en": "Your appointment was saved new Push"}}
+                                    "contents": {"en": enMsg}}
                             req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
                         
                         if int(preference) == 1:
                             #SMS
                             to_number = phone
-                            bodyStr = 'SMS Message your appointment saved'
+                            bodyStr = enMsg
                             sms.publish(
                                 PhoneNumber="+"+to_number,
                                 Message=bodyStr,
@@ -711,15 +754,15 @@ def lambda_handler(event, context):
                             #EMAIL
                             SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
                             RECIPIENT = email
-                            SUBJECT = "Tu Cita 24/7 Check-In"
-                            BODY_TEXT = ("Email your appointment saved")
+                            SUBJECT = "Tu Cita 24/7"
+                            BODY_TEXT = (enMsg)
                                         
                             # The HTML body of the email.
                             BODY_HTML = """<html>
                             <head></head>
                             <body>
                             <h1>Tu Cita 24/7</h1>
-                            <p>Email your appointment saved</p>
+                            <p>""" + enMsg + """</p>
                             </body>
                             </html>"""
 
@@ -750,7 +793,7 @@ def lambda_handler(event, context):
                                 Source=SENDER
                             )
                     statusCode = 200
-                    body = json.dumps({'Message': 'Appointment saved successfully', 'Code': 200})
+                    body = json.dumps({'Message': 'Appointment saved successfully', 'Code': 200, 'Appointment': appoInfo})
         if statusCode == '':
             statusCode = 500
             body = json.dumps({'Message': 'Error !!!', 'Code': 400})
