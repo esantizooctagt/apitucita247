@@ -20,6 +20,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def cleanNullTerms(d):
@@ -151,6 +152,21 @@ def lambda_handler(event, context):
         tranAppo = dynamodb.transact_write_items(
             TransactItems = items
         )
+
+        if dateOpe[0:10] == dateAppo[0:10]:
+            data = {
+                'BusinessId': businessId,
+                'LocationId': locationId,
+                'AppId': appointmentId,
+                'Guests': qty,
+                'Tipo': 'MOVE',
+                'To': 'CHECKIN'
+            }
+            lambdaInv.invoke(
+                FunctionName='PostMessages',
+                InvocationType='Event',
+                Payload=json.dumps(data)
+            )
 
         # table = dynamodbTable.Table('TuCita247')
         # response = table.update_item(

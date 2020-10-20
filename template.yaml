@@ -817,6 +817,7 @@ Resources:
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
         - arn:aws:lambda:us-east-1:821843840552:layer:requests:7
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -833,11 +834,12 @@ Resources:
       FunctionName: PutAppointmentCheckInQR
       CodeUri: putAppointmentCheckInQR/
       Handler: putAppointmentCheckInQR.lambda_handler
-      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Role: arn:aws:iam::821843840552:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -938,12 +940,13 @@ Resources:
       FunctionName: PutClosedLocation
       CodeUri: putClosedLocation/
       Handler: putClosedLocation.lambda_handler
-      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Role: arn:aws:iam::821843840552:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
         - arn:aws:lambda:us-east-1:821843840552:layer:requests:7
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi

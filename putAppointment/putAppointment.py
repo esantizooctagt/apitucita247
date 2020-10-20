@@ -95,6 +95,20 @@ def lambda_handler(event, context):
                 ReturnValues="UPDATED_NEW"
             )
             appo = json_dynamodb.loads(response['Attributes'])
+
+            if dateOpe[0:10] == dateAppo[0:10]:
+                data = {
+                    'BusinessId': busId,
+                    'LocationId': locId,
+                    'AppId': appointmentId,
+                    'Tipo': 'MOVE',
+                    'To': 'PRECHECK'
+                }
+                lambdaInv.invoke(
+                    FunctionName='PostMessages',
+                    InvocationType='Event',
+                    Payload=json.dumps(data)
+                )
         else:
             items = []
             getData = dynamodbQuery.query(
@@ -178,13 +192,13 @@ def lambda_handler(event, context):
             )
             appo = ''
             
-            data = {
-                'BusinessId': busId,
-                'LocationId': locId,
-                'AppId': appointmentId,
-                'Tipo': 'CANCEL'
-            }
             if dateOpe[0:10] == dateAppo[0:10]:
+                data = {
+                    'BusinessId': busId,
+                    'LocationId': locId,
+                    'AppId': appointmentId,
+                    'Tipo': 'CANCEL'
+                }
                 lambdaInv.invoke(
                     FunctionName='PostMessages',
                     InvocationType='Event',

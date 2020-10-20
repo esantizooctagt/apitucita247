@@ -24,6 +24,7 @@ dynamodb = boto3.resource('dynamodb', region_name=REGION)
 dynamoQr = boto3.client('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
 ses = boto3.client('ses', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 #falta cerrar las horas del dia a partir de la fecha/hora
 def lambda_handler(event, context):
@@ -56,6 +57,17 @@ def lambda_handler(event, context):
             ExpressionAttributeNames={'#o': 'OPEN'},
             ConditionExpression='#o = :initVal',
             ReturnValues="UPDATED_NEW"
+        )
+
+        data = {
+            'BusinessId': businessId,
+            'LocationId': locationId,
+            'Tipo': 'CLOSED'
+        }
+        lambdaInv.invoke(
+            FunctionName='PostMessages',
+            InvocationType='Event',
+            Payload=json.dumps(data)
         )
 
         if closed == 1:
