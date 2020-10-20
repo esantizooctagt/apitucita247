@@ -101,19 +101,6 @@ def lambda_handler(event, context):
             }
         }
         items.append(cleanNullTerms(recordset))
-        
-        # recordset = {
-        #     "Update": {
-        #         "TableName": "TuCita247",
-        #         "Key": {
-        #             "PKID": {"S": 'APPO#' + appointmentId}, 
-        #             "SKID": {"S": 'APPO#' + appointmentId}
-        #         },
-        #         "UpdateExpression": "REMOVE GSI3PK, GSI3SK", 
-        #         "ReturnValuesOnConditionCheckFailure": "NONE" 
-        #     }
-        # }
-        # items.append(recordset)
 
         recordset = {
             "Update": {
@@ -132,51 +119,22 @@ def lambda_handler(event, context):
         }
         items.append(recordset)
 
-        # recordset = {
-        #     "Update": {
-        #         "TableName": "TuCita247",
-        #         "Key": {
-        #             "PKID": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-        #             "SKID": {"S": 'PRO#' + providerId}, 
-        #         },
-        #         "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
-        #         "ExpressionAttributeValues": { 
-        #             ":increment": {"N": str(qty)}
-        #         },
-        #         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-        #         "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-        #     }
-        # }
-        # items.append(recordset)
-
         tranAppo = dynamodb.transact_write_items(
             TransactItems = items
         )
-
-        if dateOpe[0:10] == dateAppo[0:10]:
-            data = {
-                'BusinessId': businessId,
-                'LocationId': locationId,
-                'AppId': appointmentId,
-                'Guests': qty,
-                'Tipo': 'MOVE',
-                'To': 'CHECKIN'
-            }
-            lambdaInv.invoke(
-                FunctionName='PostMessages',
-                InvocationType='Event',
-                Payload=json.dumps(data)
-            )
-
-        # table = dynamodbTable.Table('TuCita247')
-        # response = table.update_item(
-        #     Key={
-        #         'PKID': 'APPO#' + appointmentId,
-        #         'SKID': 'APPO#' + appointmentId
-        #     },
-        #     UpdateExpression="REMOVE GSI3PK, GSI3SK",
-        #     ReturnValues="NONE"
-        # )
+        data = {
+            'BusinessId': businessId,
+            'LocationId': locationId,
+            'AppId': appointmentId,
+            'Guests': qty,
+            'Tipo': 'MOVE',
+            'To': 'CHECKIN'
+        }
+        lambdaInv.invoke(
+            FunctionName='PostMessages',
+            InvocationType='Event',
+            Payload=json.dumps(data)
+        )
         
         logger.info(tranAppo)
         statusCode = 200

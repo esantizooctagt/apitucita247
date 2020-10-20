@@ -128,28 +128,10 @@ def lambda_handler(event, context):
             }
             items.append(recordset)
 
-            # recordset = {
-            #     "Update": {
-            #         "TableName": "TuCita247",
-            #         "Key": {
-            #             "PKID": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-            #             "SKID": {"S": 'PRO#' + providerId}, 
-            #         },
-            #         "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN + :increment",
-            #         "ExpressionAttributeValues": { 
-            #             ":increment": {"N": str(qty)}
-            #         },
-            #         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-            #         "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-            #     }
-            # }
-            # items.append(recordset)
-
             tranAppo = dynamodb.transact_write_items(
                 TransactItems = items
             )
-            logger.info("entro dateOpe " + dateOpe[0:10])
-            logger.info("entro daeAppo " +  dateAppo[0:10])
+            
             if dateOpe[0:10] == dateAppo[0:10]:
                 data = {
                     'BusinessId': businessId,
@@ -159,8 +141,6 @@ def lambda_handler(event, context):
                     'Tipo': 'MOVE',
                     'To': 'CHECKIN'
                 }
-                logger.info("entro")
-                logger.info(data)
                 lambdaInv.invoke(
                     FunctionName='PostMessages',
                     InvocationType='Event',
