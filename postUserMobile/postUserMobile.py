@@ -45,7 +45,7 @@ def lambda_handler(event, context):
             oldRecord = {
                 "Delete": {
                     "TableName": "TuCita247",
-                    "Item": {
+                    "Key": {
                         "PKID": {"S": 'MOB#' + data['Phone']},
                         "SKID": {"S": 'MOB#' + data['Phone']}
                     },
