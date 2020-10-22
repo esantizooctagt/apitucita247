@@ -76,6 +76,7 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
+        language = 'en'
         data = json.loads(event['body'])
         businessId = str(uuid.uuid4()).replace("-","")
         userId = str(uuid.uuid4()).replace("-","")
@@ -383,16 +384,44 @@ def lambda_handler(event, context):
             SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
             RECIPIENT = data['Email']
             SUBJECT = "Tu Cita 24/7 - Welcome Email"
-            BODY_TEXT = ("Your Cita 24/7 account is already created, click the link to activate it https://console.tucita247.com/en/verification/" + userId + "/0/"+passDecrypt+" ")
-            
+            if language == 'en':
+                BODY_TEXT = ("Hello and welcome! Thank you for joining Tu Cita 24/7. https://console.tucita247.com/en/verification/" + userId + "/0/"+passDecrypt+" .Once you activate your account, you can add images, create keywords, services, opening hours, and much more information about your business. Your customers will love being able to book your services online 24/7, and you will love the benefits of the system. If you need any help, choose your favourite way. Our friendly support staff is here to help you Monday through Friday from 9:00 AM to 6:00 PM. " +
+                        "Chat with us. Click the “Live Help” tab at www.tucita247.com or on your administration page after you activating your account. Email us at support@tucita247.com. Call us at xxx-xxx-xxxx. All the best from the Tu Cita 24/7 support team.")
+            else:
+                BODY_TEXT = ("¡Hola y bienvenido! Gracias por unirse a Tu Cita 24/7. Haga https://console.tucita247.com/en/verification/" + userId + "/0/"+passDecrypt+" .Una vez que active su cuenta, puede agregar imágenes, crear palabras clave, servicios, horarios de apertura y mucha más información sobre su negocio. A sus clientes les encantará poder reservar sus servicios en línea 24/7, y a usted le encantará los beneficios del sistema. Si necesita ayuda, elija su forma favorita. Nuestro amable personal de soporte está aquí para ayudarlo de lunes a viernes de 9:00 AM a 6:00 PM." +
+                        "Habla con nosotros. Haga click en la pestaña 'Ayuda en vivo' en www.tucita247.com o en su página de administración después de activar su cuenta. Envíenos un correo electrónico a support@tucita247.com. Llámanos al xxx-xxx-xxxx. Mucho éxito de parte del equipo de Tu Cita 24/7.")
+
             # The HTML body of the email.
-            BODY_HTML = """<html>
-            <head></head>
-            <body>
-            <h1>Tu Cita 24/7</h1>
-            <p>Your Cita 24/7 account is already created, click the link to activate it <a href='https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """'>Click here</a> or copy and paste this link https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """</p>
-            </body>
-            </html>"""
+            if language == 'en':
+                BODY_HTML = """<html>
+                <head></head>
+                <body>
+                <h1>Tu Cita 24/7</h1>
+                <h3>Hello and welcome!</h3>
+                <p>Thank you for joining Tu Cita 24/7. <a href='https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """'>Click here</a> to activate your account, or copy and paste this link https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """</p>
+                <p>Once you activate your account, you can add images, create keywords, services, opening hours, and much more information about your business. Your customers will love being able to book your services online 24/7, and you will love the benefits of the system.</p>
+                <p><strong>If you need any help, choose your favourite way. Our friendly support staff is here to help you Monday through Friday from 9:00 AM to 6:00 PM. </strong></p>
+                <p>Chat with us. Click the “Live Help” tab at <a href='https://www.tucita247.com'>www.tucita247.com</a> or on your administration page after you activating your account.</p>
+                <p>Email us at <a href="mailto:support@tucita247.com">support@tucita247.com</a></p>
+                <p>Call us at xxx-xxx-xxxx.</p>
+                <p><strong>All the best from the Tu Cita 24/7 support team.</strong></p>
+                </body>
+                </html>"""
+            else:
+                BODY_HTML = """<html>
+                <head></head>
+                <body>
+                <h1>Tu Cita 24/7</h1>
+                <h3>¡Hola y bienvenido!</h3>
+                <p>Gracias por unirse a Tu Cita 24/7. Haga <a href='https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """'>Click here</a> para activar su cuenta, o copie y pegue este enlace https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """</p>
+                <p>Una vez que active su cuenta, puede agregar imágenes, crear palabras clave, servicios, horarios de apertura y mucha más información sobre su negocio. A sus clientes les encantará poder reservar sus servicios en línea 24/7, y a usted le encantará los beneficios del sistema.</p>
+                <p><strong>Si necesita ayuda, elija su forma favorita. Nuestro amable personal de soporte está aquí para ayudarlo de lunes a viernes de 9:00 AM a 6:00 PM.</strong></p>
+                <p>Habla con nosotros. Haga click en la pestaña "Ayuda en vivo" en <a href='https://www.tucita247.com'>www.tucita247.com</a> o en su página de administración después de activar su cuenta.</p>
+                <p>Envíenos un correo electrónico a <a href="mailto:support@tucita247.com">support@tucita247.com</a></p>
+                <p>Llámanos al xxx-xxx-xxxx.</p>
+                <p><strong>Mucho éxito de parte del equipo de Tu Cita 24/7.</strong></p>
+                </body>
+                </html>"""
 
             CHARSET = "UTF-8"
             logger.info("prev send email")
