@@ -42,8 +42,9 @@ def lambda_handler(event, context):
                 size=10
             )
         if city == '_' and sector == '_':
+            data = queryStd.replace(' ', '~3 ')
             response = cloudsearch.search(
-                query='+'+queryStd+'*',
+                query=data,
                 queryParser='simple',
                 sort='tipo asc, _score desc, name_esp asc, name_eng asc',
                 highlight='{"name_esp":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"}, "name_eng":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"}, "name":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"} }',

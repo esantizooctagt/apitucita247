@@ -37,11 +37,11 @@ def lambda_handler(event, context):
             search = ''
             e = {'#s': 'STATUS'}
             a = {':businessId': {'S': 'BUS#' + businessId}, ':userId': {'S': 'USER#'}, ':stat': {'N': '2'}, ':super':{'N': '0'}}
-            f = '#s < :stat and SUPER_ADMIN = :super'
+            f = '#s <> :stat and SUPER_ADMIN = :super'
         else:
             e = {'#s': 'STATUS','#n': 'FIRST_NAME'}
             a = {':businessId': {'S': 'BUS#' + businessId}, ':userId': {'S': 'USER#'}, ':search': {'S': search}, ':stat': {'N': '2'}, ':super':{'N': '0'}}
-            f = '#s < :stat AND contains ( #n , :search ) and SUPER_ADMIN = :super'
+            f = '#s <> :stat AND contains ( #n , :search ) and SUPER_ADMIN = :super'
             
         if lastItem == '_':
             lastItem = ''
@@ -77,7 +77,8 @@ def lambda_handler(event, context):
                 'First_Name': row['FIRST_NAME'],
                 'Last_Name': row['LAST_NAME'],
                 'Email': row['GSI1PK'].replace('EMAIL#',''),
-                'Business_Id': row['PKID'].replace('BUS#','')
+                'Business_Id': row['PKID'].replace('BUS#',''),
+                'Status': row['STATUS']
             }
             records.append(recordset)
             

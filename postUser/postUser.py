@@ -116,16 +116,18 @@ def lambda_handler(event, context):
         )
         logger.info("data")
         try:
-            key = secreKey.encode()
-            ct_b64 = data['Password'] 
-            passDecrypt = decrypt(ct_b64, key)
+            # key = secreKey.encode()
+            # ct_b64 = data['Password'] 
+            # passDecrypt = decrypt(ct_b64, key)
 
+            logger.info(cognitoClientId)
+            logger.info(email)
             client = boto3.client('cognito-idp')
-            response = client.sign_up(
+            cognitoUser = client.sign_up(
                 ClientId=cognitoClientId,
                 SecretHash=get_secret_hash(email),
                 Username=email,
-                Password=passDecrypt.decode('utf-8'),
+                Password='Temporal2020', #passDecrypt.decode('utf-8'),
                 UserAttributes=[
                     {
                         'Name': 'email',
@@ -145,7 +147,7 @@ def lambda_handler(event, context):
                     }
                 ]
             )
-
+            logger.info(cognitoUser)
             statusCode = 200
             body = json.dumps({'Message': 'User added successfully'})
 

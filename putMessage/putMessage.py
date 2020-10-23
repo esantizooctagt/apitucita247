@@ -124,89 +124,90 @@ def lambda_handler(event, context):
             customerId = row['GSI2PK'].replace('CUS#','')
             phone = row['PHONE']
 
-        # if phone != '00000000000':
-        #     # GET USER PREFERENCE NOTIFICATION
-        #     response = dynamodb.query(
-        #         TableName="TuCita247",
-        #         IndexName="TuCita247_Index",
-        #         ReturnConsumedCapacity='TOTAL',
-        #         KeyConditionExpression='GSI1PK = :key AND GSI1SK = :key',
-        #         ExpressionAttributeValues={
-        #             ':key': {'S': 'CUS#' + customerId}
-        #         }
-        #     )
-        #     preference = 0
-        #     playerId = ''
-        #     for row in json_dynamodb.loads(response['Items']):
-        #         preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
-        #         email = row['EMAIL'] if 'EMAIL' in row else ''
-        #         playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-        #     logger.info('Preference user ' + customerId + ' -- ' + str(preference))
-        #     #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
-        #     if playerId != '':
-        #         header = {"Content-Type": "application/json; charset=utf-8"}
-        #         payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
-        #                 "include_player_ids": [playerId],
-        #                 "contents": {"en": "You received a new message"}}
-        #         req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+        if phone != '00000000000':
+            # GET USER PREFERENCE NOTIFICATION
+            response = dynamodb.query(
+                TableName="TuCita247",
+                IndexName="TuCita247_Index",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='GSI1PK = :key AND GSI1SK = :key',
+                ExpressionAttributeValues={
+                    ':key': {'S': 'CUS#' + customerId}
+                }
+            )
+            preference = 0
+            playerId = ''
+            for row in json_dynamodb.loads(response['Items']):
+                preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
+                email = row['EMAIL'] if 'EMAIL' in row else ''
+                playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
+            logger.info('Preference user ' + customerId + ' -- ' + str(preference))
+            sendMsg = 'You received a new message: ' + message
+            #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
+            if playerId != '':
+                header = {"Content-Type": "application/json; charset=utf-8"}
+                payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
+                        "include_player_ids": [playerId],
+                        "contents": {"en": sendMsg}}
+                req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
-        #     if int(preference) == 1:
-        #         #SMS
-        #         to_number = phone
-        #         bodyStr = 'You received a new message'
-        #         sms.publish(
-        #             PhoneNumber="+"+to_number,
-        #             Message=bodyStr,
-        #             MessageAttributes={
-        #                     'AWS.SNS.SMS.SMSType': {
-        #                     'DataType': 'String',
-        #                     'StringValue': 'Transactional'
-        #                 }
-        #             }
-        #         )
+            if int(preference) == 1:
+                #SMS
+                to_number = phone
+                bodyStr = sendMsg
+                sms.publish(
+                    PhoneNumber="+"+to_number,
+                    Message=bodyStr,
+                    MessageAttributes={
+                            'AWS.SNS.SMS.SMSType': {
+                            'DataType': 'String',
+                            'StringValue': 'Transactional'
+                        }
+                    }
+                )
                 
-        #     if int(preference) == 2 and email != '':
-        #         #EMAIL
-        #         SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
-        #         RECIPIENT = email
-        #         SUBJECT = "Tu Cita 24/7 Check-In"
-        #         BODY_TEXT = ("You received a new message")
+            if int(preference) == 2 and email != '':
+                #EMAIL
+                SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+                RECIPIENT = email
+                SUBJECT = "Tu Cita 24/7 Check-In"
+                BODY_TEXT = (sendMsg)
                             
-        #         # The HTML body of the email.
-        #         BODY_HTML = """<html>
-        #         <head></head>
-        #         <body>
-        #         <h1>Tu Cita 24/7</h1>
-        #         <p>""" + "You received a new message" + """</p>
-        #         </body>
-        #         </html>"""
+                # The HTML body of the email.
+                BODY_HTML = """<html>
+                <head></head>
+                <body>
+                <h1>Tu Cita 24/7</h1>
+                <p>""" + sendMsg + """</p>
+                </body>
+                </html>"""
 
-        #         CHARSET = "UTF-8"
+                CHARSET = "UTF-8"
 
-        #         response = ses.send_email(
-        #             Destination={
-        #                 'ToAddresses': [
-        #                     RECIPIENT,
-        #                 ],
-        #             },
-        #             Message={
-        #                 'Body': {
-        #                     'Html': {
-        #                         'Charset': CHARSET,
-        #                         'Data': BODY_HTML,
-        #                     },
-        #                     'Text': {
-        #                         'Charset': CHARSET,
-        #                         'Data': BODY_TEXT,
-        #                     },
-        #                 },
-        #                 'Subject': {
-        #                     'Charset': CHARSET,
-        #                     'Data': SUBJECT,
-        #                 },
-        #             },
-        #             Source=SENDER
-        #         )
+                response = ses.send_email(
+                    Destination={
+                        'ToAddresses': [
+                            RECIPIENT,
+                        ],
+                    },
+                    Message={
+                        'Body': {
+                            'Html': {
+                                'Charset': CHARSET,
+                                'Data': BODY_HTML,
+                            },
+                            'Text': {
+                                'Charset': CHARSET,
+                                'Data': BODY_TEXT,
+                            },
+                        },
+                        'Subject': {
+                            'Charset': CHARSET,
+                            'Data': SUBJECT,
+                        },
+                    },
+                    Source=SENDER
+                )
 
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})

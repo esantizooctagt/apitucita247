@@ -101,6 +101,7 @@ def lambda_handler(event, context):
                     'BusinessId': busId,
                     'LocationId': locId,
                     'AppId': appointmentId,
+                    'Time': dateOpe,
                     'Tipo': 'MOVE',
                     'To': 'PRECHECK'
                 }

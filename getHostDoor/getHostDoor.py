@@ -81,17 +81,6 @@ def lambda_handler(event, context):
                         }
                         providers.append(recordset)
 
-                    if 'OPEN_DATE' in loc and 'OPEN' in loc:
-                        if loc['OPEN_DATE'][0:10] < dateOpe and loc['OPEN'] == 1:
-                            open = 1
-                            closed = 1
-                        if loc['OPEN_DATE'][0:10] == dateOpe or loc['OPEN_DATE'] == '':
-                            open = loc['OPEN']
-                            closed = 0
-                    else:
-                        open = 0
-                        closed = 0
-                    
                     recordset = {
                         'LocationId': locationId,
                         'Providers': providers,
@@ -99,8 +88,7 @@ def lambda_handler(event, context):
                         'Name': loc['NAME'],
                         'MaxCustomers': loc['MAX_CUSTOMER'],
                         'ManualCheckOut': loc['MANUAL_CHECK_OUT'],
-                        'Open': open,
-                        'Closed': closed
+                        'Open': loc['OPEN']
                     }
                     locations.append(recordset)
             else:
@@ -114,17 +102,6 @@ def lambda_handler(event, context):
                     }
                 )
                 for loc in json_dynamodb.loads(locs['Items']):
-                    if 'OPEN_DATE' in loc and 'OPEN' in loc:
-                        if loc['OPEN_DATE'][0:10] < dateOpe and loc['OPEN'] == 1:
-                            open = 1
-                            closed = 1
-                        if loc['OPEN_DATE'][0:10] == dateOpe or loc['OPEN_DATE'] == '':
-                            open = loc['OPEN']
-                            closed = 0
-                    else:
-                        open = 0
-                        closed = 0
-
                     serv = dynamodb.query(
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
@@ -149,8 +126,7 @@ def lambda_handler(event, context):
                         'Name': loc['NAME'],
                         'MaxCustomers': loc['MAX_CUSTOMER'],
                         'ManualCheckOut': loc['MANUAL_CHECK_OUT'],
-                        'Open': open,
-                        'Closed': closed
+                        'Open': loc['OPEN']
                     }
                     locations.append(recordset)
 
