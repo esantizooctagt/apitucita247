@@ -131,7 +131,7 @@ def lambda_handler(event, context):
 
         lastItem = ''
         while 'LastEvaluatedKey' in response:
-            lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])
+            lastItem = response['LastEvaluatedKey']
             if typeAppo != '_':
                 n = {'#t': 'TYPE'}
                 f = '#t = :type'

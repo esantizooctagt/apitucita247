@@ -20,6 +20,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -49,6 +50,17 @@ def lambda_handler(event, context):
             ExpressionAttributeNames={'#o': 'OPEN'},
             ConditionExpression='attribute_not_exists(#o) OR #o = :initVal',
             ReturnValues="UPDATED_NEW"
+        )
+
+        data = {
+            'BusinessId': businessId,
+            'LocationId': locationId,
+            'Tipo': 'OPEN'
+        }
+        lambdaInv.invoke(
+            FunctionName='PostMessages',
+            InvocationType='Event',
+            Payload=json.dumps(data)
         )
 
         statusCode = 200
