@@ -607,7 +607,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointments/{businessId}/{locationId}/{providerId}/{dateAppoIni}/{dateAppoFin}/{status}/{type}/{lastItem}/{appoId}
+            Path: /appointments/{businessId}/{locationId}/{providerId}/{dateAppoIni}/{dateAppoFin}/{status}/{type}
             Method: get
             ApiId: !Ref HttpApi
     

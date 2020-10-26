@@ -48,30 +48,52 @@ def lambda_handler(event, context):
         hourNow = today.strftime("%H")
 
         table = dynamodb.Table('TuCita247')
-        response = table.update_item(
-            Key={
-                'PKID': 'BUS#' + businessId,
-                'SKID': 'LOC#' + locationId
-            },
-            UpdateExpression="SET PEOPLE_CHECK_IN = :qty, OPEN_DATE = :closed, #o = :open", 
-            ExpressionAttributeValues= {':qty': 0, ':closed': '', ':initVal': 1, ':open': 0},
-            ExpressionAttributeNames={'#o': 'OPEN'},
-            ConditionExpression='#o = :initVal',
-            ReturnValues="UPDATED_NEW"
-        )
+        if closed == 0:
+            response = table.update_item(
+                Key={
+                    'PKID': 'BUS#' + businessId,
+                    'SKID': 'LOC#' + locationId
+                },
+                UpdateExpression="SET PEOPLE_CHECK_IN = :qty", 
+                ExpressionAttributeValues= {':qty': 0},
+                ReturnValues="UPDATED_NEW"
+            )
 
-        data = {
-            'BusinessId': businessId,
-            'LocationId': locationId,
-            'Tipo': 'CLOSED'
-        }
-        lambdaInv.invoke(
-            FunctionName='PostMessages',
-            InvocationType='Event',
-            Payload=json.dumps(data)
-        )
+            data = {
+                'BusinessId': businessId,
+                'LocationId': locationId,
+                'Tipo': 'RESET'
+            }
+            lambdaInv.invoke(
+                FunctionName='PostMessages',
+                InvocationType='Event',
+                Payload=json.dumps(data)
+            )
 
         if closed == 1:
+            response = table.update_item(
+                Key={
+                    'PKID': 'BUS#' + businessId,
+                    'SKID': 'LOC#' + locationId
+                },
+                UpdateExpression="SET PEOPLE_CHECK_IN = :qty, OPEN_DATE = :closed, #o = :open", 
+                ExpressionAttributeValues= {':qty': 0, ':closed': '', ':initVal': 1, ':open': 0},
+                ExpressionAttributeNames={'#o': 'OPEN'},
+                ConditionExpression='#o = :initVal',
+                ReturnValues="UPDATED_NEW"
+            )
+
+            data = {
+                'BusinessId': businessId,
+                'LocationId': locationId,
+                'Tipo': 'CLOSED'
+            }
+            lambdaInv.invoke(
+                FunctionName='PostMessages',
+                InvocationType='Event',
+                Payload=json.dumps(data)
+            )
+
             providers = dynamoQr.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -96,10 +118,12 @@ def lambda_handler(event, context):
                     )
                     #DISABLED HOURS FROM NOW TO 23
                     for hr in range(int(hourNow), 24):
+                        logger.info('LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow)
+                        logger.info('HR#'+str(hr).zfill(2)+'-00')
                         updHr = table.update_item(
                             Key={
                                 'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow,
-                                'SKID': 'HR#'+hr.zfill(2)+'-00'
+                                'SKID': 'HR#'+str(hr).zfill(2)+'-00'
                             },
                             UpdateExpression="SET AVAILABLE = :available, CANCEL = :cancel, TIME_SERVICE = :service",
                             ExpressionAttributeValues={
@@ -216,7 +240,6 @@ def lambda_handler(event, context):
                                 },
                                 Source=SENDER
                             )
-
 
         statusCode = 200
         body = json.dumps({'Message': 'Service closed successfully', 'Code': 200, 'Business': json_dynamodb.loads(response['Attributes'])})

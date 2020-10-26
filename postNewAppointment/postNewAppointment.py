@@ -527,9 +527,10 @@ def lambda_handler(event, context):
                         getPhone = dynamodb.query(
                             TableName = "TuCita247",
                             ReturnConsumedCapacity = 'TOTAL',
-                            KeyConditionExpression = 'PKID = :phone',
+                            KeyConditionExpression = 'PKID = :phone AND begins_with(SKID, :customer)',
                             ExpressionAttributeValues = {
-                                ':phone': {'S': 'MOB#' + phone}
+                                ':phone': {'S': 'MOB#' + phone},
+                                ':customer': {'S': 'CUS#'}
                             }
                         )
                         for phoneNumber in json_dynamodb.loads(getPhone['Items']):
@@ -605,7 +606,7 @@ def lambda_handler(event, context):
                                 "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId}, 
                                 "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment}, 
                                 "GSI2PK": {"S": 'CUS#' + customerId},
-                                "GSI2SK": {"S": '5#' if str(status) == '5' else str(status) + '#DT#' + dateAppointment},
+                                "GSI2SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment},
                                 "GSI3PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#' + dateAppointment[0:10] if qrCode != 'VALID' else None}, 
                                 "GSI3SK": {"S": 'QR#' + qrCode if qrCode != 'VALID' else None},
                                 "GSI4PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId if status == 3 else None},
