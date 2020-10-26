@@ -184,24 +184,31 @@ def lambda_handler(event, context):
                     )
                     preference = ''
                     playerId = ''
+                    language = ''
+                    msg = ''
                     for row in json_dynamodb.loads(response['Items']):
                         preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                         mobile = row['PKID'].replace('MOB#','')
                         email = row['EMAIL'] if 'EMAIL' in row else ''
                         playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
+                        language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
                     
+                    if language == 'en':
+                        msg = "Your appointment was cancelled by the business"
+                    else:
+                        msg = "Su cita fue cancelada por el negocio"
                     #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                     if playerId != '':
                         header = {"Content-Type": "application/json; charset=utf-8"}
                         payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
                                 "include_player_ids": [playerId],
-                                "contents": {"en": "Your appointment was cancelled by the business"}}
+                                "contents": {"en": msg}}
                         req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
                     if preference == 1 and mobile != '':
                         #SMS
                         to_number = mobile
-                        bodyStr = 'Your appointment was cancelled by the business'
+                        bodyStr = msg
                         sms.publish(
                             PhoneNumber="+"+to_number,
                             Message=bodyStr,
@@ -218,14 +225,14 @@ def lambda_handler(event, context):
                         SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
                         RECIPIENT = email
                         SUBJECT = "Tu Cita 24/7 Check-In"
-                        BODY_TEXT = ("Your appointment was cancelled by the business")
+                        BODY_TEXT = (msg)
                                     
                         # The HTML body of the email.
                         BODY_HTML = """<html>
                         <head></head>
                         <body>
                         <h1>Tu Cita 24/7</h1>
-                        <p>Your appointment was cancelled by the business</p>
+                        <p>""" + msg + """</p>
                         </body>
                         </html>"""
 

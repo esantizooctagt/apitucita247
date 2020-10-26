@@ -147,7 +147,7 @@ def lambda_handler(event, context):
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%m-%d-%Y')
         hourDate = data['AppoHour']
         businessName = data['BusinessName']
-        language = data['Language']
+        # language = data['Language']
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
@@ -716,13 +716,15 @@ def lambda_handler(event, context):
                         )
                         preference = 0
                         playerId = ''
+                        language = ''
                         for row in json_dynamodb.loads(response['Items']):
                             preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                             email = row['EMAIL'] if 'EMAIL' in row else ''
                             playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
+                            language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
                         logger.info('Preference user ' + customerId + ' -- ' + str(preference))
 
-                        if language.lower() == "en":
+                        if language == 'en':
                             enMsg = 'Your booking at ' + businessName + ' has been confirmed. Find more information at Tu Cita 24/7, in Bookings.'
                         else:
                             enMsg = 'Su cita en ' + businessName + ' ha sido confirmada. Encuentra más información en Tu Cita 24/7, en Mis Citas.'

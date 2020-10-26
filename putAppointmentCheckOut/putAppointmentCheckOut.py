@@ -46,7 +46,7 @@ def lambda_handler(event, context):
         businessId = data['BusinessId']
         locationId = data['LocationId']
         providerId = data['ProviderId']
-        language = data['Language']
+        # language = data['Language']
         businessName = data['BusinessName']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
@@ -242,16 +242,19 @@ def lambda_handler(event, context):
                 )
                 preference = 0
                 playerId = ''
+                language = ''
                 for row in json_dynamodb.loads(response['Items']):
                     preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                     mobile = row['PKID'].replace('MOB#','')
                     email = row['EMAIL'] if 'EMAIL' in row else ''
                     playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
+                    language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
+
                 logger.info('Preference user ' + customerId + ' -- ' + str(preference))
-                if language.lower() == "en":
-                    message = 'Thank you for visiting '+ businessName +'. ' + link
+                if language == "en":
+                    message = 'Thank you for visiting '+ businessName +'. Please fill out the next poll ' + link
                 else:
-                    message = 'Gracias por visitar '+businessName+'. ' + link
+                    message = 'Gracias por visitar '+businessName+'. Por favor conteste la siguiente encuesta' + link
                 #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                 if playerId != '':
                     header = {"Content-Type": "application/json; charset=utf-8"}

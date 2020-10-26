@@ -137,12 +137,18 @@ def lambda_handler(event, context):
             )
             preference = 0
             playerId = ''
+            language = ''
             for row in json_dynamodb.loads(response['Items']):
                 preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                 email = row['EMAIL'] if 'EMAIL' in row else ''
                 playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
+                language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
+
             logger.info('Preference user ' + customerId + ' -- ' + str(preference))
-            sendMsg = 'You received a new message: ' + message
+            if language == 'en':
+                sendMsg = 'Tu Cita 24/7. You received a new message: ' + message
+            else:
+                sendMsg = 'Tu Cita 24/7. Ha recibido un mensaje nuevo: ' + message
             #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
             if playerId != '':
                 header = {"Content-Type": "application/json; charset=utf-8"}
@@ -170,7 +176,7 @@ def lambda_handler(event, context):
                 #EMAIL
                 SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
                 RECIPIENT = email
-                SUBJECT = "Tu Cita 24/7 Check-In"
+                SUBJECT = "Tu Cita 24/7"
                 BODY_TEXT = (sendMsg)
                             
                 # The HTML body of the email.

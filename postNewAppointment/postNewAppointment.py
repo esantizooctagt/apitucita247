@@ -140,7 +140,7 @@ def lambda_handler(event, context):
         locationId = data['LocationId']
         providerId = data['ProviderId']
         serviceId = data['ServiceId']
-        language = data['Language']
+        # language = data['Language']
         businessName = data['BusinessName']
         door = data['Door'] if 'Door' in data else ''
         phone = data['Phone']
@@ -847,10 +847,11 @@ def lambda_handler(event, context):
                             preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                             email = row['EMAIL'] if 'EMAIL' in row else ''
                             playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
+                            language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
                         logger.info('Preference user ' + customerId + ' -- ' + str(preference))
 
                         if qrCode == 'VALID':
-                            if language.lower() == "en":
+                            if language == "en":
                                 enMsg = 'Your booking at ' + businessName + ' has been confirmed. For more information, click here https://play.google.com/store?hl=en'
                             else:
                                 enMsg = 'Su cita en ' + businessName + ' ha sido confirmada. Para más información, oprima aquí https://play.google.com/store?hl=en'

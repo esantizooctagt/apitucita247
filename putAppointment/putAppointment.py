@@ -53,7 +53,7 @@ def lambda_handler(event, context):
         reasonId = data['Reason'] if 'Reason' in data else ''
         customerId = data['CustomerId'] if 'CustomerId' in data else ''
         businessName = data['BusinessName']
-        language = data['Language']
+        # language = data['Language']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -213,16 +213,6 @@ def lambda_handler(event, context):
         #PASA A PRE-CHECK O CANCELACION IN Y ENVIA NOTIFICACION POR SNS A SMS y CORREO, ONESIGNAL (PUSH NOTIFICATION)
         textMess = ''
         if status == 2 or status == 5:
-            if status == 2:
-                if language.lower() == "en":
-                    textMess = 'We are ready to serve you. Please proceed to the entrance.'
-                else:
-                    textMess = 'Estamos listos para servirte. Por favor dirígete a la entrada.'
-            else:
-                if language.lower() == "en":
-                    textMess = 'Your booking ' + businessName + ' was cancelled. Reason: ' + reasonId
-                else:
-                    textMess = 'Su cita en ' + businessName + ' fue cancelada. Razón: ' + reasonId
             # GET USER PREFER  ENCE NOTIFICATION
             response = dynamodbQuery.query(
                 TableName="TuCita247",
@@ -235,11 +225,25 @@ def lambda_handler(event, context):
             )
             preference = 0
             playerId = ''
+            language = ''
             for row in json_dynamodb.loads(response['Items']):
                 preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                 mobile = row['PKID'].replace('MOB#','')
                 email = row['EMAIL'] if 'EMAIL' in row else ''
                 playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
+                language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
+
+            if status == 2:
+                if language == "en":
+                    textMess = 'We are ready to serve you. Please proceed to the entrance.'
+                else:
+                    textMess = 'Estamos listos para servirte. Por favor dirígete a la entrada.'
+            else:
+                if language == "en":
+                    textMess = 'Your booking ' + businessName + ' was cancelled. Reason: ' + reasonId
+                else:
+                    textMess = 'Su cita en ' + businessName + ' fue cancelada. Razón: ' + reasonId
+
             logger.info('Preference user ' + customerId + ' -- ' + str(preference))
             #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
             if playerId != '':
