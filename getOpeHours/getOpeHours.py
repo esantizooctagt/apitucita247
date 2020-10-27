@@ -104,6 +104,10 @@ def lambda_handler(event, context):
         locationId = event['pathParameters']['locationId']
         providerId = event['pathParameters']['providerId']
         monday = datetime.datetime.strptime(event['pathParameters']['initDay'], '%Y-%m-%d')
+
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
+        dateOpe = today.strftime("%Y-%m-%d")
         
         #GET OPERATION HOURS
         response = dynamodb.query(
@@ -196,7 +200,38 @@ def lambda_handler(event, context):
                             hoursBooks.remove(resAppo)
                             recordset['People'] = int(hours['PEOPLE_QTY'])+int(resAppo['People']) 
                             hoursBooks.append(recordset)
-                            
+
+                    #OBTIENE LAS CITAS DEL DIA ACTUAL Y CON ESTADO 2 O 3(POSIBLEMENTE)
+                    if nextDate.strftime("%Y-%m-%d") == dateOpe:
+                        getAppos02 = dynamodb.query(
+                            TableName="TuCita247",
+                            IndexName="TuCita247_Index",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='GSI1PK = :key01 and begins_with(GSI1SK, :key02)',
+                            ExpressionAttributeValues={
+                                ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
+                                ':key02': {'S': '2#DT#'+nextDate.strftime("%Y-%m-%d")}
+                            }
+                        )
+
+                        for hours in json_dynamodb.loads(getAppos02['Items']):
+                            timeBooking = int(hours['GSI1SK'].replace('2#DT#'+nextDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                            cxTime = findServiceTime(hours['SERVICEID'], services)
+                            recordset = {
+                                'Time': timeBooking,
+                                'ServiceId': hours['SERVICEID'],
+                                'People': hours['PEOPLE_QTY'],
+                                'TimeService': cxTime,
+                                'Cancel': 0
+                            }
+                            resAppo = findHoursAppo(timeBooking, hoursBooks, hours['SERVICEID'])
+                            if resAppo == '':
+                                hoursBooks.append(recordset)
+                            else:
+                                hoursBooks.remove(resAppo)
+                                recordset['People'] = int(hours['PEOPLE_QTY'])+int(resAppo['People']) 
+                                hoursBooks.append(recordset)
+
                     #OBTIENE LAS CITAS EN RESERVA DE UN DIA
                     getReservas = dynamodb.query(
                         TableName="TuCita247",

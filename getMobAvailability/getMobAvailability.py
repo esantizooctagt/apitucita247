@@ -291,6 +291,7 @@ def lambda_handler(event, context):
                     #BOOKINGS
                     hoursBooks = []
                     hoursData = []
+                    #OBTIENE LAS CITAS DEL DIA SOLICITADO
                     getAppos = dynamodb.query(
                         TableName="TuCita247",
                         IndexName="TuCita247_Index",
@@ -318,6 +319,37 @@ def lambda_handler(event, context):
                             hoursBooks.remove(resAppo)
                             recordset['People'] = int(hrsData['PEOPLE_QTY'])+int(resAppo['People']) 
                             hoursBooks.append(recordset)
+                    
+                    #OBTIENE LAS CITAS Q VAN EN PROCESO DEL DIA ACTUAL SI FUERA NECESARIO
+                    if str(dateOpe[0:10]) == str(dateStd):
+                        getAppos02 = dynamodb.query(
+                            TableName="TuCita247",
+                            IndexName="TuCita247_Index",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='GSI1PK = :key01 and begins_with(GSI1SK, :key02)',
+                            ExpressionAttributeValues={
+                                ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
+                                ':key02': {'S': '2#DT#'+dateStd}
+                            }
+                        )
+                        for hrCita in json_dynamodb.loads(getAppos02['Items']):
+                            timeBooking = int(hrCita['GSI1SK'].replace('2#DT#'+dateStd+'-','')[0:2])
+                            cxTime = findServiceTime(hrCita['SERVICEID'], services)
+                            citasProgress = {
+                                'Hour': timeBooking,
+                                'ServiceId': hrCita['SERVICEID'],
+                                'People': hrCita['PEOPLE_QTY'],
+                                'TimeService': cxTime,
+                                'Cancel': 0
+                            }
+
+                            resAppo = findHoursAppo(timeBooking, hoursBooks, hrCita['SERVICEID'])
+                            if resAppo == '':
+                                hoursBooks.append(citasProgress)
+                            else:
+                                hoursBooks.remove(resAppo)
+                                citasProgress['People'] = int(hrCita['PEOPLE_QTY'])+int(resAppo['People']) 
+                                hoursBooks.append(citasProgress)
 
                     #OBTIENE LAS CITAS EN RESERVA DE UN DIA
                     getReservas = dynamodb.query(
