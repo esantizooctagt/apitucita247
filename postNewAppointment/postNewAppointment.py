@@ -343,7 +343,7 @@ def lambda_handler(event, context):
                             hoursBooks.remove(resAppo)
                             recordset['People'] = int(hours['PEOPLE_QTY'])+int(resAppo['People']) 
                             hoursBooks.append(recordset)
-
+                    #OBTIENE LAS CITAS DEL DIA EN PROCESO
                     if appoDate.strftime("%Y-%m-%d") == dateOpe[0:10]:
                         getAppos02 = dynamodb.query(
                             TableName="TuCita247",
@@ -372,7 +372,7 @@ def lambda_handler(event, context):
                                 hoursBooks.remove(resAppo)
                                 recordset['People'] = int(hoursCita['PEOPLE_QTY'])+int(resAppo['People']) 
                                 hoursBooks.append(recordset)
-                                
+
                     #OBTIENE LAS CITAS EN RESERVA DE UN DIA
                     getReservas = dynamodb.query(
                         TableName="TuCita247",

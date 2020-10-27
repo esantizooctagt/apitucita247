@@ -213,7 +213,6 @@ def lambda_handler(event, context):
                                 ':key02': {'S': '2#DT#'+nextDate.strftime("%Y-%m-%d")}
                             }
                         )
-
                         for hours in json_dynamodb.loads(getAppos02['Items']):
                             timeBooking = int(hours['GSI1SK'].replace('2#DT#'+nextDate.strftime("%Y-%m-%d")+'-','')[0:2])
                             cxTime = findServiceTime(hours['SERVICEID'], services)
