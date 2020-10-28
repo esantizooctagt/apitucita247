@@ -332,11 +332,11 @@ def lambda_handler(event, context):
                             KeyConditionExpression='GSI1PK = :key01 and begins_with(GSI1SK, :key02)',
                             ExpressionAttributeValues={
                                 ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
-                                ':key02': {'S': '1#DT#'+appoDate.strftime("%Y-%m-%d")}
+                                ':key02': {'S': '2#DT#'+appoDate.strftime("%Y-%m-%d")}
                             }
                         )
                         for hoursCita in json_dynamodb.loads(getAppos02['Items']):
-                            timeBooking = int(hoursCita['GSI1SK'].replace('1#DT#'+appoDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                            timeBooking = int(hoursCita['GSI1SK'].replace('2#DT#'+appoDate.strftime("%Y-%m-%d")+'-','')[0:2])
                             cxTime = findServiceTime(hoursCita['SERVICEID'], services)
                             recordset = {
                                 'Hour': timeBooking,

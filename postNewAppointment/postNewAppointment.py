@@ -352,11 +352,11 @@ def lambda_handler(event, context):
                             KeyConditionExpression='GSI1PK = :key01 and begins_with(GSI1SK, :key02)',
                             ExpressionAttributeValues={
                                 ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
-                                ':key02': {'S': '1#DT#'+appoDate.strftime("%Y-%m-%d")}
+                                ':key02': {'S': '2#DT#'+appoDate.strftime("%Y-%m-%d")}
                             }
                         )
                         for hoursCita in json_dynamodb.loads(getAppos02['Items']):
-                            timeBooking = int(hoursCita['GSI1SK'].replace('1#DT#'+appoDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                            timeBooking = int(hoursCita['GSI1SK'].replace('2#DT#'+appoDate.strftime("%Y-%m-%d")+'-','')[0:2])
                             cxTime = findServiceTime(hoursCita['SERVICEID'], services)
                             recordset = {
                                 'Hour': timeBooking,
@@ -852,11 +852,26 @@ def lambda_handler(event, context):
                         'DateAppo': sTime
                     }
 
-                    if dateOpe[0:10] == dateAppointment[0:10]:
+                    if dateOpe[0:10] == dateAppointment[0:10] and status != 3:
                         lambdaInv.invoke(
                             FunctionName='PostMessages',
                             InvocationType='Event',
                             Payload=json.dumps(appoInfo)
+                        )
+                        
+                    if status == 3:
+                        data = {
+                            'BusinessId': businessId,
+                            'LocationId': locationId,
+                            'AppId': appoId,
+                            'Guests': int(guests),
+                            'Tipo': 'MOVE',
+                            'To': 'CHECKIN'
+                        }
+                        lambdaInv.invoke(
+                            FunctionName='PostMessages',
+                            InvocationType='Event',
+                            Payload=json.dumps(data)
                         )
 
                     if phone != '00000000000':
@@ -966,7 +981,7 @@ def lambda_handler(event, context):
             statusCode = 500
             body = json.dumps({'Message': 'Error !!!', 'Code': 400})
 
-    except ClientError as error:
+    except botocore.exceptions.ClientError as error:
         statusCode = 500
         body = json.dumps({'Message': str(error), 'Code': 400})
 
