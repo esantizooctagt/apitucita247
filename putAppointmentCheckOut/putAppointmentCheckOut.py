@@ -252,9 +252,9 @@ def lambda_handler(event, context):
 
                 logger.info('Preference user ' + customerId + ' -- ' + str(preference))
                 if language == "en":
-                    message = 'Thank you for visiting '+ businessName +'. Please fill out the next poll ' + link
+                    message = 'Thank you for visiting '+ businessName +'. Please fill out the next poll.  ' + link
                 else:
-                    message = 'Gracias por visitar '+businessName+'. Por favor conteste la siguiente encuesta' + link
+                    message = 'Gracias por visitar '+businessName+'. Por favor conteste la siguiente encuesta.  ' + link
                 #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                 if playerId != '':
                     header = {"Content-Type": "application/json; charset=utf-8"}
