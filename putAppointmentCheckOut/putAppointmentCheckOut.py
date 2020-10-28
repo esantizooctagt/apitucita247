@@ -23,6 +23,7 @@ logger.setLevel(logging.INFO)
 sms = boto3.client('sns')
 email = boto3.client('ses',region_name=REGION)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -205,7 +206,20 @@ def lambda_handler(event, context):
             tranAppo = dynamodb.transact_write_items(
                 TransactItems = items
             )
-            logger.info("transaction finished")
+
+            data = {
+                'BusinessId': businessId,
+                'LocationId': locationId,
+                'Guests': qty,
+                'Tipo': 'MOVE',
+                'To': 'CHECKOUT'
+            }
+            lambdaInv.invoke(
+                FunctionName='PostMessages',
+                InvocationType='Event',
+                Payload=json.dumps(data)
+            )
+
             #SEND NOTIFICATION CON LINK DE ENCUESTA
             dateOpe = today.strftime("%Y-%m-%d")
             response = dynamodb.query(

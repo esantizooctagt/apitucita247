@@ -986,7 +986,7 @@ Resources:
       FunctionName: PutAppointmentManualCO
       CodeUri: putAppointmentManualCO/
       Handler: putAppointmentManualCO.lambda_handler
-      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Role: arn:aws:iam::821843840552:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
