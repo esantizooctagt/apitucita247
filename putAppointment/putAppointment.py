@@ -80,21 +80,33 @@ def lambda_handler(event, context):
 
         table = dynamodb.Table('TuCita247')
         e = {'#s': 'STATUS'}
-        if reasonId == '':
-            v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
-        
         if str(status) != "5":
-            response = table.update_item(
-                Key={
-                    'PKID': 'APPO#' + appointmentId,
-                    'SKID': 'APPO#' + appointmentId
-                },
-                UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, GSI9SK = :key01" + (", TIMECHEK = :dateope" if str(status) == "2" else ""),
-                ExpressionAttributeNames=e,
-                ExpressionAttributeValues=v,
-                ReturnValues="UPDATED_NEW"
-            )
-            appo = json_dynamodb.loads(response['Attributes'])
+            if str(status) != "2":
+                v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
+                response = table.update_item(
+                    Key={
+                        'PKID': 'APPO#' + appointmentId,
+                        'SKID': 'APPO#' + appointmentId
+                    },
+                    UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, GSI9SK = :key01",
+                    ExpressionAttributeNames=e,
+                    ExpressionAttributeValues=v,
+                    ReturnValues="UPDATED_NEW"
+                )
+                appo = json_dynamodb.loads(response['Attributes'])
+            else:
+                v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe, ':precheckin': 'PRECHECKIN'}
+                response = table.update_item(
+                    Key={
+                        'PKID': 'APPO#' + appointmentId,
+                        'SKID': 'APPO#' + appointmentId
+                    },
+                    UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, GSI9SK = :key01, TIMECHEK = :dateope, GSI8PK = :precheckin, GSI8SK = :dateope",
+                    ExpressionAttributeNames=e,
+                    ExpressionAttributeValues=v,
+                    ReturnValues="UPDATED_NEW"
+                )
+                appo = json_dynamodb.loads(response['Attributes'])
 
             if dateOpe[0:10] == dateAppo[0:10]:
                 data = {
@@ -166,7 +178,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'APPO#' + appointmentId}, 
                         "SKID": {"S": 'APPO#' + appointmentId}, 
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, REASONID = :reason, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, GSI9SK = :key01, TIMECANCEL = :dateope",
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, REASONID = :reason, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, GSI9SK = :key01, TIMECANCEL = :dateope REMOVE GSI8PK, GSI8SK",
                     "ExpressionAttributeValues": { 
                         ":status": {"N": str(status)}, 
                         ":key01": {"S": str(status) + '#DT#' + str(dateAppo)}, 

@@ -105,7 +105,7 @@ def lambda_handler(event, context):
                                 "PKID": {"S": row['PKID']}, 
                                 "SKID": {"S": row['PKID']}, 
                             },
-                            "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, TIMECANCEL = :dateope",
+                            "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, TIMECANCEL = :dateope REMOVE GSI8PK, GSI8SK",
                             "ExpressionAttributeValues": { 
                                 ":status": {"N": str(5)}, 
                                 ":key01": {"S": str(5) + '#DT#' + row['DATE_APPO']}, 

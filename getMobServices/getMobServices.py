@@ -53,7 +53,8 @@ def lambda_handler(event, context):
             for item in json_dynamodb.loads(serv['Items']):
                 recordset = {
                     'ServiceId': item['SKID'].replace('SER#',''),
-                    'Name': item['NAME']
+                    'Name': item['NAME'],
+                    'CustomerPerBooking': item['CUSTOMER_PER_BOOKING']
                 }
                 services.append(recordset)
         
