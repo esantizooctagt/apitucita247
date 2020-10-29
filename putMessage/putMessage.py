@@ -156,21 +156,6 @@ def lambda_handler(event, context):
                         "include_player_ids": [playerId],
                         "contents": {"en": sendMsg}}
                 req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
-
-            if int(preference) == 1:
-                #SMS
-                to_number = phone
-                bodyStr = sendMsg
-                sms.publish(
-                    PhoneNumber="+"+to_number,
-                    Message=bodyStr,
-                    MessageAttributes={
-                            'AWS.SNS.SMS.SMSType': {
-                            'DataType': 'String',
-                            'StringValue': 'Transactional'
-                        }
-                    }
-                )
                 
             if int(preference) == 2 and email != '':
                 #EMAIL

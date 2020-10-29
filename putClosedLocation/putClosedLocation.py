@@ -47,6 +47,19 @@ def lambda_handler(event, context):
         dateFin = today.strftime("%Y-%m-%d")
         hourNow = today.strftime("%H")
 
+        busName = dynamoQr.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :pkid AND SKID = :skid',
+            ExpressionAttributeValues={
+                ':pkid': {'S': 'BUS#' + businessId},
+                ':skid': {'S': 'LOC#' + locationId}
+            }
+        )
+        businessName = ''
+        for bus in json_dynamodb.loads(busName['Items']):
+            businessName = bus['NAME']
+
         table = dynamodb.Table('TuCita247')
         if closed == 0:
             response = table.update_item(
@@ -178,9 +191,9 @@ def lambda_handler(event, context):
                             language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
                         
                         if language == 'en':
-                            msg = 'Your appointment was cancelled by the business'
+                            msg = 'Your appointment was cancelled by the ' + businessName
                         else:
-                            msg = 'Su cita fue cancelada por el negocio'
+                            msg = 'Su cita fue cancelada por el ' + businessName
                             
                         #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                         if playerId != '':

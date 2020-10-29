@@ -257,6 +257,7 @@ def lambda_handler(event, context):
                 preference = 0
                 playerId = ''
                 language = ''
+                messPush = ''
                 for row in json_dynamodb.loads(response['Items']):
                     preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                     mobile = row['PKID'].replace('MOB#','')
@@ -267,14 +268,16 @@ def lambda_handler(event, context):
                 logger.info('Preference user ' + customerId + ' -- ' + str(preference))
                 if language == "en":
                     message = 'Thank you for visiting '+ businessName +'. Please fill out the next poll.  ' + link
+                    messPush = 'Thank you for visiting '+ businessName
                 else:
                     message = 'Gracias por visitar '+businessName+'. Por favor conteste la siguiente encuesta.  ' + link
+                    messPush = 'Gracias por visitar '+businessName
                 #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                 if playerId != '':
                     header = {"Content-Type": "application/json; charset=utf-8"}
                     payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
                             "include_player_ids": [playerId],
-                            "contents": {"en": message}}
+                            "contents": {"en": messPush}}
                     req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
                 if int(preference) == 1 and mobile != '':
