@@ -2,9 +2,14 @@ import sys
 import logging
 import json
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
+from dynamodb_json import json_util as json_dynamodb
 
 import os
 
@@ -24,6 +29,7 @@ def lambda_handler(event, context):
         queryStd = event['pathParameters']['search']
         city = event['pathParameters']['city']
         sector = event['pathParameters']['sector']
+        when = event['pathParameters']['when']
 
         if sector != '_' and city != '_':
             response = cloudsearch.search(
@@ -50,9 +56,34 @@ def lambda_handler(event, context):
                 highlight='{"name_esp":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"}, "name_eng":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"}, "name":{"format":"html", "max_phrases": 4,"pre_tag": "<strong>","post_tag": "</strong>"} }',
                 size=10
             )
+        
+        result = []
+        opeHours = ''
+        if when != '_':
+            for item in response['hits']['hit']:
+                dataWhen = datetime.datetime.strptime(when, '%Y-%m-%d')
+                dayName = dataWhen.strftime("%A")[0:3].upper()
                 
+                business = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :key AND SKID = :metadata',
+                    ExpressionAttributeValues={
+                        ':key': {'S': item['id']},
+                        ':metadata': {'S': 'METADATA'}
+                    }
+                )
+                valid = 0
+                for res in json_dynamodb.loads(business['Items']):
+                    opeHours = json.loads(res['OPERATIONHOURS'])
+                    valid = 1 if dayName in opeHours else 0
+                if valid == 1:
+                    result.append(item)
+        else:
+            result = response['hits']['hit']
+
         statusCode = 200
-        body = json.dumps(response)
+        body = json.dumps(result)
     except botocore.exceptions.EndpointConnectionError as e:
         statusCode = 500
         body = json.dumps({'Message':'Error on request try again ' + str(e)})

@@ -21,6 +21,9 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def getKey(obj):
+  return obj['DateAppo']
+
 def lambda_handler(event, context):    
     try:
         customerId = event['pathParameters']['customerId']
@@ -146,6 +149,65 @@ def lambda_handler(event, context):
             }
             record.append(recordset)
 
+        checkIn = dynamodb.query(
+            TableName="TuCita247",
+            IndexName="TuCita247_CustAppos",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='GSI2PK = :customerId AND GSI2SK between :dateHoy AND :newDate',
+            ExpressionAttributeValues={
+                ':customerId': {'S': 'CUS#' + customerId},
+                ':dateHoy': {'S': '3#DT#' + dateHoy},
+                ':newDate': {'S': '3#DT#' + endToday}
+            }
+        )
+        recordset = {}
+
+        for item in json_dynamodb.loads(checkIn['Items']):
+            locs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + item['GSI1PK'].split('#')[1]},
+                    ':locationId': {'S': 'LOC#' + item['GSI1PK'].split('#')[3] }
+                },
+                Limit = 1
+            )
+            for locations in json_dynamodb.loads(locs['Items']):
+                Address = locations['ADDRESS']
+
+            bus = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND SKID = :meta',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + item['GSI1PK'].split('#')[1]},
+                    ':meta': {'S': 'METADATA' }
+                },
+                Limit = 1
+            )
+            for business in json_dynamodb.loads(bus['Items']):
+                Name = business['NAME']
+
+            recordset = {
+                'AppointmentId': item['PKID'].replace('APPO#',''),
+                'Status': item['STATUS'],
+                'Address': Address,
+                'NameBusiness': Name,
+                'Name': item['NAME'],
+                'Phone': item['PHONE'],
+                'DateAppo': item['DATE_APPO'],
+                'Door': item['DOOR'] if 'DOOR' in item else '',
+                'OnBehalf': item['ON_BEHALF'] if 'ON_BEHALF' in item else 0,
+                'PeopleQty': item['PEOPLE_QTY'] if 'PEOPLE_QTY' in item else 0,
+                'QRCode': item['QRCODE'] if 'QRCODE' in item else '',
+                'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
+                'UnRead': item['UNREAD'] if 'UNREAD' in item else '',
+                'Ready': item['READY'] if 'READY' in item else 0
+            }
+            record.append(recordset)
+
+        record.sort(key=getKey)
         statusCode = 200
         body = json.dumps({'Appointments': record, 'Code': 200})
 

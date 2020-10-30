@@ -126,7 +126,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /mobile/search/{search}/{city}/{sector}
+            Path: /mobile/search/{search}/{city}/{sector}/{when}
             Method: get
             ApiId: !Ref HttpApi
       

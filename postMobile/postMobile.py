@@ -60,7 +60,8 @@ def lambda_handler(event, context):
                 'Preferences': item['PREFERENCES'] if 'PREFERENCES' in item else '',
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else '',
                 'DOB': item['DOB'] if 'DOB' in item else '',
-                'Mobile': to_number
+                'Mobile': to_number,
+                'Language': item['LANGUAGE'] if 'LANGUAGE' in item else 'en'
             }
             if item['SKID'] != '' and playerId != '':
                 dynamodb.update_item(

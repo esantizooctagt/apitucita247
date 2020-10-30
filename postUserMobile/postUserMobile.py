@@ -85,6 +85,7 @@ def lambda_handler(event, context):
                     "PREFERENCES": {"N": str(data['Preferences']) if str(data['Preferences']) != '' else None},
                     "DISABILITY": {"N": str(data['Disability']) if str(data['Disability']) != '' else None},
                     "PLAYERID": {"S": data['PlayerId'] if data['PlayerId'] != '' else None},
+                    "LANGUAGE": {"S": data['Language']},
                     "STATUS": {"N": "1"}
                 },
                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
@@ -131,7 +132,8 @@ def lambda_handler(event, context):
                 'Preferences': item['PREFERENCES'] if 'PREFERENCES' in item else '',
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else '',
                 'DOB': item['DOB'] if 'DOB' in item else '',
-                'Mobile': data['Phone']
+                'Mobile': data['Phone'],
+                'Language': item['LANGUAGE']
             }
 
         statusCode = 200
