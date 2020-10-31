@@ -190,10 +190,12 @@ def lambda_handler(event, context):
                             playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                             language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
                         
-                        if language == 'en':
-                            msg = 'Your appointment was cancelled by the ' + businessName
+                        hrAppo = datetime.datetime.strptime(appo['DATE_APPO'], '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
+                        dayAppo = datetime.datetime.strptime(appo['DATE_APPO'][0:10], '%Y-%m-%d').strftime('%b %d %Y')
+                        if language == "en":
+                            msg = businessName + ' has canceled your booking for ' + dayAppo  + ', ' + hrAppo + '. Reason: LOCATION CLOSED'
                         else:
-                            msg = 'Su cita fue cancelada por el ' + businessName
+                            msg = businessName + ' ha cancelado su cita para ' + dayAppo + ', ' + hrAppo + '. Razón: LOCALIDAD CERRADA'
                             
                         #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                         if playerId != '':

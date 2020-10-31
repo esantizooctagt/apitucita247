@@ -50,6 +50,20 @@ def lambda_handler(event, context):
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
+        #GET BUSINESS NAME
+        business = dynamodbQuery.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :key AND SKID = :skey',
+            ExpressionAttributeValues={
+                ':key': {'S': 'BUS#' + businessId},
+                ':skey': {'S': 'METADATA'}
+            }
+        )
+        businessName = ''
+        for bus in json_dynamodb.loads(business['Items']):
+            businessName = bus['NAME']
+
         #GET SERVICES
         services = dynamodbQuery.query(
             TableName="TuCita247",
@@ -98,6 +112,7 @@ def lambda_handler(event, context):
                 citafin = int(citaini)+int(timeService)-1
                 if cancel >= citaini and cancel <= citafin:
                     appoData = row['DATE_APPO']+'#'+row['PKID']
+                    appoDateMess = row['DATE_APPO']
                     recordset = {
                         "Update": {
                             "TableName": "TuCita247",
@@ -193,10 +208,13 @@ def lambda_handler(event, context):
                         playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                         language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
                     
-                    if language == 'en':
-                        msg = "Your appointment was cancelled by the business"
+                    hrAppo = datetime.datetime.strptime(appoDateMess, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
+                    dayAppo = datetime.datetime.strptime(appoDateMess[0:10], '%Y-%m-%d').strftime('%b %d %Y')
+                    if language == "en":
+                        msg = businessName + ' has canceled your booking for ' + dayAppo  + ', ' + hrAppo + '. Reason: SERVICE UNAVAILABLE'
                     else:
-                        msg = "Su cita fue cancelada por el negocio"
+                        msg = businessName + ' ha cancelado su cita para ' + dayAppo + ', ' + hrAppo + '. Razón: SERVICIO NO DISPONIBLE'
+
                     #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                     if playerId != '':
                         header = {"Content-Type": "application/json; charset=utf-8"}
