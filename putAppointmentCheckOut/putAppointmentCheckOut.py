@@ -47,7 +47,7 @@ def lambda_handler(event, context):
         businessId = data['BusinessId']
         locationId = data['LocationId']
         providerId = data['ProviderId']
-        # language = data['Language']
+        busLanguage = data['Language']
         businessName = data['BusinessName']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
@@ -263,7 +263,7 @@ def lambda_handler(event, context):
                     mobile = row['PKID'].replace('MOB#','')
                     email = row['EMAIL'] if 'EMAIL' in row else ''
                     playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                    language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
+                    language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
 
                 logger.info('Preference user ' + customerId + ' -- ' + str(preference))
                 if language == "en":
