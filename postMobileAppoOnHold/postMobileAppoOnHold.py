@@ -195,8 +195,8 @@ def lambda_handler(event, context):
             Limit = 1
         )
         for stat in json_dynamodb.loads(statPlan['Items']):
-            dueDate = datetime.datetime.strptime(stat['DUE_DATE'], '%Y-%m-%d').strftime("%Y-%m-%d")
-            if dueDate > today.strftime("%Y-%m-%d") and stat['STATUS'] == 1:
+            dueDate = datetime.datetime.strptime(stat['DUE_DATE'], '%Y-%m-%d').strftime("%Y-%m-%d-23-59")
+            if dueDate > today.strftime("%Y-%m-%d-%H-%M") and stat['STATUS'] == 1:
                 statusPlan = stat['STATUS']
                 numberAppos = stat['AVAILABLE']
 

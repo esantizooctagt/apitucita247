@@ -188,10 +188,12 @@ def lambda_handler(event, context):
                 playerId = cust['PLAYERID'] if 'PLAYERID' in cust else ''
                 language = str(cust['LANGUAGE']).lower() if 'LANGUAGE' in cust else 'en'
 
+            hrAppo = datetime.datetime.strptime(dateAppo, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
+            dayAppo = datetime.datetime.strptime(dateAppo[0:10], '%Y-%m-%d').strftime('%b %d %Y')
             if language == "en":
-                textMess = 'Your booking ' + businessName + ' was cancelled. Reason: NOT SHOW'
+                textMess = businessName + ' has canceled your booking for ' + dayAppo  + ', ' + hrAppo + '. Reason: NOT SHOW'
             else:
-                textMess = 'Su cita en ' + businessName + ' fue cancelada. Razón: NO SE PRESENTO'
+                textMess = businessName + ' ha cancelado su cita para ' + dayAppo + ', ' + hrAppo + '. Razón: NO SE PRESENTO'
 
             logger.info('Preference user ' + customerId + ' -- ' + str(preference))
             #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL

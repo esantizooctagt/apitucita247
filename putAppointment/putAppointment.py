@@ -251,10 +251,12 @@ def lambda_handler(event, context):
                 else:
                     textMess = 'Estamos listos para servirte. Por favor dirígete a la entrada.'
             else:
+                hrAppo = datetime.datetime.strptime(dateAppo, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
+                dayAppo = datetime.datetime.strptime(dateAppo[0:10], '%Y-%m-%d').strftime('%b %d %Y')
                 if language == "en":
-                    textMess = 'Your booking ' + businessName + ' was cancelled. Reason: ' + reasonId
+                    textMess = businessName + ' has canceled your booking for ' + dayAppo  + ', ' + hrAppo + '. Reason: ' + reasonId
                 else:
-                    textMess = 'Su cita en ' + businessName + ' fue cancelada. Razón: ' + reasonId
+                    textMess = businessName + ' ha cancelado su cita para ' + dayAppo + ', ' + hrAppo + '. Razón: ' + reasonId
 
             logger.info('Preference user ' + customerId + ' -- ' + str(preference))
             #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL

@@ -40,6 +40,7 @@ def lambda_handler(event, context):
         appointmentId = event['pathParameters']['id']
         userType = event['pathParameters']['type']
         message = data['Message']
+        businessName = data['BusinessName']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -135,20 +136,11 @@ def lambda_handler(event, context):
                     ':key': {'S': 'CUS#' + customerId}
                 }
             )
-            preference = 0
             playerId = ''
-            language = ''
             for row in json_dynamodb.loads(response['Items']):
-                preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
-                email = row['EMAIL'] if 'EMAIL' in row else ''
                 playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
 
-            logger.info('Preference user ' + customerId + ' -- ' + str(preference))
-            if language == 'en':
-                sendMsg = 'Tu Cita 24/7. You received a new message: ' + message
-            else:
-                sendMsg = 'Tu Cita 24/7. Ha recibido un mensaje nuevo: ' + message
+            sendMsg = businessName + ' : ' + message
             #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
             if playerId != '':
                 header = {"Content-Type": "application/json; charset=utf-8"}
@@ -156,49 +148,6 @@ def lambda_handler(event, context):
                         "include_player_ids": [playerId],
                         "contents": {"en": sendMsg}}
                 req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
-                
-            if int(preference) == 2 and email != '':
-                #EMAIL
-                SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
-                RECIPIENT = email
-                SUBJECT = "Tu Cita 24/7"
-                BODY_TEXT = (sendMsg)
-                            
-                # The HTML body of the email.
-                BODY_HTML = """<html>
-                <head></head>
-                <body>
-                <h1>Tu Cita 24/7</h1>
-                <p>""" + sendMsg + """</p>
-                </body>
-                </html>"""
-
-                CHARSET = "UTF-8"
-
-                response = ses.send_email(
-                    Destination={
-                        'ToAddresses': [
-                            RECIPIENT,
-                        ],
-                    },
-                    Message={
-                        'Body': {
-                            'Html': {
-                                'Charset': CHARSET,
-                                'Data': BODY_HTML,
-                            },
-                            'Text': {
-                                'Charset': CHARSET,
-                                'Data': BODY_TEXT,
-                            },
-                        },
-                        'Subject': {
-                            'Charset': CHARSET,
-                            'Data': SUBJECT,
-                        },
-                    },
-                    Source=SENDER
-                )
 
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})
