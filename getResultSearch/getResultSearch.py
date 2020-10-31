@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         queryStd = event['pathParameters']['search']
         city = event['pathParameters']['city']
         sector = event['pathParameters']['sector']
-        when = event['pathParameters']['when']
+        when = event['pathParameters']['dateOpe']
 
         if sector != '_' and city != '_':
             response = cloudsearch.search(
@@ -48,7 +48,7 @@ def lambda_handler(event, context):
                 size=10
             )
         if city == '_' and sector == '_':
-            data = queryStd.replace(' ', '~3 ')
+            data = str(queryStd+' ').replace(' ', '~3 ')
             response = cloudsearch.search(
                 query=data,
                 queryParser='simple',
@@ -63,7 +63,6 @@ def lambda_handler(event, context):
             for item in response['hits']['hit']:
                 dataWhen = datetime.datetime.strptime(when, '%Y-%m-%d')
                 dayName = dataWhen.strftime("%A")[0:3].upper()
-                
                 business = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',

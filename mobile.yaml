@@ -126,7 +126,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /mobile/search/{search}/{city}/{sector}/{when}
+            Path: /mobile/search/{search}/{city}/{sector}/{dateOpe}
             Method: get
             ApiId: !Ref HttpApi
       
@@ -661,6 +661,26 @@ Resources:
             Path: /mobile/avatar/{customerId}/{mobile}
             Method: put
             ApiId: !Ref HttpApi
+
+  PutUserLanguageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutUserLanguage
+      CodeUri: putUserLanguage/
+      Handler: putUserLanguage.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /mobile/lng/{mobile}/{customerId}/{language}
+            Method: put
+            ApiId: !Ref HttpApi
+
 
 # CustomMessageFunction:
 #   Type: AWS::Serverless::Function
