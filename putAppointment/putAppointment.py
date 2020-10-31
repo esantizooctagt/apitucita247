@@ -43,6 +43,7 @@ def lambda_handler(event, context):
         providerId = ''
         busId = ''
         locId = ''
+        busLanguage = ''
 
         data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
@@ -53,7 +54,7 @@ def lambda_handler(event, context):
         reasonId = data['Reason'] if 'Reason' in data else ''
         customerId = data['CustomerId'] if 'CustomerId' in data else ''
         businessName = data['BusinessName']
-        # language = data['Language']
+        busLanguage = data['Language']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -243,7 +244,7 @@ def lambda_handler(event, context):
                 mobile = row['PKID'].replace('MOB#','')
                 email = row['EMAIL'] if 'EMAIL' in row else ''
                 playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
+                language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
 
             if status == 2:
                 if language == "en":

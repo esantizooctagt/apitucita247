@@ -180,6 +180,7 @@ def lambda_handler(event, context):
                     "TU_CITA_LINK": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
                     "ZIPCODE": {"S": data['ZipCode']},
                     "STATUS": {"N": str(1)},
+                    "LANGUAGE": {"S": data['Language']},
                     "PARENTBUSINESS": {"N": str(0)},
                     "GSI2PK": {"S": 'PLAN#' + data['Plan']},
                     "GSI2SK": {"S": 'BUS#' + businessId},

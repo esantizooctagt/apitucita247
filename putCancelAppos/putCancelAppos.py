@@ -24,6 +24,8 @@ dynamodb = boto3.resource('dynamodb', region_name=REGION)
 dynamodbQuery = boto3.client('dynamodb', region_name=REGION)
 sms = boto3.client('sns')
 ses = boto3.client('ses',region_name=REGION)
+lambdaInv = boto3.client('lambda')
+
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def findService(serviceId, services):
@@ -45,6 +47,7 @@ def lambda_handler(event, context):
         locationId = event['pathParameters']['locationId']
         providerId = event['pathParameters']['providerId']
         dateAppo = event['pathParameters']['dateAppo']
+        busLanguage = event['pathParameters']['busLanguage']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -111,8 +114,9 @@ def lambda_handler(event, context):
                 citaini = int(citainiTemp[0:2])
                 citafin = int(citaini)+int(timeService)-1
                 if cancel >= citaini and cancel <= citafin:
-                    appoData = row['DATE_APPO']+'#'+row['PKID']
+                    appoData = str(row['DATE_APPO'])[0:10]+'#'+row['PKID']
                     appoDateMess = row['DATE_APPO']
+                    appoId = row['PKID']
                     recordset = {
                         "Update": {
                             "TableName": "TuCita247",
@@ -186,6 +190,19 @@ def lambda_handler(event, context):
                                 }
                             }
                             items.append(recordset)
+                    
+                    #REMOVE FROM QEUE
+                    data = {
+                        'BusinessId': businessId,
+                        'LocationId': locationId,
+                        'AppId': appoId.replace('APPO#',''),
+                        'Tipo': 'CANCEL'
+                    }
+                    lambdaInv.invoke(
+                        FunctionName='PostMessages',
+                        InvocationType='Event',
+                        Payload=json.dumps(data)
+                    )
 
                     # GET USER PREFERENCE NOTIFICATION
                     response = dynamodbQuery.query(
@@ -206,7 +223,7 @@ def lambda_handler(event, context):
                         mobile = row['PKID'].replace('MOB#','')
                         email = row['EMAIL'] if 'EMAIL' in row else ''
                         playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                        language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
+                        language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
                     
                     hrAppo = datetime.datetime.strptime(appoDateMess, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
                     dayAppo = datetime.datetime.strptime(appoDateMess[0:10], '%Y-%m-%d').strftime('%b %d %Y')

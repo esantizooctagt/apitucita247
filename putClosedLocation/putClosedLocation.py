@@ -39,6 +39,7 @@ def lambda_handler(event, context):
         locationId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
         closed = int(event['pathParameters']['closed'])
+        busLanguage = event['pathParameters']['busLanguage']
         
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -158,7 +159,7 @@ def lambda_handler(event, context):
                             ExpressionAttributeNames={'#s': 'STATUS'},
                             ExpressionAttributeValues={
                                 ':dtkey': str('5#DT#'+appo['DATE_APPO']),
-                                ':keyCancel': str('5#'),
+                                ':keyCancel': str('#5'),
                                 ':buskey': 'BUS#'+businessId+'#5',
                                 ':skey5': appo['DATE_APPO'][0:10]+'#'+appo['PKID'],
                                 ':pkey6': 'BUS#'+businessId+'#LOC#'+locationId+'#5',
@@ -188,7 +189,7 @@ def lambda_handler(event, context):
                             mobile = row['PKID'].replace('MOB#','')
                             email = row['EMAIL'] if 'EMAIL' in row else ''
                             playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                            language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
+                            language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
                         
                         hrAppo = datetime.datetime.strptime(appo['DATE_APPO'], '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
                         dayAppo = datetime.datetime.strptime(appo['DATE_APPO'][0:10], '%Y-%m-%d').strftime('%b %d %Y')

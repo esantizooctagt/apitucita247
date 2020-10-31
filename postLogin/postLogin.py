@@ -182,6 +182,7 @@ def lambda_handler(event, context):
                         'User_Adm': '',
                         'Email_Adm': '',
                         'Role_Adm':  user['ROLE_ADMIN'] if 'ROLE_ADMIN' in user else '',
+                        'Business_Language': business['LANGUAGE'] if 'LANGUAGE' in business else 'en',
                         'Business_Adm': user['PKID'].replace('BUS#','') if 'ROLE_ADMIN' in user else ''
                     }
 

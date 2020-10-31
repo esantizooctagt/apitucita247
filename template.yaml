@@ -954,7 +954,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/closed/{id}/{businessId}/{closed}
+            Path: /location/closed/{id}/{businessId}/{closed}/{busLanguage}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -1554,7 +1554,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointment/{businessId}/{locationId}/{providerId}/{dateAppo}
+            Path: /appointment/{businessId}/{locationId}/{providerId}/{dateAppo}/{busLanguage}
             Method: put
             ApiId: !Ref HttpApi
 

@@ -51,6 +51,7 @@ def lambda_handler(event, context):
             locationId = ''
             providerId = ''
             businessName = ''
+            busLanguage = ''
 
             appId = row['PKID']
             dateAppo = row['DATE_APPO']
@@ -74,6 +75,18 @@ def lambda_handler(event, context):
             )
             for business in json_dynamodb.loads(getBusiness['Items']):
                 businessName = business['NAME']
+
+            getLanguage = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :key AND SKID = :skey',
+                ExpressionAttributeValues={
+                    ':key': {'S': 'BUS#'+businessId},
+                    ':skey': {'S': 'METADATA'}
+                }
+            )
+            for busLng in json_dynamodb.loads(getLanguage['Items']):
+                busLanguage = busLng['LANGUAGE'] if 'LANGUAGE' in busLng else 'en'
             
             items = []
             getData = dynamodb.query(
@@ -136,11 +149,11 @@ def lambda_handler(event, context):
                         ":key01": {"S": '5#DT#' + str(dateAppo)}, 
                         ":key02": {"S": '#5'}, 
                         ":reason": {"S": 'NOT SHOW'},  
-                        ":pkey05": {"S": businessId}, 
+                        ":pkey05": {"S": 'BUS#'+businessId+'#5'}, 
                         ":skey05": {"S": appoData}, 
-                        ":pkey06": {"S": locationId}, 
+                        ":pkey06": {"S": 'BUS#'+businessId+'#LOC#'+locationId+'#5'}, 
                         ":skey06": {"S": appoData}, 
-                        ":pkey07": {"S": providerId}, 
+                        ":pkey07": {"S": 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId+'#5'}, 
                         ":skey07": {"S": appoData},
                         ":dateope": {"S": dateOpe}
                     },
@@ -186,7 +199,7 @@ def lambda_handler(event, context):
                 mobile = cust['PKID'].replace('MOB#','')
                 email = cust['EMAIL'] if 'EMAIL' in cust else ''
                 playerId = cust['PLAYERID'] if 'PLAYERID' in cust else ''
-                language = str(cust['LANGUAGE']).lower() if 'LANGUAGE' in cust else 'en'
+                language = str(cust['LANGUAGE']).lower() if 'LANGUAGE' in cust else busLanguage
 
             hrAppo = datetime.datetime.strptime(dateAppo, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
             dayAppo = datetime.datetime.strptime(dateAppo[0:10], '%Y-%m-%d').strftime('%b %d %Y')
