@@ -147,6 +147,10 @@ def lambda_handler(event, context):
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%m-%d-%Y')
         hourDate = data['AppoHour']
         businessName = data['BusinessName']
+        countProv = data['CountProv']
+        countServ = data['CountServ']
+        provName = data['ProvName']
+        servName = data['ServName']
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
@@ -778,49 +782,24 @@ def lambda_handler(event, context):
                                 lng = str(coordenates['LNG'])
                         if count < 2:
                             strLocation = ''
-                        
-                        provs = dynamodb.query(
-                            TableName="TuCita247",
-                            ReturnConsumedCapacity='TOTAL',
-                            KeyConditionExpression='PKID = :key AND begins_with(SKID , :locs)',
-                            ExpressionAttributeValues={
-                                ':key': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                                ':locs': {'S': 'PRO#'}
-                            }
-                        )
-                        count = 0
-                        for provNum in json_dynamodb.loads(provs['Items']):
-                            count = count + 1
-                            if provNum['SKID'].replace('PRO#','') == providerId:
-                                strProvider = provNum['NAME']
-                        if count < 2:
-                            strProvider = ''
-                        
-                        servs = dynamodb.query(
-                            TableName="TuCita247",
-                            ReturnConsumedCapacity='TOTAL',
-                            KeyConditionExpression='PKID = :key AND begins_with(SKID , :servs)',
-                            ExpressionAttributeValues={
-                                ':key': {'S': 'BUS#' + businessId},
-                                ':servs': {'S': 'SER#'}
-                            }
-                        )
-                        count = 0
-                        for servNum in json_dynamodb.loads(servs['Items']):
-                            count = count + 1
-                            if servNum['SKID'].replace('SER#','') == serviceId:
-                                strService = servNum['NAME']
-                        if count < 2:
-                            strService = ''
+
+                        if countProv > 1:
+                            strProvider = provName
+
+                        if countServ > 1:
+                            strService = servName
                         
                         hrAppo = datetime.datetime.strptime(dateAppointment, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
                         dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
                         if language == 'en':
-                            msg = 'Your booking at ' + businessName + (' for ' + strService + ' ' if strService != '' else '') + ('with ' + strProvider if strProvider != '' else '') + ' has been confirmed for ' + dayAppo + ', ' + hrAppo + ', ' + ('on ' + strLocation + ',' if strLocation != '' else '') + ' located at ' + 'https://www.google.com/maps/@'+lat+','+lng+',16z' + '. Find more information at the App. Thank you for using Tu Cita 24/7.'
+                            msg = 'Your booking at ' + businessName + (' for ' + strService + ' ' if strService != '' else '') + ('with ' + strProvider if strProvider != '' else '') + ' has been confirmed for ' + dayAppo + ', ' + hrAppo + ', ' + ('on ' + strLocation + ',' if strLocation != '' else '') + ' located at ' + 'https://www.google.com/maps/'+'@'+lat+','+lng+',16z' + '. Find more information at the App. Thank you for using Tu Cita 24/7.'
                             msgPush = 'Your booking at ' + businessName + (' for ' + strService + ' ' if strService != '' else '') + ('with ' + strProvider if strProvider != '' else '') + ' has been confirmed for ' + dayAppo + ', ' + hrAppo + ', ' + ('on ' + strLocation + ',' if strLocation != '' else '') + '. Find more information at the App. Thank you for using Tu Cita 24/7.'
                         else:
-                            msg = 'Su cita en ' + businessName + (' para ' + strService + ' ' if strService != '' else '') + ('con ' + strProvider if strProvider != '' else '') + ' ha sido confirmada para ' + dayAppo + ', ' + hrAppo + ', ' + ('en ' + strLocation + ',' if strLocation != '' else '') + ' ubicado en ' + 'https://www.google.com/maps/@'+lat+','+lng+',16z' + '. Encuentra más información en la App. Gracias por usar Tu Cita 24/7.'
+                            msg = 'Su cita en ' + businessName + (' para ' + strService + ' ' if strService != '' else '') + ('con ' + strProvider if strProvider != '' else '') + ' ha sido confirmada para ' + dayAppo + ', ' + hrAppo + ', ' + ('en ' + strLocation + ',' if strLocation != '' else '') + ' ubicado en ' + 'https://www.google.com/maps/'+'@'+lat+','+lng+',16z' + '. Encuentra más información en la App. Gracias por usar Tu Cita 24/7.'
                             msgPush = 'Su cita en ' + businessName + (' para ' + strService + ' ' if strService != '' else '') + ('con ' + strProvider if strProvider != '' else '') + ' ha sido confirmada para ' + dayAppo + ', ' + hrAppo + ', ' + ('en ' + strLocation + ',' if strLocation != '' else '') + '. Encuentra más información en la App. Gracias por usar Tu Cita 24/7.'
+
+                        logger.info(msg)
+                        logger.info(msgPush)
 
                         #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                         if playerId != '':
@@ -889,6 +868,9 @@ def lambda_handler(event, context):
                             )
                     statusCode = 200
                     body = json.dumps({'Message': 'Appointment saved successfully', 'Code': 200, 'Appointment': appoInfo})
+                else:
+                    statusCode = 500
+                    body = json.dumps({'Message': 'Unavailable date and time', 'Code': 400})
         if statusCode == '':
             statusCode = 500
             body = json.dumps({'Message': 'Error !!!', 'Code': 400})
