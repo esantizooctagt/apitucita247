@@ -1,5 +1,6 @@
 import sys
 import logging
+import requests
 import json
 
 import boto3
@@ -26,6 +27,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name=REGION)
+sms = boto3.client('sns')
+ses = boto3.client('ses', region_name=REGION)
 lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
@@ -448,6 +451,7 @@ def lambda_handler(event, context):
                 strService = ''
                 strProvider = ''
                 strLocation = ''
+                businessName = ''
                 msgPush = ''
                 msg = ''
                 lat = ''
@@ -467,6 +471,19 @@ def lambda_handler(event, context):
                     playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                     language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
                 
+                buss = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :key AND SKID = :meta',
+                    ExpressionAttributeValues={
+                        ':key': {'S': 'BUS#' + businessId},
+                        ':meta': {'S': 'METADATA'}
+                    }
+                )
+                count = 0
+                for busName in json_dynamodb.loads(buss['Items']):
+                    businessName = busName['NAME']
+
                 locs = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
@@ -487,11 +504,39 @@ def lambda_handler(event, context):
                 if count < 2:
                     strLocation = ''
 
-                if countProv > 1:
-                    strProvider = provName
-
-                if countServ > 1:
-                    strService = servName
+                provs = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :key AND begins_with(SKID , :locs)',
+                    ExpressionAttributeValues={
+                        ':key': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                        ':locs': {'S': 'PRO#'}
+                    }
+                )
+                count = 0
+                for provNum in json_dynamodb.loads(provs['Items']):
+                    count = count + 1
+                    if provNum['SKID'].replace('PRO#','') == providerId:
+                        strProvider = provNum['NAME']
+                if count < 2:
+                    strProvider = ''
+                
+                servs = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :key AND begins_with(SKID , :servs)',
+                    ExpressionAttributeValues={
+                        ':key': {'S': 'BUS#' + businessId},
+                        ':servs': {'S': 'SER#'}
+                    }
+                )
+                count = 0
+                for servNum in json_dynamodb.loads(servs['Items']):
+                    count = count + 1
+                    if servNum['SKID'].replace('SER#','') == serviceId:
+                        strService = servNum['NAME']
+                if count < 2:
+                    strService = ''
                 
                 hrAppo = datetime.datetime.strptime(dateAppointment, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
                 dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
