@@ -140,7 +140,7 @@ def lambda_handler(event, context):
         locationId = data['LocationId']
         providerId = data['ProviderId']
         serviceId = data['ServiceId']
-        # language = data['Language']
+        busLanguage = data['Language']
         businessName = data['BusinessName']
         door = data['Door'] if 'Door' in data else ''
         phone = data['Phone']
@@ -156,6 +156,10 @@ def lambda_handler(event, context):
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%Y-%m-%d') if 'AppoDate' in data else ''
         hourDate = data['AppoHour'] if 'AppoHour' in data else ''
         typeCita = data['Type'] if 'Type' in data else ''
+        countProv = data['CountProv']
+        countServ = data['CountServ']
+        provName = data['ProvName']
+        servName = data['ServName']
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
         existe = 0
         opeHours = ''
@@ -876,6 +880,62 @@ def lambda_handler(event, context):
                         )
 
                     if phone != '00000000000':
+                        preference = 0
+                        playerId = ''
+                        language = ''
+                        strService = ''
+                        strProvider = ''
+                        strLocation = ''
+                        businessName = ''
+                        msgPush = ''
+                        msg = ''
+                        lat = ''
+                        lng = ''
+
+                        # locs = dynamodb.query(
+                        #     TableName="TuCita247",
+                        #     ReturnConsumedCapacity='TOTAL',
+                        #     KeyConditionExpression='PKID = :key AND begins_with(SKID , :locs)',
+                        #     ExpressionAttributeValues={
+                        #         ':key': {'S': 'BUS#' + businessId},
+                        #         ':locs': {'S': 'LOC#'}
+                        #     }
+                        # )
+                        # count = 0
+                        # for locNum in json_dynamodb.loads(locs['Items']):
+                        #     count = count + 1
+                        #     if locNum['SKID'].replace('LOC#','') == locationId:
+                        #         strLocation = locNum['NAME']
+                        #         coordenates = json.loads(locNum['GEOLOCATION'])
+                        #         lat = str(coordenates['LAT'])
+                        #         lng = str(coordenates['LNG'])
+                        # if count < 2:
+                        #     strLocation = ''
+
+                        # if countProv == 0:
+                        #     provs = dynamodb.query(
+                        #         TableName="TuCita247",
+                        #         ReturnConsumedCapacity='TOTAL',
+                        #         KeyConditionExpression='PKID = :key AND begins_with(SKID , :locs)',
+                        #         ExpressionAttributeValues={
+                        #             ':key': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                        #             ':locs': {'S': 'PRO#'}
+                        #         }
+                        #     )
+                        #     count = 0
+                        #     for provNum in json_dynamodb.loads(provs['Items']):
+                        #         count = count + 1
+                        #         if provNum['SKID'].replace('PRO#','') == providerId:
+                        #             strProvider = provNum['NAME']
+                        #     if count < 2:
+                        #         strProvider = ''
+
+                        # if countProv > 1:
+                        #     strProvider = provName
+
+                        # if countServ > 1:
+                        #     strService = servName
+
                         # GET USER PREFERENCE NOTIFICATION
                         response = dynamodb.query(
                             TableName="TuCita247",
@@ -892,8 +952,17 @@ def lambda_handler(event, context):
                             preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                             email = row['EMAIL'] if 'EMAIL' in row else ''
                             playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                            language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
+                            language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
                         logger.info('Preference user ' + customerId + ' -- ' + str(preference))
+
+                        # hrAppo = datetime.datetime.strptime(dateAppointment, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
+                        # dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
+                        # if language == 'en':
+                        #     msg = 'Your booking at ' + businessName + (' for ' + strService + ' ' if strService != '' else '') + ('with ' + strProvider if strProvider != '' else '') + ' has been confirmed for ' + dayAppo + ', ' + hrAppo + ', ' + ('on ' + strLocation + ',' if strLocation != '' else '') + ' located at ' + 'https://www.google.com/maps/'+'@'+lat+','+lng+',16z' + '. Find more information at the App. Thank you for using Tu Cita 24/7.'
+                        #     msgPush = 'Your booking at ' + businessName + (' for ' + strService + ' ' if strService != '' else '') + ('with ' + strProvider if strProvider != '' else '') + ' has been confirmed for ' + dayAppo + ', ' + hrAppo + ', ' + ('on ' + strLocation + ',' if strLocation != '' else '') + '. Find more information at the App. Thank you for using Tu Cita 24/7.'
+                        # else:
+                        #     msg = 'Su cita en ' + businessName + (' para ' + strService + ' ' if strService != '' else '') + ('con ' + strProvider if strProvider != '' else '') + ' ha sido confirmada para ' + dayAppo + ', ' + hrAppo + ', ' + ('en ' + strLocation + ',' if strLocation != '' else '') + ' ubicado en ' + 'https://www.google.com/maps/'+'@'+lat+','+lng+',16z' + '. Encuentra más información en la App. Gracias por usar Tu Cita 24/7.'
+                        #     msgPush = 'Su cita en ' + businessName + (' para ' + strService + ' ' if strService != '' else '') + ('con ' + strProvider if strProvider != '' else '') + ' ha sido confirmada para ' + dayAppo + ', ' + hrAppo + ', ' + ('en ' + strLocation + ',' if strLocation != '' else '') + '. Encuentra más información en la App. Gracias por usar Tu Cita 24/7.'
 
                         if qrCode == 'VALID':
                             if language == "en":
