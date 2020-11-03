@@ -211,6 +211,7 @@ def lambda_handler(event, context):
                     'BusinessId': busId,
                     'LocationId': locId,
                     'AppId': appointmentId,
+                    'CustomerId': customerId,
                     'Tipo': 'CANCEL'
                 }
                 lambdaInv.invoke(

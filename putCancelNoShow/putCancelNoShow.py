@@ -173,6 +173,7 @@ def lambda_handler(event, context):
                 'BusinessId': businessId,
                 'LocationId': locationId,
                 'AppId': appId.replace('APPO#',''),
+                'CustomerId': customerId.replace('CUS#',''),
                 'Tipo': 'CANCEL'
             }
             lambdaInv.invoke(

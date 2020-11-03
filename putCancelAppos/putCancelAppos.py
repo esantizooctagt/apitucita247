@@ -108,9 +108,11 @@ def lambda_handler(event, context):
         cancel = int(cancel[0:2])
         items = []
         entro = 0
+        customerId=''
         for row in json_dynamodb.loads(response['Items']):
             entro = 1
             timeService = findService(row['SERVICEID'], serv)
+            customerId = row['GSI2PK'].replace('CUS#','')
             if timeService != 0:
                 citainiTemp = str(row['GSI1SK'])[-5:]
                 citaini = int(citainiTemp[0:2])
@@ -197,6 +199,7 @@ def lambda_handler(event, context):
                         'BusinessId': businessId,
                         'LocationId': locationId,
                         'AppId': appoId.replace('APPO#',''),
+                        'CustomerId': customerId,
                         'Tipo': 'CANCEL'
                     }
                     lambdaInv.invoke(
