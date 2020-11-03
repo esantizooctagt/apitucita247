@@ -70,6 +70,7 @@ def lambda_handler(event, context):
         )
         for row in json_dynamodb.loads(response['Items']):
             dataId = row['GSI1PK']
+            customerId = row['GSI2PK'].replace('CUS#','')
             appoData = str(row['DATE_APPO'])[0:10]+'#APPO#'+appointmentId
             if dataId != '':
                 busId = dataId.split('#')[1]

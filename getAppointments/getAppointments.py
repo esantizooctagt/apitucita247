@@ -45,6 +45,9 @@ def lambda_handler(event, context):
             dateAppoFin = today.strftime("%Y-%m-%d-23-59")
         if status == '2':
             dateAppoFin = today.strftime("%Y-%m-%d-23-59")
+        if typeAppo == '2':
+            dateAppoIni = today.strftime("%Y-%m-%d-00-00")
+            dateAppoFin = today.strftime("%Y-%m-%d-23-59")
         
         if typeAppo != '_':
             n = {'#t': 'TYPE'}

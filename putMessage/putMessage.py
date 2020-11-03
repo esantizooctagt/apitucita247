@@ -36,6 +36,8 @@ def lambda_handler(event, context):
     try:
         statusCode = ''
         timeChat = ''
+        customerId = ''
+        phone = ''
         data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
         userType = event['pathParameters']['type']
@@ -65,6 +67,8 @@ def lambda_handler(event, context):
             keys = row['GSI1PK'].split('#')
             businessId = keys[1]
             locationId = keys[3]
+            customerId = row['GSI2PK'].replace('CUS#','')
+            phone = row['PHONE']
 
         conversation = []
         if userType == "1":
@@ -101,29 +105,16 @@ def lambda_handler(event, context):
             'BusinessId': businessId,
             'LocationId': locationId,
             'AppId': appointmentId,
-            'User': 'U',
+            'CustomerId': customerId,
+            'User': 'U' if userType == '1' else 'H' ,
             'Tipo': 'MESS'
         }
-        if dateOpe[0:10] == dateAppointment[0:10] and userType != "1":
+        if dateOpe[0:10] == dateAppointment[0:10]:
             lambdaInv.invoke(
                 FunctionName='PostMessages',
                 InvocationType='Event',
                 Payload=json.dumps(data)
             )
-
-        phone = ''
-        customerId = ''
-        response = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :appointmentId AND SKID = :appointmentId',
-            ExpressionAttributeValues={
-                ':appointmentId': {'S': 'APPO#'+appointmentId}
-            }
-        )
-        for row in json_dynamodb.loads(response['Items']):
-            customerId = row['GSI2PK'].replace('CUS#','')
-            phone = row['PHONE']
 
         if phone != '00000000000':
             # GET USER PREFERENCE NOTIFICATION

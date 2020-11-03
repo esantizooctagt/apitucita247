@@ -94,7 +94,7 @@ def lambda_handler(event, context):
             'BusinessId': businessId,
             'LocationId': locationId,
             'AppId': appointmentId,
-            'User': 'U',
+            'User': 'H',
             'Tipo': 'MESS'
         }
         if dateOpe[0:10] == dateAppointment[0:10]:

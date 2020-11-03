@@ -839,12 +839,25 @@ def lambda_handler(event, context):
                     else:
                         sTime = str(hTime).rjust(2,'0') + ':00 AM'
 
+                    getAddr = dynamodb.query(
+                        TableName = "TuCita247",
+                        ReturnConsumedCapacity = 'TOTAL',
+                        KeyConditionExpression = 'PKID = :key01 AND SKID = :key02',
+                        ExpressionAttributeValues = {
+                            ':key01': {"S": 'BUS#' + businessId},
+                            ':key02': {"S": 'LOC#' + locationId}
+                        }
+                    )
+                    Addr = ''
+                    for addr in json_dynamodb.loads(getAddr['Items']):
+                        Addr = addr['ADDRESS']
+
                     appoInfo = {
                         'Tipo': 'APPO',
                         'BusinessId': businessId,
                         'LocationId': locationId,
                         'AppId': appoId,
-                        'ClientId': customerId,
+                        'CustomerId': customerId,
                         'ProviderId': providerId,
                         'Name': name,
                         'Phone': phone,
@@ -854,7 +867,13 @@ def lambda_handler(event, context):
                         'Disability': 0 if disability == '' else int(disability),
                         'DateFull': dateAppointment,
                         'Type': '2' if qrCode == 'VALID' else '1',
-                        'DateAppo': sTime
+                        'DateAppo': sTime,
+                        'Status': status,
+                        'UnRead': '',
+                        'QRCode': qrCode,
+                        'Ready': 0,
+                        'NameBusiness': businessName,
+                        'Address': Addr
                     }
 
                     if dateOpe[0:10] == dateAppointment[0:10] and status != 3:
