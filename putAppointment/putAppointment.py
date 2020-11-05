@@ -207,19 +207,19 @@ def lambda_handler(event, context):
             )
             appo = ''
             
-            if dateOpe[0:10] == dateAppo[0:10]:
-                data = {
-                    'BusinessId': busId,
-                    'LocationId': locId,
-                    'AppId': appointmentId,
-                    'CustomerId': customerId,
-                    'Tipo': 'CANCEL'
-                }
-                lambdaInv.invoke(
-                    FunctionName='PostMessages',
-                    InvocationType='Event',
-                    Payload=json.dumps(data)
-                )
+            # if dateOpe[0:10] == dateAppo[0:10]:
+            data = {
+                'BusinessId': busId,
+                'LocationId': locId,
+                'AppId': appointmentId,
+                'CustomerId': customerId,
+                'Tipo': 'CANCEL'
+            }
+            lambdaInv.invoke(
+                FunctionName='PostMessages',
+                InvocationType='Event',
+                Payload=json.dumps(data)
+            )
 
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200, 'Appo': appo})

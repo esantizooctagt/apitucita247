@@ -871,8 +871,8 @@ def lambda_handler(event, context):
                         'NameBusiness': businessName,
                         'Address': Addr
                     }
-
-                    if dateOpe[0:10] == dateAppointment[0:10] and status != 3:
+                    # dateOpe[0:10] == dateAppointment[0:10] and 
+                    if status != 3:
                         lambdaInv.invoke(
                             FunctionName='PostMessages',
                             InvocationType='Event',

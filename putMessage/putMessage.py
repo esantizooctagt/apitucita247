@@ -110,12 +110,12 @@ def lambda_handler(event, context):
             'Message': conver,
             'Tipo': 'MESS'
         }
-        if dateOpe[0:10] == dateAppointment[0:10]:
-            lambdaInv.invoke(
-                FunctionName='PostMessages',
-                InvocationType='Event',
-                Payload=json.dumps(data)
-            )
+        # if dateOpe[0:10] == dateAppointment[0:10]:
+        lambdaInv.invoke(
+            FunctionName='PostMessages',
+            InvocationType='Event',
+            Payload=json.dumps(data)
+        )
 
         if phone != '00000000000':
             # GET USER PREFERENCE NOTIFICATION
