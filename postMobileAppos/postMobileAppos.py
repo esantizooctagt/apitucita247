@@ -448,9 +448,6 @@ def lambda_handler(event, context):
                 preference = 0
                 playerId = ''
                 language = ''
-                strService = ''
-                strProvider = ''
-                strLocation = ''
                 businessName = ''
                 msgPush = ''
                 msg = ''
@@ -480,72 +477,31 @@ def lambda_handler(event, context):
                         ':meta': {'S': 'METADATA'}
                     }
                 )
-                count = 0
                 for busName in json_dynamodb.loads(buss['Items']):
-                    businessName = busName['NAME']
+                    businessName = str(busName['NAME'])[0:27]+'...' if len(busName['NAME']) > 27 else busName['NAME']
 
                 locs = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :key AND begins_with(SKID , :locs)',
+                    KeyConditionExpression='PKID = :key AND SKID = :loc',
                     ExpressionAttributeValues={
                         ':key': {'S': 'BUS#' + businessId},
-                        ':locs': {'S': 'LOC#'}
+                        ':loc': {'S': 'LOC#' + locationId}
                     }
                 )
-                count = 0
                 for locNum in json_dynamodb.loads(locs['Items']):
-                    count = count + 1
-                    if locNum['SKID'].replace('LOC#','') == locationId:
-                        strLocation = locNum['NAME']
-                        coordenates = json.loads(locNum['GEOLOCATION'])
-                        lat = str(coordenates['LAT'])
-                        lng = str(coordenates['LNG'])
-                if count < 2:
-                    strLocation = ''
-
-                provs = dynamodb.query(
-                    TableName="TuCita247",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :key AND begins_with(SKID , :locs)',
-                    ExpressionAttributeValues={
-                        ':key': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                        ':locs': {'S': 'PRO#'}
-                    }
-                )
-                count = 0
-                for provNum in json_dynamodb.loads(provs['Items']):
-                    count = count + 1
-                    if provNum['SKID'].replace('PRO#','') == providerId:
-                        strProvider = provNum['NAME']
-                if count < 2:
-                    strProvider = ''
-                
-                servs = dynamodb.query(
-                    TableName="TuCita247",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :key AND begins_with(SKID , :servs)',
-                    ExpressionAttributeValues={
-                        ':key': {'S': 'BUS#' + businessId},
-                        ':servs': {'S': 'SER#'}
-                    }
-                )
-                count = 0
-                for servNum in json_dynamodb.loads(servs['Items']):
-                    count = count + 1
-                    if servNum['SKID'].replace('SER#','') == serviceId:
-                        strService = servNum['NAME']
-                if count < 2:
-                    strService = ''
+                    coordenates = json.loads(locNum['GEOLOCATION'])
+                    lat = str(coordenates['LAT'])
+                    lng = str(coordenates['LNG'])
                 
                 hrAppo = datetime.datetime.strptime(dateAppointment, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
                 dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
                 if language == 'en':
-                    msg = 'Your booking at ' + businessName + (' for ' + strService + ' ' if strService != '' else '') + ('with ' + strProvider if strProvider != '' else '') + ' has been confirmed for ' + dayAppo + ', ' + hrAppo + ', ' + ('on ' + strLocation + ',' if strLocation != '' else '') + ' located at ' + 'https://www.google.com/maps/'+'@'+lat+','+lng+',16z' + '. Find more information at the App. Thank you for using Tu Cita 24/7.'
-                    msgPush = 'Your booking at ' + businessName + (' for ' + strService + ' ' if strService != '' else '') + ('with ' + strProvider if strProvider != '' else '') + ' has been confirmed for ' + dayAppo + ', ' + hrAppo + ', ' + ('on ' + strLocation + ',' if strLocation != '' else '') + '. Find more information at the App. Thank you for using Tu Cita 24/7.'
+                    msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Thanks, Tu Cita 24/7.'
+                    msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. Thanks, Tu Cita 24/7.'
                 else:
-                    msg = 'Su cita en ' + businessName + (' para ' + strService + ' ' if strService != '' else '') + ('con ' + strProvider if strProvider != '' else '') + ' ha sido confirmada para ' + dayAppo + ', ' + hrAppo + ', ' + ('en ' + strLocation + ',' if strLocation != '' else '') + ' ubicado en ' + 'https://www.google.com/maps/'+'@'+lat+','+lng+',16z' + '. Encuentra más información en la App. Gracias por usar Tu Cita 24/7.'
-                    msgPush = 'Su cita en ' + businessName + (' para ' + strService + ' ' if strService != '' else '') + ('con ' + strProvider if strProvider != '' else '') + ' ha sido confirmada para ' + dayAppo + ', ' + hrAppo + ', ' + ('en ' + strLocation + ',' if strLocation != '' else '') + '. Encuentra más información en la App. Gracias por usar Tu Cita 24/7.'
+                    msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Gracias, Tu Cita 24/7.'
+                    msgPush = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + '. Gracias, Tu Cita 24/7.'
 
                 logger.info(msg)
                 logger.info(msgPush)

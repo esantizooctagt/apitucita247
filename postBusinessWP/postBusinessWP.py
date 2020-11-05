@@ -76,10 +76,11 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
-        language = 'en'
+        language = ''
         data = json.loads(event['body'])
         businessId = str(uuid.uuid4()).replace("-","")
         userId = str(uuid.uuid4()).replace("-","")
+        language = data['Language']
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
@@ -246,7 +247,7 @@ def lambda_handler(event, context):
                         "DAYS_OFF": {"L": []},
                         "OPEN": {"N": str(0)},
                         "PARENT_LOCATION": {"N": str(0)},
-                        "MANUAL_CHECK_OUT": {"N": str(0)},
+                        "MANUAL_CHECK_OUT": {"N": str(1)},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
                         "MAX_CUSTOMER": {"N": str(item['MaxCustomer'])},
@@ -384,7 +385,7 @@ def lambda_handler(event, context):
             #EMAIL
             SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
             RECIPIENT = data['Email']
-            SUBJECT = "Tu Cita 24/7 - Welcome Email"
+            SUBJECT = "Tu Cita 24/7 - Welcome Email" if language == 'en' else "Tu Cita 24/7 - Correo de Bienvenida"
             if language == 'en':
                 BODY_TEXT = ("Hello and welcome! Thank you for joining Tu Cita 24/7. https://console.tucita247.com/en/verification/" + userId + "/0/"+passDecrypt+" .Once you activate your account, you can add images, create keywords, services, opening hours, and much more information about your business. Your customers will love being able to book your services online 24/7, and you will love the benefits of the system. If you need any help, choose your favourite way. Our friendly support staff is here to help you Monday through Friday from 9:00 AM to 6:00 PM. " +
                         "Chat with us. Click the “Live Help” tab at www.tucita247.com or on your administration page after you activating your account. Email us at support@tucita247.com. Call us at xxx-xxx-xxxx. All the best from the Tu Cita 24/7 support team.")
@@ -402,7 +403,7 @@ def lambda_handler(event, context):
                 <p>Thank you for joining Tu Cita 24/7. <a href='https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """'>Click here</a> to activate your account, or copy and paste this link https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """</p>
                 <p>Once you activate your account, you can add images, create keywords, services, opening hours, and much more information about your business. Your customers will love being able to book your services online 24/7, and you will love the benefits of the system.</p>
                 <p><strong>If you need any help, choose your favourite way. Our friendly support staff is here to help you Monday through Friday from 9:00 AM to 6:00 PM. </strong></p>
-                <p>Chat with us. Click the “Live Help” tab at <a href='https://www.tucita247.com'>www.tucita247.com</a> or on your administration page after you activating your account.</p>
+                <p>Chat with us. Click the “Live Help” tab at <a href='https://www.tucita247.com'>www.tucita247.com</a> or on your administration page after activating your account.</p>
                 <p>Email us at <a href="mailto:support@tucita247.com">support@tucita247.com</a></p>
                 <p>Call us at xxx-xxx-xxxx.</p>
                 <p><strong>All the best from the Tu Cita 24/7 support team.</strong></p>

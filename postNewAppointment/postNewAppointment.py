@@ -156,10 +156,6 @@ def lambda_handler(event, context):
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%Y-%m-%d') if 'AppoDate' in data else ''
         hourDate = data['AppoHour'] if 'AppoHour' in data else ''
         typeCita = data['Type'] if 'Type' in data else ''
-        countProv = data['CountProv']
-        countServ = data['CountServ']
-        provName = data['ProvName']
-        servName = data['ServName']
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
         existe = 0
         opeHours = ''
@@ -901,59 +897,24 @@ def lambda_handler(event, context):
                     if phone != '00000000000':
                         preference = 0
                         playerId = ''
-                        language = ''
-                        strService = ''
-                        strProvider = ''
-                        strLocation = ''
-                        businessName = ''
                         msgPush = ''
                         msg = ''
                         lat = ''
                         lng = ''
 
-                        # locs = dynamodb.query(
-                        #     TableName="TuCita247",
-                        #     ReturnConsumedCapacity='TOTAL',
-                        #     KeyConditionExpression='PKID = :key AND begins_with(SKID , :locs)',
-                        #     ExpressionAttributeValues={
-                        #         ':key': {'S': 'BUS#' + businessId},
-                        #         ':locs': {'S': 'LOC#'}
-                        #     }
-                        # )
-                        # count = 0
-                        # for locNum in json_dynamodb.loads(locs['Items']):
-                        #     count = count + 1
-                        #     if locNum['SKID'].replace('LOC#','') == locationId:
-                        #         strLocation = locNum['NAME']
-                        #         coordenates = json.loads(locNum['GEOLOCATION'])
-                        #         lat = str(coordenates['LAT'])
-                        #         lng = str(coordenates['LNG'])
-                        # if count < 2:
-                        #     strLocation = ''
-
-                        # if countProv == 0:
-                        #     provs = dynamodb.query(
-                        #         TableName="TuCita247",
-                        #         ReturnConsumedCapacity='TOTAL',
-                        #         KeyConditionExpression='PKID = :key AND begins_with(SKID , :locs)',
-                        #         ExpressionAttributeValues={
-                        #             ':key': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                        #             ':locs': {'S': 'PRO#'}
-                        #         }
-                        #     )
-                        #     count = 0
-                        #     for provNum in json_dynamodb.loads(provs['Items']):
-                        #         count = count + 1
-                        #         if provNum['SKID'].replace('PRO#','') == providerId:
-                        #             strProvider = provNum['NAME']
-                        #     if count < 2:
-                        #         strProvider = ''
-
-                        # if countProv > 1:
-                        #     strProvider = provName
-
-                        # if countServ > 1:
-                        #     strService = servName
+                        locs = dynamodb.query(
+                            TableName="TuCita247",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='PKID = :key AND SKID = :loc',
+                            ExpressionAttributeValues={
+                                ':key': {'S': 'BUS#' + businessId},
+                                ':loc': {'S': 'LOC#' + locationId}
+                            }
+                        )
+                        for locNum in json_dynamodb.loads(locs['Items']):
+                            coordenates = json.loads(locNum['GEOLOCATION'])
+                            lat = str(coordenates['LAT'])
+                            lng = str(coordenates['LNG'])
 
                         # GET USER PREFERENCE NOTIFICATION
                         response = dynamodb.query(
@@ -974,38 +935,33 @@ def lambda_handler(event, context):
                             language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
                         logger.info('Preference user ' + customerId + ' -- ' + str(preference))
 
-                        # hrAppo = datetime.datetime.strptime(dateAppointment, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
-                        # dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
-                        # if language == 'en':
-                        #     msg = 'Your booking at ' + businessName + (' for ' + strService + ' ' if strService != '' else '') + ('with ' + strProvider if strProvider != '' else '') + ' has been confirmed for ' + dayAppo + ', ' + hrAppo + ', ' + ('on ' + strLocation + ',' if strLocation != '' else '') + ' located at ' + 'https://www.google.com/maps/'+'@'+lat+','+lng+',16z' + '. Find more information at the App. Thank you for using Tu Cita 24/7.'
-                        #     msgPush = 'Your booking at ' + businessName + (' for ' + strService + ' ' if strService != '' else '') + ('with ' + strProvider if strProvider != '' else '') + ' has been confirmed for ' + dayAppo + ', ' + hrAppo + ', ' + ('on ' + strLocation + ',' if strLocation != '' else '') + '. Find more information at the App. Thank you for using Tu Cita 24/7.'
-                        # else:
-                        #     msg = 'Su cita en ' + businessName + (' para ' + strService + ' ' if strService != '' else '') + ('con ' + strProvider if strProvider != '' else '') + ' ha sido confirmada para ' + dayAppo + ', ' + hrAppo + ', ' + ('en ' + strLocation + ',' if strLocation != '' else '') + ' ubicado en ' + 'https://www.google.com/maps/'+'@'+lat+','+lng+',16z' + '. Encuentra más información en la App. Gracias por usar Tu Cita 24/7.'
-                        #     msgPush = 'Su cita en ' + businessName + (' para ' + strService + ' ' if strService != '' else '') + ('con ' + strProvider if strProvider != '' else '') + ' ha sido confirmada para ' + dayAppo + ', ' + hrAppo + ', ' + ('en ' + strLocation + ',' if strLocation != '' else '') + '. Encuentra más información en la App. Gracias por usar Tu Cita 24/7.'
-
-                        if qrCode == 'VALID':
-                            if language == "en":
-                                enMsg = 'Your booking at ' + businessName + ' has been confirmed. For more information, click here https://play.google.com/store?hl=en'
+                        hrAppo = datetime.datetime.strptime(dateAppointment, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
+                        dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
+                        if language == 'en':
+                            if playerId != '':
+                                msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Thanks, Tu Cita 24/7.'
                             else:
-                                enMsg = 'Su cita en ' + businessName + ' ha sido confirmada. Para más información, oprima aquí https://play.google.com/store?hl=en'
+                                msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Download Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247. Thanks'
+                            msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. Thanks, Tu Cita 24/7.'
                         else:
-                            if language.lower() == "en":
-                                enMsg = 'Your booking at ' + businessName + ' has been confirmed. For more information, click here https://play.google.com/store?hl=en'
+                            if playerId != '':
+                                msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Gracias, Tu Cita 24/7.'
                             else:
-                                enMsg = 'Su cita en ' + businessName + ' ha sido confirmada. Para más información, oprima aquí https://play.google.com/store?hl=en'
+                                msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Descarga Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247. Gracias'
+                            msgPush = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + '. Gracias, Tu Cita 24/7.'
 
                         #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                         if playerId != '':
                             header = {"Content-Type": "application/json; charset=utf-8"}
                             payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
                                     "include_player_ids": [playerId],
-                                    "contents": {"en": enMsg}}
+                                    "contents": {"en": msgPush}}
                             req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
                         if int(preference) == 1:
                             #SMS
                             to_number = phone
-                            bodyStr = enMsg
+                            bodyStr = msg
                             sms.publish(
                                 PhoneNumber="+"+to_number,
                                 Message=bodyStr,
@@ -1022,14 +978,14 @@ def lambda_handler(event, context):
                             SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
                             RECIPIENT = email
                             SUBJECT = "Tu Cita 24/7 Check-In"
-                            BODY_TEXT = (enMsg)
+                            BODY_TEXT = (msg)
                                         
                             # The HTML body of the email.
                             BODY_HTML = """<html>
                             <head></head>
                             <body>
                             <h1>Tu Cita 24/7</h1>
-                            <p>""" + enMsg + """</p>
+                            <p>""" + msg + """</p>
                             </body>
                             </html>"""
 
