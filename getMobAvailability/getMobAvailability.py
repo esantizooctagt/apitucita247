@@ -26,6 +26,9 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def getKey(obj):
+  return obj['Time24']
+  
 def cleanNullTerms(d):
    clean = {}
    for k, v in d.items():
@@ -61,7 +64,7 @@ def findServiceTime(serviceId, servs):
 def findUsedHours(time, hours, serviceId, interval):
     count = 0
     for item in hours:
-        if item['ServiceId'] == serviceId:
+        if item['ServiceId'] == serviceId or item['ServiceId'] == '':
             if item['Hour'] < time and item['Hour']+interval >= time:
                 count = count + int(item['People'])
             if item['Hour'] == time:
@@ -71,12 +74,12 @@ def findUsedHours(time, hours, serviceId, interval):
 def findAvailability(time, hours, serviceId, interval, services):
     count = 0
     for item in hours:
-        if item['ServiceId'] == serviceId:
+        if item['ServiceId'] == serviceId or item['ServiceId'] == '':
             if item['Hour'] < time and item['Hour']+interval >= time:
                 count = count + int(item['People'])
             if item['Hour'] == time:
                 count = count + int(item['People'])
-        if item['ServiceId'] != serviceId:
+        if item['ServiceId'] != serviceId and item['ServiceId'] != '':
             newInterval = findServiceTime(item['ServiceId'], services)
             if item['Hour'] < time and item['Hour']+newInterval-1 >= time:
                 count = -1
@@ -409,7 +412,7 @@ def lambda_handler(event, context):
                             recordset = {
                                 'Hour': int(cancel['SKID'].replace('HR#','')[0:2]),
                                 'ServiceId': '',
-                                'People': 0,
+                                'People': 99,
                                 'TimeService': 0,
                                 'Cancel': 0
                             }
@@ -459,10 +462,6 @@ def lambda_handler(event, context):
                                             if getApp['ServiceId'] != item['ServiceId']:
                                                 count = custPerTime
                                                 break
-                                        else:
-                                            if availableHour(nextHr, newHr, dateAppo, locationId, providerId, item['ServiceId'], appoDate) == False:
-                                                count = custPerTime
-                                                break
                                         tempCount = findUsedHours(nextHr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)
                                         if tempCount > count:
                                             count = tempCount
@@ -482,11 +481,230 @@ def lambda_handler(event, context):
                                     'Cancel': 0
                                 }
                                 hoursData.append(recordset)
-
+                    x = 0
+                    prevFin = 0
+                    logger.info(hoursBooks)
                     for item in dateAppo:
                         ini = int(item['I'])
                         fin = int(item['F'])
                         scale = 10
+                        x = x + 1
+                        if len(dateAppo) == 1:
+                            #VALIDATE HOURS BEFORE INI FROM 0 TO INI
+                            for h in range(0, ini):
+                                hStd = str(h).zfill(2) + ':00'
+                                res = h if h < 13 else h-12
+                                h = str(res).zfill(2) + ':00 ' + 'AM' if h < 12 else str(res).zfill(2) + ':00 ' + 'PM'
+                                count = findAvailability(int(hStd[0:2]), hoursBooks, serviceId, bucket-1, services)
+                                if count > 0:
+                                    time24hr = int(hStd[0:2])
+                                    res = range(1, int(bucket))
+                                    for citas in res:
+                                        nextHr = time24hr+citas
+                                        newHr = str(nextHr).rjust(2,'0')+'-00'
+                                        getApp = searchHours(nextHr, hoursBooks)
+                                        if getApp != '':
+                                            if getApp['ServiceId'] != serviceId and getApp['ServiceId'] != '':
+                                                count = numCustomer
+                                                break
+                                        else:
+                                            if availableHour(nextHr, newHr, dateAppo, locationId, providerId, serviceId, appoDate) == False:
+                                                count = numCustomer
+                                                break
+                                        tempCount = findAvailability(nextHr, hoursBooks, serviceId, bucket-1, services)
+                                        if tempCount > count:
+                                            count = tempCount
+                                    logger.info(numCustomer-count)
+                                    # logger.info("eval next hour " + str(time24hr) + "-- h " + str(h) + " nex hour available " + str(numCustomer-count))
+                                    if count > 0:
+                                        if numCustomer-count != 0:
+                                            if isCurrDay == 1:
+                                                newH = int(h[0:2])+12 if h[-2:] == 'PM' and int(h[0:2]) < 12 else int(h[0:2])
+                                                if newH > currHour:
+                                                    recordset = {
+                                                        'Hour': h,
+                                                        'Time24': time24hr,
+                                                        'Available': numCustomer if count == 99 else numCustomer-count
+                                                    }
+                                                    hours.append(recordset)
+                                            else:
+                                                recordset = {
+                                                        'Hour': h,
+                                                        'Time24': time24hr,
+                                                        'Available': numCustomer if count == 99 else numCustomer-count
+                                                    }
+                                                hours.append(recordset)
+
+                            for h in range(fin, 24):
+                                hStd = str(h).zfill(2) + ':00'
+                                res = h if h < 13 else h-12
+                                h = str(res).zfill(2) + ':00 ' + 'AM' if h < 12 else str(res).zfill(2) + ':00 ' + 'PM'
+                                count = findAvailability(int(hStd[0:2]), hoursBooks, serviceId, bucket-1, services)
+                                if count > 0:
+                                    time24hr = int(hStd[0:2])
+                                    res = range(1, int(bucket))
+                                    for citas in res:
+                                        nextHr = time24hr+citas
+                                        newHr = str(nextHr).rjust(2,'0')+'-00'
+                                        getApp = searchHours(nextHr, hoursBooks)
+                                        if getApp != '':
+                                            if getApp['ServiceId'] != serviceId and getApp['ServiceId'] != '':
+                                                count = numCustomer
+                                                break
+                                        else:
+                                            if availableHour(nextHr, newHr, dateAppo, locationId, providerId, serviceId, appoDate) == False:
+                                                count = numCustomer
+                                                break
+                                        tempCount = findAvailability(nextHr, hoursBooks, serviceId, bucket-1, services)
+                                        if tempCount > count:
+                                            count = tempCount
+                                            
+                                    # logger.info("eval next hour " + str(time24hr) + "-- h " + str(h) + " nex hour available " + str(numCustomer-count))
+                                    if count > 0:
+                                        if numCustomer-count != 0:
+                                            if isCurrDay == 1:
+                                                newH = int(h[0:2])+12 if h[-2:] == 'PM' and int(h[0:2]) < 12 else int(h[0:2])
+                                                if newH > currHour:
+                                                    recordset = {
+                                                        'Hour': h,
+                                                        'Time24': time24hr,
+                                                        'Available': numCustomer if count == 99 else numCustomer-count
+                                                    }
+                                                    hours.append(recordset)
+                                            else:
+                                                recordset = {
+                                                        'Hour': h,
+                                                        'Time24': time24hr,
+                                                        'Available': numCustomer if count == 99 else numCustomer-count
+                                                    }
+                                                hours.append(recordset)
+
+                        # if len(dateAppo) == 2 and x == 1:
+                        #     prevFin = fin
+                        #     for h in range(0, ini):
+                        #         hStd = str(h).zfill(2) + ':00'
+                        #         res = h if h < 13 else h-12
+                        #         h = str(res).zfill(2) + ':00 ' + 'AM' if h < 12 else str(res).zfill(2) + ':00 ' + 'PM'
+                        #         count = findAvailability(int(hStd[0:2]), hoursBooks, serviceId, bucket-1, services)
+                        #         if count > -1:
+                        #             time24hr = int(hStd[0:2])
+                        #             res = range(1, int(bucket))
+                        #             for citas in res:
+                        #                 nextHr = time24hr+citas
+                        #                 newHr = str(nextHr).rjust(2,'0')+'-00'
+                        #                 # logger.info("eval next hour " + str(nextHr))
+                        #                 getApp = searchHours(nextHr, hoursBooks)
+                        #                 if getApp != '':
+                        #                     if getApp['ServiceId'] != serviceId:
+                        #                         count = numCustomer
+                        #                         break
+                        #                 else:
+                        #                     if availableHour(nextHr, newHr, dateAppo, locationId, providerId, serviceId, appoDate) == False:
+                        #                         count = numCustomer
+                        #                         break
+                        #                 tempCount = findAvailability(nextHr, hoursBooks, serviceId, bucket-1, services)
+                        #                 if tempCount > count:
+                        #                     count = tempCount
+                        #             # logger.info("eval next hour " + str(nextHr) + "-- h " + str(h) + " nex hour available " + str(numCustomer-count))
+                        #             if numCustomer-count > 0:
+                        #                 if isCurrDay == 1:
+                        #                     newH = int(h[0:2])+12 if h[-2:] == 'PM' and int(h[0:2]) < 12 else int(h[0:2])
+                        #                     if newH > currHour:
+                        #                         recordset = {
+                        #                             'Hour': h,
+                        #                             'Available': numCustomer-count
+                        #                         }
+                        #                         hours.append(recordset)
+                        #                 else:
+                        #                     recordset = {
+                        #                             'Hour': h,
+                        #                             'Available': numCustomer-count
+                        #                         }
+                        #                     hours.append(recordset)
+
+                        # if len(dateAppo) == 2 and x == 2:
+                        #     for h in range(prevFin+1, ini):
+                        #         hStd = str(h).zfill(2) + ':00'
+                        #         res = h if h < 13 else h-12
+                        #         h = str(res).zfill(2) + ':00 ' + 'AM' if h < 12 else str(res).zfill(2) + ':00 ' + 'PM'
+                        #         count = findAvailability(int(hStd[0:2]), hoursBooks, serviceId, bucket-1, services)
+                        #         if count > -1:
+                        #             time24hr = int(hStd[0:2])
+                        #             res = range(1, int(bucket))
+                        #             for citas in res:
+                        #                 nextHr = time24hr+citas
+                        #                 newHr = str(nextHr).rjust(2,'0')+'-00'
+                        #                 # logger.info("eval next hour " + str(nextHr))
+                        #                 getApp = searchHours(nextHr, hoursBooks)
+                        #                 if getApp != '':
+                        #                     if getApp['ServiceId'] != serviceId:
+                        #                         count = numCustomer
+                        #                         break
+                        #                 else:
+                        #                     if availableHour(nextHr, newHr, dateAppo, locationId, providerId, serviceId, appoDate) == False:
+                        #                         count = numCustomer
+                        #                         break
+                        #                 tempCount = findAvailability(nextHr, hoursBooks, serviceId, bucket-1, services)
+                        #                 if tempCount > count:
+                        #                     count = tempCount
+                        #             # logger.info("eval next hour " + str(nextHr) + "-- h " + str(h) + " nex hour available " + str(numCustomer-count))
+                        #             if numCustomer-count > 0:
+                        #                 if isCurrDay == 1:
+                        #                     newH = int(h[0:2])+12 if h[-2:] == 'PM' and int(h[0:2]) < 12 else int(h[0:2])
+                        #                     if newH > currHour:
+                        #                         recordset = {
+                        #                             'Hour': h,
+                        #                             'Available': numCustomer-count
+                        #                         }
+                        #                         hours.append(recordset)
+                        #                 else:
+                        #                     recordset = {
+                        #                             'Hour': h,
+                        #                             'Available': numCustomer-count
+                        #                         }
+                        #                     hours.append(recordset)
+
+                        #     for h in range(fin, 24):
+                        #         hStd = str(h).zfill(2) + ':00'
+                        #         res = h if h < 13 else h-12
+                        #         h = str(res).zfill(2) + ':00 ' + 'AM' if h < 12 else str(res).zfill(2) + ':00 ' + 'PM'
+                        #         count = findAvailability(int(hStd[0:2]), hoursBooks, serviceId, bucket-1, services)
+                        #         if count > -1:
+                        #             time24hr = int(hStd[0:2])
+                        #             res = range(1, int(bucket))
+                        #             for citas in res:
+                        #                 nextHr = time24hr+citas
+                        #                 newHr = str(nextHr).rjust(2,'0')+'-00'
+                        #                 # logger.info("eval next hour " + str(nextHr))
+                        #                 getApp = searchHours(nextHr, hoursBooks)
+                        #                 if getApp != '':
+                        #                     if getApp['ServiceId'] != serviceId:
+                        #                         count = numCustomer
+                        #                         break
+                        #                 else:
+                        #                     if availableHour(nextHr, newHr, dateAppo, locationId, providerId, serviceId, appoDate) == False:
+                        #                         count = numCustomer
+                        #                         break
+                        #                 tempCount = findAvailability(nextHr, hoursBooks, serviceId, bucket-1, services)
+                        #                 if tempCount > count:
+                        #                     count = tempCount
+                        #             # logger.info("eval next hour " + str(nextHr) + "-- h " + str(h) + " nex hour available " + str(numCustomer-count))
+                        #             if numCustomer-count > 0:
+                        #                 if isCurrDay == 1:
+                        #                     newH = int(h[0:2])+12 if h[-2:] == 'PM' and int(h[0:2]) < 12 else int(h[0:2])
+                        #                     if newH > currHour:
+                        #                         recordset = {
+                        #                             'Hour': h,
+                        #                             'Available': numCustomer-count
+                        #                         }
+                        #                         hours.append(recordset)
+                        #                 else:
+                        #                     recordset = {
+                        #                             'Hour': h,
+                        #                             'Available': numCustomer-count
+                        #                         }
+                        #                     hours.append(recordset)
+                        
                         for h in range(ini, fin):
                             hStd = str(h).zfill(2) + ':00'
                             res = h if h < 13 else h-12
@@ -519,16 +737,18 @@ def lambda_handler(event, context):
                                         if newH > currHour:
                                             recordset = {
                                                 'Hour': h,
+                                                'Time24': time24hr,
                                                 'Available': numCustomer-count
                                             }
                                             hours.append(recordset)
                                     else:
                                         recordset = {
                                                 'Hour': h,
+                                                'Time24': time24hr,
                                                 'Available': numCustomer-count
                                             }
                                         hours.append(recordset)
-                
+                        hours.sort(key=getKey)
                 statusCode = 200
                 body = json.dumps({'Hours': hours, 'Code': 200})
         
