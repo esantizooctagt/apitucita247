@@ -69,10 +69,10 @@ def lambda_handler(event, context):
                 Item={
                     'PKID': 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppo[0:10],
                     'SKID': 'HR#' + dateAppo[-5:],
-                    'SERVICEID': '',
+                    # 'SERVICEID': '',
                     'AVAILABLE': 1,
-                    'CUSTOMER_PER_TIME': 0,
-                    'TIME_SERVICE': 1,
+                    # 'CUSTOMER_PER_TIME': 0,
+                    # 'TIME_SERVICE': 1,
                     'CANCEL': 0
                 }
             )

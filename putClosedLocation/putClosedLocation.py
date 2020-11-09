@@ -139,11 +139,11 @@ def lambda_handler(event, context):
                                 'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow,
                                 'SKID': 'HR#'+str(hr).zfill(2)+'-00'
                             },
-                            UpdateExpression="SET AVAILABLE = :available, CANCEL = :cancel, TIME_SERVICE = :service",
+                            UpdateExpression="SET AVAILABLE = :available, CANCEL = :cancel", #, TIME_SERVICE = :service",
                             ExpressionAttributeValues={
                                 ':available': 0,
-                                ':cancel': 1,
-                                ':service': 1
+                                ':cancel': 1
+                                # ':service': 1
                             }
                         )
                         

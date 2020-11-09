@@ -382,7 +382,7 @@ def lambda_handler(event, context):
                             recordset['People'] = int(res['PEOPLE_QTY'])+int(resAppo['People']) 
                             hoursBooks.append(recordset)
 
-                    #GET SUMMARIZE APPOINTMENTS FROM A SPECIFIC LOCATION AND PROVIDER FOR SPECIFIC DATE
+                    #GET CLOSED AND OPEN HOURS
                     getCurrHours = dynamodb.query(
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
@@ -404,9 +404,9 @@ def lambda_handler(event, context):
                             timeExists = findHours(cancel['SKID'].replace('HR#','').replace('-',':'), hoursBooks)
                             if timeExists == '':
                                 hoursBooks.append(recordset)
-                            else:
-                                hoursBooks.remove(timeExists)
-                                hoursBooks.append(recordset)
+                            # else:
+                            #     hoursBooks.remove(timeExists)
+                            #     hoursBooks.append(recordset)
 
                     for item in hoursBooks:
                         if item['Cancel'] == 1:
@@ -448,10 +448,10 @@ def lambda_handler(event, context):
                                             if getApp['ServiceId'] != item['ServiceId']:
                                                 count = custPerTime
                                                 break
-                                        else:
-                                            if availableHour(nextHr, newHr, dateAppo, locationId, providerId, item['ServiceId'], appoDate) == False:
-                                                count = custPerTime
-                                                break
+                                        # else:
+                                        #     if availableHour(nextHr, newHr, dateAppo, locationId, providerId, item['ServiceId'], appoDate) == False:
+                                        #         count = custPerTime
+                                        #         break
                                         tempCount = findUsedHours(nextHr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)
                                         if tempCount > count:
                                             count = tempCount

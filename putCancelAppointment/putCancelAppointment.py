@@ -64,52 +64,52 @@ def lambda_handler(event, context):
                 keyUpd = 'LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#DT#'+dateAppo[0:10]
 
         items = []
-        getData = dynamodbQuery.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :key01 AND SKID = :key02',
-            ExpressionAttributeValues={
-                ':key01': {'S': keyUpd},
-                ':key02': {'S': 'HR#' + dateAppo[-5:]}
-            }
-        )
-        custQty = 0
-        available = 0
-        for row in json_dynamodb.loads(getData['Items']):
-            custQty = int(row['CUSTOMER_PER_TIME'])
-            available = int(row['AVAILABLE'])+int(guests)
+        # getData = dynamodbQuery.query(
+        #     TableName="TuCita247",
+        #     ReturnConsumedCapacity='TOTAL',
+        #     KeyConditionExpression='PKID = :key01 AND SKID = :key02',
+        #     ExpressionAttributeValues={
+        #         ':key01': {'S': keyUpd},
+        #         ':key02': {'S': 'HR#' + dateAppo[-5:]}
+        #     }
+        # )
+        # custQty = 0
+        # available = 0
+        # for row in json_dynamodb.loads(getData['Items']):
+        #     custQty = int(row['CUSTOMER_PER_TIME'])
+        #     available = int(row['AVAILABLE'])+int(guests)
 
-        if available < custQty:
-            recordset = {
-                "Update": {
-                    "TableName": "TuCita247",
-                    "Key": {
-                        "PKID": {"S": keyUpd}, 
-                        "SKID": {"S": 'HR#' + dateAppo[-5:]}, 
-                    },
-                    "UpdateExpression": "SET AVAILABLE = AVAILABLE + :increment",
-                    "ExpressionAttributeValues": { 
-                        ":increment": {"N": str(guests)}
-                    },
-                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                }
-            }
-            items.append(recordset)
+        # if available < custQty:
+        #     recordset = {
+        #         "Update": {
+        #             "TableName": "TuCita247",
+        #             "Key": {
+        #                 "PKID": {"S": keyUpd}, 
+        #                 "SKID": {"S": 'HR#' + dateAppo[-5:]}, 
+        #             },
+        #             "UpdateExpression": "SET AVAILABLE = AVAILABLE + :increment",
+        #             "ExpressionAttributeValues": { 
+        #                 ":increment": {"N": str(guests)}
+        #             },
+        #             "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+        #             "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+        #         }
+        #     }
+        #     items.append(recordset)
 
-        if available == custQty:
-            recordset = {
-                "Delete": {
-                    "TableName": "TuCita247",
-                    "Key": {
-                        "PKID": {"S": keyUpd}, 
-                        "SKID": {"S": 'HR#' + dateAppo[-5:]}, 
-                    },
-                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-                }
-            }
-            items.append(recordset)
+        # if available == custQty:
+        #     recordset = {
+        #         "Delete": {
+        #             "TableName": "TuCita247",
+        #             "Key": {
+        #                 "PKID": {"S": keyUpd}, 
+        #                 "SKID": {"S": 'HR#' + dateAppo[-5:]}, 
+        #             },
+        #             "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+        #             "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+        #         }
+        #     }
+        #     items.append(recordset)
 
         recordset = {
             "Update": {
