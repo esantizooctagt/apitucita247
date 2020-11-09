@@ -44,7 +44,7 @@ def lambda_handler(event, context):
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
-        dateNow = today.strftime("%Y-%m-%d")
+        dateNow = today.strftime("%Y-%m-%d-%H")
         dateFin = today.strftime("%Y-%m-%d")
         hourNow = today.strftime("%H")
 
@@ -126,30 +126,48 @@ def lambda_handler(event, context):
                         KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
                         ExpressionAttributeValues={
                             ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + provider['SKID'].replace('PRO#','')},
-                            ':gsi1sk_ini': {'S': str(i)+'#DT#' + dateNow+'-00-00'},
+                            ':gsi1sk_ini': {'S': str(i)+'#DT#' + dateNow+'-00'},
                             ':gsi1sk_fin': {'S': str(i)+'#DT#' + dateFin+'-23-59'}
                         }
                     )
                     #DISABLED HOURS FROM NOW TO 23
                     for hr in range(int(hourNow), 24):
-                        logger.info('LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow)
-                        logger.info('HR#'+str(hr).zfill(2)+'-00')
-                        updHr = table.update_item(
-                            Key={
-                                'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow,
-                                'SKID': 'HR#'+str(hr).zfill(2)+'-00'
-                            },
-                            UpdateExpression="SET AVAILABLE = :available, CANCEL = :cancel", #, TIME_SERVICE = :service",
+                        res = dynamoQr.query(
+                            TableName="TuCita247",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='PKID = :key AND SKID = :skey',
                             ExpressionAttributeValues={
-                                ':available': 0,
-                                ':cancel': 1
-                                # ':service': 1
+                                ':key': {'S': 'LOC#' + locationId + '#PRO#' + provider['SKID'].replace('PRO#','') + '#DT#' + dateNow[0:10]},
+                                ':skey': {'S': 'HR#'+str(hr).zfill(2)+'-00'}
                             }
                         )
-                        
+                        ingresa = 0
+                        for appoRes in json_dynamodb.loads(res['Items']):
+                            ingresa = 1 
+                            updHr = table.update_item(
+                                Key={
+                                    'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow[0:10],
+                                    'SKID': 'HR#'+str(hr).zfill(2)+'-00'
+                                },
+                                UpdateExpression="SET AVAILABLE = :available, CANCEL = :cancel",
+                                ExpressionAttributeValues={
+                                    ':available': 0,
+                                    ':cancel': 1
+                                }
+                            )
+                        if ingresa == 0:
+                            updHr = table.put_item(
+                                Item={
+                                    'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow[0:10],
+                                    'SKID': 'HR#'+str(hr).zfill(2)+'-00',
+                                    'AVAILABLE': 0,
+                                    'CANCEL': 1
+                                },
+                                ReturnValues='NONE'
+                            )
+
                     table = dynamodb.Table('TuCita247')
                     for appo in json_dynamodb.loads(appos['Items']):
-                        
                         updAppo = table.update_item(
                             Key={
                                 'PKID': appo['PKID'],

@@ -49,30 +49,30 @@ def lambda_handler(event, context):
                 ':key02': {'S': 'HR#' + dateAppo[-5:]}
             }
         )
-        
-        existe = 0
+        entro = 0
         for row in json_dynamodb.loads(response['Items']):
+            entro = 1
             if row['PKID'] != '':
-                existe = 1
                 table = dynamodb.Table('TuCita247')
-                response = table.delete_item(
+                response = table.update_item(
                     Key={
                         'PKID': 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppo[0:10],
                         'SKID': 'HR#' + dateAppo[-5:]
+                    },
+                    UpdateExpression='SET CANCEL = :cancel, AVAILABLE = :available',
+                    ExpressionAttributeValues= {
+                        ':cancel': 0,
+                        ':available': 1
                     }
                 )
-        
-        if existe == 0:
+        if entro == 0:
             table = dynamodb.Table('TuCita247')
             response = table.put_item(
                 TableName='TuCita247',
                 Item={
                     'PKID': 'LOC#' + locationId + '#PRO#' + providerId + '#DT#' + dateAppo[0:10],
                     'SKID': 'HR#' + dateAppo[-5:],
-                    # 'SERVICEID': '',
                     'AVAILABLE': 1,
-                    # 'CUSTOMER_PER_TIME': 0,
-                    # 'TIME_SERVICE': 1,
                     'CANCEL': 0
                 }
             )
