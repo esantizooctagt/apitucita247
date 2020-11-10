@@ -421,13 +421,13 @@ def lambda_handler(event, context):
                                 'TimeService': 0,
                                 'Cancel': 1
                             }
-                            timeExists = searchHours(cancel['SKID'].replace('HR#','').replace('-',':'), hoursBooks)
+                            timeExists = searchHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
                             if timeExists == '':
                                 hoursBooks.append(recordset)
-                            # else:
-                            #     hoursBooks.remove(timeExists)
-                            #     hoursBooks.append(recordset)
-                        if int(cancel['AVAILABLE']) == 1: # and int(cancel['CANCEL']) == 0 and cancel['SERVICEID'] == ''
+                            else:
+                                hoursBooks.remove(timeExists)
+                                hoursBooks.append(recordset)
+                        if int(cancel['AVAILABLE']) == 1:
                             recordset = {
                                 'Hour': int(cancel['SKID'].replace('HR#','')[0:2]),
                                 'ServiceId': '',
@@ -435,12 +435,9 @@ def lambda_handler(event, context):
                                 'TimeService': 0,
                                 'Cancel': 0
                             }
-                            timeExists = searchHours(cancel['SKID'].replace('HR#','').replace('-',':'), hoursBooks)
+                            timeExists = searchHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
                             if timeExists == '':
                                 hoursBooks.append(recordset)
-                            # else:
-                            #     hoursBooks.remove(timeExists)
-                            #     hoursBooks.append(recordset)
 
                     for item in hoursBooks:
                         if item['Cancel'] == 1:

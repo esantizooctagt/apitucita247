@@ -279,7 +279,7 @@ def lambda_handler(event, context):
                                 'TimeService': 0,
                                 'Cancel': 1
                             }
-                            timeExists = findHours(cancel['SKID'].replace('HR#','').replace('-',':'), hoursBooks)
+                            timeExists = findHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
                             if timeExists == '':
                                 hoursBooks.append(recordset)
                             else:
@@ -293,7 +293,7 @@ def lambda_handler(event, context):
                                 'TimeService': 0,
                                 'Cancel': 0
                             }
-                            timeExists = findHours(cancel['SKID'].replace('HR#','').replace('-',':'), hoursBooks)
+                            timeExists = findHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
                             if timeExists == '':
                                 hoursBooks.append(recordset)
                     for item in hoursBooks:
