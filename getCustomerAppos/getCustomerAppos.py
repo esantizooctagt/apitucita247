@@ -74,6 +74,42 @@ def lambda_handler(event, context):
             for business in json_dynamodb.loads(bus['Items']):
                 Name = business['NAME']
 
+            servs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serv)',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + item['GSI1PK'].split('#')[1]},
+                    ':serv': {'S': 'SER#' }
+                }
+            )
+            count = 0
+            servName = ''
+            for serv in json_dynamodb.loads(servs['Items']):
+                count = count + 1
+                if serv['SKID'].replace('SER#','') == item['SERVICEID']:
+                    servName = serv['NAME']
+            if count == 1:
+                servName = ''
+            
+            provs =  dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :key AND begins_with(SKID , :provs)',
+                ExpressionAttributeValues={
+                    ':key': {'S': 'BUS#' + item['GSI1PK'].split('#')[1] + '#LOC#'+item['GSI1PK'].split('#')[3]},
+                    ':provs': {'S': 'PRO#' }
+                }
+            )
+            countp = 0
+            provName = ''
+            for prov in json_dynamodb.loads(provs['Items']):
+                countp = countp + 1
+                if prov['SKID'].replace('PRO#','') == item['GSI1PK'].split('#')[5]:
+                    provName = prov['NAME']
+            if countp == 1:
+                provName = ''
+
             recordset = {
                 'AppointmentId': item['PKID'].replace('APPO#',''),
                 'Status': item['STATUS'],
@@ -88,7 +124,9 @@ def lambda_handler(event, context):
                 'QRCode': item['QRCODE'] if 'QRCODE' in item else '',
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
                 'UnRead': item['UNREAD'] if 'UNREAD' in item else '',
-                'Ready': item['READY'] if 'READY' in item else 0
+                'Ready': item['READY'] if 'READY' in item else 0,
+                'ServName': servName,
+                'ProvName': provName
             }
             record.append(recordset)
 
@@ -131,6 +169,42 @@ def lambda_handler(event, context):
             for business in json_dynamodb.loads(bus['Items']):
                 Name = business['NAME']
 
+            servs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serv)',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + item['GSI1PK'].split('#')[1]},
+                    ':serv': {'S': 'SER#' }
+                }
+            )
+            count = 0
+            servName = ''
+            for serv in json_dynamodb.loads(servs['Items']):
+                count = count + 1
+                if serv['SKID'].replace('SER#','') == item['SERVICEID']:
+                    servName = serv['NAME']
+            if count == 1:
+                servName = ''
+
+            provs =  dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :key AND begins_with(SKID , :provs)',
+                ExpressionAttributeValues={
+                    ':key': {'S': 'BUS#' + item['GSI1PK'].split('#')[1] + '#LOC#'+item['GSI1PK'].split('#')[3]},
+                    ':provs': {'S': 'PRO#' }
+                }
+            )
+            countp = 0
+            provName = ''
+            for prov in json_dynamodb.loads(provs['Items']):
+                countp = countp + 1
+                if prov['SKID'].replace('PRO#','') == item['GSI1PK'].split('#')[5]:
+                    provName = prov['NAME']
+            if countp == 1:
+                provName = ''
+
             recordset = {
                 'AppointmentId': item['PKID'].replace('APPO#',''),
                 'Status': item['STATUS'],
@@ -145,7 +219,9 @@ def lambda_handler(event, context):
                 'QRCode': item['QRCODE'] if 'QRCODE' in item else '',
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
                 'UnRead': item['UNREAD'] if 'UNREAD' in item else '',
-                'Ready': item['READY'] if 'READY' in item else 0
+                'Ready': item['READY'] if 'READY' in item else 0,
+                'ServName': servName,
+                'ProvName': provName
             }
             record.append(recordset)
 
@@ -189,6 +265,42 @@ def lambda_handler(event, context):
             for business in json_dynamodb.loads(bus['Items']):
                 Name = business['NAME']
 
+            servs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serv)',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + item['GSI1PK'].split('#')[1]},
+                    ':serv': {'S': 'SER#' }
+                }
+            )
+            count = 0
+            servName = ''
+            for serv in json_dynamodb.loads(servs['Items']):
+                count = count + 1
+                if serv['SKID'].replace('SER#','') == item['SERVICEID']:
+                    servName = serv['NAME']
+            if count == 1:
+                servName = ''
+
+            provs =  dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :key AND begins_with(SKID , :provs)',
+                ExpressionAttributeValues={
+                    ':key': {'S': 'BUS#' + item['GSI1PK'].split('#')[1] + '#LOC#'+item['GSI1PK'].split('#')[3]},
+                    ':provs': {'S': 'PRO#' }
+                }
+            )
+            countp = 0
+            provName = ''
+            for prov in json_dynamodb.loads(provs['Items']):
+                countp = countp + 1
+                if prov['SKID'].replace('PRO#','') == item['GSI1PK'].split('#')[5]:
+                    provName = prov['NAME']
+            if countp == 1:
+                provName = ''
+
             recordset = {
                 'AppointmentId': item['PKID'].replace('APPO#',''),
                 'Status': item['STATUS'],
@@ -203,7 +315,9 @@ def lambda_handler(event, context):
                 'QRCode': item['QRCODE'] if 'QRCODE' in item else '',
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
                 'UnRead': item['UNREAD'] if 'UNREAD' in item else '',
-                'Ready': item['READY'] if 'READY' in item else 0
+                'Ready': item['READY'] if 'READY' in item else 0,
+                'ServName': servName,
+                'ProvName': provName
             }
             record.append(recordset)
 
