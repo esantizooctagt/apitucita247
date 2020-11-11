@@ -363,7 +363,7 @@ def lambda_handler(event, context):
                                     'Cancel': 0
                                 }
                                 hoursData.append(recordset)
-                    
+                    logger.info(hoursData)
                     ini = 0
                     fin = 0
                     interval = 1

@@ -21,6 +21,12 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def findService(serviceId, servs):
+    for item in servs:
+        if item['ServiceId'] == serviceId:
+            return int(item['BufferTime'])
+    return 1
+
 def lambda_handler(event, context):
     stage = event['headers']
 
@@ -49,6 +55,24 @@ def lambda_handler(event, context):
             dateAppoIni = today.strftime("%Y-%m-%d-00-00")
             dateAppoFin = today.strftime("%Y-%m-%d-23-59")
         
+        #GET SERVICES INFO
+        servs = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :key AND begins_with(SKID , :skey)',
+            ExpressionAttributeValues={
+                ':key': {'S': 'BUS#' + businessId},
+                ':skey': {'S': 'SER#'}
+            }
+        )
+        services = []
+        for serv in json_dynamodb.loads(servs['Items']):
+            recordset = {
+                'ServiceId': serv['SKID'].replace('SER#',''),
+                'BufferTime': serv['BUFFER_TIME']
+            }
+            services.append(recordset)
+
         if typeAppo != '_':
             n = {'#t': 'TYPE'}
             f = '#t = :type'
@@ -115,6 +139,7 @@ def lambda_handler(event, context):
                 'BusinessId': businessId,
                 'LocationId': locationId,
                 'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#',''),
+                'BufferTime': findService(row['SERVICEID'], services),
                 'AppointmentId': row['PKID'].replace('APPO#',''),
                 'ClientId': row['GSI2PK'].replace('CUS#',''),
                 'Name': row['NAME'],
@@ -203,6 +228,7 @@ def lambda_handler(event, context):
                     'BusinessId': businessId,
                     'LocationId': locationId,
                     'ProviderId': row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#',''),
+                    'BufferTime': findService(row['SERVICEID'], services),
                     'AppointmentId': row['PKID'].replace('APPO#',''),
                     'ClientId': row['GSI2PK'].replace('CUS#',''),
                     'Name': row['NAME'],

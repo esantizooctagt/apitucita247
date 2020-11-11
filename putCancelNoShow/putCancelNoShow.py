@@ -27,24 +27,27 @@ lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
+    stage = event['headers']
+
+    if stage['origin'] != "http://localhost:4200":
+        cors = os.environ['prodCors']
+    else:
+        cors = os.environ['devCors']
+
     try:
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M")
-        dateAppoFin = (today + datetime.timedelta(minutes=-5)).strftime("%Y-%m-%d-%H-%M")
         
+        appoId = event['pathParameters']['AppointmentId']
         response = dynamodb.query(
             TableName="TuCita247",
-            IndexName="TuCita247_Parent",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='GSI8PK = :key AND GSI8SK <= :skey',
+            KeyConditionExpression='PKID = :key AND SKID = :key',
             ExpressionAttributeValues={
-                ':key': {'S': 'PRECHECKIN'},
-                ':skey': {'S': dateAppoFin}
+                ':key': {'S': 'APPO#'+appoId}
             }
         )
-        logger.info(response)
-        record = []
         recordset = {}
         for row in json_dynamodb.loads(response['Items']):
             businessId = ''
@@ -52,6 +55,7 @@ def lambda_handler(event, context):
             providerId = ''
             businessName = ''
             busLanguage = ''
+            appId = ''
 
             appId = row['PKID']
             dateAppo = row['DATE_APPO']
@@ -229,12 +233,12 @@ def lambda_handler(event, context):
                     Source=SENDER
                 )
         
-        resultSet = { 
-            'Code': 200,
-            'Message': 'OK'
-        }
-        statusCode = 200
-        body = json.dumps(resultSet)
+            resultSet = { 
+                'Code': 200,
+                'Message': 'OK'
+            }
+            statusCode = 200
+            body = json.dumps(resultSet)
     
         if statusCode == '':
             statusCode = 500

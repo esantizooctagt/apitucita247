@@ -407,6 +407,6 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /appointments/cancel/precheckin
+            Path: /appointments/cancel/precheckin/{AppointmentId}
             Method: put
             ApiId: !Ref HttpApi

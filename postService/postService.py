@@ -52,6 +52,7 @@ def lambda_handler(event, context):
                         "SKID": {"S": 'SER#' + serviceId},
                         "NAME": {"S": data['Name']},
                         "TIME_SERVICE": {"N": str(data['TimeService'])},
+                        "BUFFER_TIME": {"N": str(data['BufferTime'])},
                         "CUSTOMER_PER_TIME": {"N": data['CustomerPerTime']},
                         "CUSTOMER_PER_BOOKING": {"N": data['CustomerPerBooking']},
                         "COLOR": {"S": data['Color']},
@@ -70,10 +71,11 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'BUS#' + data['BusinessId']},
                         "SKID": {"S": 'SER#' + serviceId}
                     },
-                    "UpdateExpression": "SET #n = :name, TIME_SERVICE = :timeService, CUSTOMER_PER_TIME = :customerPerTime, CUSTOMER_PER_BOOKING = :customerPerBooking, #s = :status, COLOR = :color",
+                    "UpdateExpression": "SET #n = :name, TIME_SERVICE = :timeService, BUFFER_TIME = :bufferTime, CUSTOMER_PER_TIME = :customerPerTime, CUSTOMER_PER_BOOKING = :customerPerBooking, #s = :status, COLOR = :color",
                     "ExpressionAttributeValues": {
                         ':name': {'S': data['Name']},
                         ':timeService': {'N': str(data['TimeService'])},
+                        ':bufferTime': {'N': str(data['BufferTime'])},
                         ':customerPerTime': {'N': str(data['CustomerPerTime'])},
                         ':customerPerBooking': {'N': str(data['CustomerPerBooking'])},
                         ':status': {'N': str(data['Status'])},

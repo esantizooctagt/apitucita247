@@ -11,6 +11,7 @@ from dynamodb_json import json_util as json_dynamodb
 import datetime
 import dateutil.tz
 from datetime import timezone
+from datetime import datetime
 
 import os
 
@@ -55,8 +56,9 @@ def lambda_handler(event, context):
         # providerId = data['ProviderId'] if 'ProviderId' in data else ''
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
-        today = datetime.datetime.now(tz=country_date)
+        today = datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d")
+        newOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
         service = ''
 
         e = {'#s': 'STATUS'}
@@ -79,6 +81,15 @@ def lambda_handler(event, context):
             dateAppo = row['DATE_APPO']
             customerId = row['GSI2PK'].replace('CUS#','')
             providerId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#','')
+
+        newAppoDate = datetime.strptime(dateAppo, '%Y-%m-%d-%H-%M')
+        newAppoNow = datetime.strptime(newOpe, '%Y-%m-%d-%H-%M-%S')
+        time_delta = (newAppoNow - newAppoDate)
+        total_seconds = time_delta.total_seconds()
+        minutes = total_seconds/60
+
+        if minutes < -40:
+            dateAppo = today.strftime("%Y-%m-%d-%H-00")
 
         items = []
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")

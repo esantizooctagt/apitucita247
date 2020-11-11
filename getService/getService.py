@@ -44,6 +44,7 @@ def lambda_handler(event, context):
                 'ServiceId': item['SKID'].replace('SER#',''),
                 'Name': item['NAME'],
                 'TimeService': item['TIME_SERVICE'],
+                'BufferTime': item['BUFFER_TIME'] if 'BUFFER_TIME' in item else 0,
                 'CustomerPerTime': item['CUSTOMER_PER_TIME'],
                 'CustomerPerBooking': item['CUSTOMER_PER_BOOKING'],
                 'Color': item['COLOR'],

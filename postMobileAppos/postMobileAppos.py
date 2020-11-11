@@ -220,9 +220,11 @@ def lambda_handler(event, context):
                     ':serviceId': {'S': 'SER#'+serviceId}
                 }
             )
+            bufferTime = 0
             for serv in json_dynamodb.loads(getServices['Items']):
                 bucket = int(serv['TIME_SERVICE'])
                 numCustomer = int(serv['CUSTOMER_PER_TIME'])
+                bufferTime = serv['BUFFER_TIME']
 
             #PROCEDE A GUARDAR LA CITA
             recordset = {}
@@ -350,6 +352,7 @@ def lambda_handler(event, context):
                 'AppId': appoId,
                 'ClientId': customerId,
                 'ProviderId': providerId,
+                'BufferTime': bufferTime,
                 'Name': name,
                 'Phone': phone,
                 'OnBehalf': str(onbehalf),

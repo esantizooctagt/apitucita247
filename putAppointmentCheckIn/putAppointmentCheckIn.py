@@ -11,6 +11,7 @@ from dynamodb_json import json_util as json_dynamodb
 import datetime
 import dateutil.tz
 from datetime import timezone
+from datetime import datetime
 
 import os
 
@@ -55,8 +56,17 @@ def lambda_handler(event, context):
         providerId = data['ProviderId'] if 'ProviderId' in data else ''
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
-        today = datetime.datetime.now(tz=country_date)
+        today = datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
+        newAppoDate = datetime.strptime(dateAppo, '%Y-%m-%d-%H-%M')
+        newAppoNow = datetime.strptime(dateOpe, '%Y-%m-%d-%H-%M-%S')
+        time_delta = (newAppoNow - newAppoDate)
+        total_seconds = time_delta.total_seconds()
+        minutes = total_seconds/60
+
+        if minutes < -40:
+            dateAppo = today.strftime("%Y-%m-%d-%H-00")
 
         response = dynamodb.query(
             TableName="TuCita247",
@@ -78,7 +88,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'APPO#' + appointmentId}, 
                     "SKID": {"S": 'APPO#' + appointmentId}
                 },
-                "UpdateExpression": "REMOVE GSI8PK, GSI8SK SET #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty, GSI5PK = :key05, GSI5SK = :skey05, GSI6PK = :key06, GSI6SK = :skey06, GSI7PK = :key07, GSI7SK = :skey07, GSI9SK = :key" + ("" if typeAppo != 2 else ", GSI4PK = :key4, GSI4SK = :skey4"), 
+                "UpdateExpression": "REMOVE GSI8PK, GSI8SK SET DATE_APPO = :dateAppo, #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty, GSI5PK = :key05, GSI5SK = :skey05, GSI6PK = :key06, GSI6SK = :skey06, GSI7PK = :key07, GSI7SK = :skey07, GSI9SK = :key" + ("" if typeAppo != 2 else ", GSI4PK = :key4, GSI4SK = :skey4"), 
                 "ExpressionAttributeValues": {
                     ":status": {"N": "3"}, 
                     ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
@@ -93,7 +103,8 @@ def lambda_handler(event, context):
                     ":key06": {"S" : 'BUS#' + businessId + '#LOC#' + locationId},
                     ":skey06": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId},
                     ":key07": {"S" : 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
-                    ":skey07": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId}
+                    ":skey07": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId},
+                    ":dateAppo": {"S": dateAppo}
                 },
                 "ExpressionAttributeNames": {'#s': 'STATUS'},
                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND QRCODE = :qrCode",
