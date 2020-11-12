@@ -281,7 +281,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /mobile/appointments/{customerId}
+            Path: /mobile/appointments/{customerId}/{typeAppo}
             Method: get
             ApiId: !Ref HttpApi
   
