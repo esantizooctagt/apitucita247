@@ -71,11 +71,11 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'APPO#' + appointmentId}, 
                     "SKID": {"S": 'APPO#' + appointmentId}, 
                 },
-                "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI9SK = :key01, GSI2SK = :key02, TIMECANCEL = :dateope, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07 REMOVE GSI8PK, GSI8SK",
+                "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI9SK = :key01, GSI2SK = :key01, TIMECANCEL = :dateope, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07 REMOVE GSI8PK, GSI8SK",
                 "ExpressionAttributeValues": { 
                     ":status": {"N": str(status)}, 
                     ":key01": {"S": str(status) + '#DT#' + str(dateAppo)}, 
-                    ":key02": {"S": '#5'}, 
+                    # ":key02": {"S": '#5'}, 
                     ":pkey05": {"S": businessId}, 
                     ":skey05": {"S": appoData}, 
                     ":pkey06": {"S": locationId}, 

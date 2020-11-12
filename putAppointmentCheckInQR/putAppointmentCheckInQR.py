@@ -105,7 +105,7 @@ def lambda_handler(event, context):
                     "ExpressionAttributeValues": {
                         ":status": {"N": "3"}, 
                         ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
-                        ":key2": {"S": '#5' if str(status) == '5' else  str(status) + '#DT#' + str(dateAppo)}, 
+                        ":key2": {"S": str(status) + '#DT#' + str(dateAppo)},  #'#5' if str(status) == '5' else
                         ":qty": {"N": str(qty)},
                         ":dateOpe": {"S": str(dateOpe)},
                         ":key05": {"S" : 'BUS#' + businessId},
