@@ -34,6 +34,7 @@ def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
+        dayOffValid = True
 
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
