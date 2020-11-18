@@ -505,7 +505,9 @@ def lambda_handler(event, context):
                                 "GSI3PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#' + dateAppointment[0:10]}, 
                                 "GSI3SK": {"S": 'QR#' + qrCode},
                                 "GSI9PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-                                "GSI9SK": {"S": '1#DT#' + dateAppointment}, 
+                                "GSI9SK": {"S": '1#DT#' + dateAppointment},
+                                "GSI10PK": {"S": 'CUS#' + customerId},
+                                "GSI10SK": {"S": dateAppointment}
                             },
                             "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"

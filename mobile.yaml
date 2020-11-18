@@ -282,7 +282,7 @@ Resources:
           Type: HttpApi
           Properties:
             Path: /mobile/appointments/{customerId}/{typeAppo}
-            Method: get
+            Method: put
             ApiId: !Ref HttpApi
   
   GetReserveApposFunction:

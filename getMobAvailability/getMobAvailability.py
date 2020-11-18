@@ -185,6 +185,19 @@ def lambda_handler(event, context):
         currHour = ''
         isCurrDay = 0
 
+        if appoDate.strftime("%Y-%m-%d") < today.strftime("%Y-%m-%d"):
+            statusCode = 200
+            body = json.dumps({'Message': 'Date time invalid', 'Hours': [], 'Code': 200})
+            response = {
+                'statusCode' : statusCode,
+                'headers' : {
+                    "content-type" : "application/json",
+                    "access-control-allow-origin" : "*"
+                },
+                'body' : body
+            }
+            return response
+
         if appoDate.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
             currHour = today.strftime("%H:%M")
             currHour = int(str(currHour)[0:2])
@@ -539,12 +552,20 @@ def lambda_handler(event, context):
                                     else:
                                         count = +numCustomer
                             if count > 0:
-                                recordset = {
-                                    'Hour': h,
-                                    'Time24': time24hr,
-                                    'Available': count
-                                }
-                                hours.append(recordset)
+                                if isCurrDay == 1 and time24hr > currHour:
+                                    recordset = {
+                                        'Hour': h,
+                                        'Time24': time24hr,
+                                        'Available': count
+                                    }
+                                    hours.append(recordset)
+                                if isCurrDay == 0:
+                                    recordset = {
+                                        'Hour': h,
+                                        'Time24': time24hr,
+                                        'Available': count
+                                    }
+                                    hours.append(recordset)
                         else:
                             if found != '0':
                                 if found['TimeService'] > 1:
@@ -584,20 +605,36 @@ def lambda_handler(event, context):
                                                         count = 0
                                                         break
                                         if count > 0:
+                                            if isCurrDay == 1 and time24hr > currHour:
+                                                recordset = {
+                                                    'Hour': h,
+                                                    'Time24': time24hr,
+                                                    'Available': count
+                                                }
+                                                hours.append(recordset)
+                                            if isCurrDay == 0:
+                                                recordset = {
+                                                    'Hour': h,
+                                                    'Time24': time24hr,
+                                                    'Available': count
+                                                }
+                                                hours.append(recordset)
+                                else:
+                                    if int(found['Cancel']) == 0 and int(found['Available']) > 0:
+                                        if isCurrDay == 1 and time24hr > currHour:
                                             recordset = {
                                                 'Hour': h,
                                                 'Time24': time24hr,
-                                                'Available': count
+                                                'Available': found['Available']
                                             }
                                             hours.append(recordset)
-                                else:
-                                    if int(found['Cancel']) == 0 and int(found['Available']) > 0:
-                                        recordset = {
-                                            'Hour': h,
-                                            'Time24': time24hr,
-                                            'Available': found['Available']
-                                        }
-                                        hours.append(recordset)
+                                        if isCurrDay == 0:
+                                            recordset = {
+                                                'Hour': h,
+                                                'Time24': time24hr,
+                                                'Available': found['Available']
+                                            }
+                                            hours.append(recordset)
                         hours.sort(key=getKey)
                 statusCode = 200
                 body = json.dumps({'Hours': hours, 'Code': 200})
