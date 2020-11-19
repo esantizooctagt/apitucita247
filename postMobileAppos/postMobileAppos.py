@@ -365,7 +365,8 @@ def lambda_handler(event, context):
                 'Type': '1',
                 'DateAppo': sTime
             }
-            if dateOpe[0:10] == dateAppointment[0:10]:
+            validAppo = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-%M")
+            if dateAppointment <= validAppo: 
                 lambdaInv.invoke(
                     FunctionName='PostMessages',
                     InvocationType='Event',

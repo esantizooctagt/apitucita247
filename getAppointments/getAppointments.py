@@ -44,17 +44,21 @@ def lambda_handler(event, context):
         providerId = event['pathParameters']['providerId']
         status = event['pathParameters']['status']
         typeAppo = event['pathParameters']['type']
-        dateAppoIni = event['pathParameters']['dateAppoIni']
-        dateAppoFin = event['pathParameters']['dateAppoFin']
+
+        dateAppoIni = ''
+        dateAppoFin = ''
+
+        #BOOKINGS -6 HORAS A LA HORA ACTUAL
         if status == '1' and typeAppo == '1':
-            dateAppoIni = today.strftime("%Y-%m-%d-%H-00")
-            dateAppoFin = today.strftime("%Y-%m-%d-23-59")
+            dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-00-00")
+            dateAppoFin = today.strftime("%Y-%m-%d-%H-59")
+        if status == '1' and typeAppo == '2':
+            dateAppoIni = (today + datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H-00")
+            dateAppoFin = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-59")
         if status == '2':
+            dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-%H-00")
             dateAppoFin = today.strftime("%Y-%m-%d-23-59")
-        if typeAppo == '2':
-            dateAppoIni = today.strftime("%Y-%m-%d-00-00")
-            dateAppoFin = today.strftime("%Y-%m-%d-23-59")
-        
+
         #GET SERVICES INFO
         servs = dynamodb.query(
             TableName="TuCita247",
@@ -73,64 +77,30 @@ def lambda_handler(event, context):
             }
             services.append(recordset)
 
-        if typeAppo != '_':
-            n = {'#t': 'TYPE'}
-            f = '#t = :type'
-            if providerId != '0':
-                response = dynamodb.query(
-                    TableName="TuCita247",
-                    IndexName="TuCita247_Index",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
-                    ExpressionAttributeNames=n,
-                    FilterExpression=f,
-                    ExpressionAttributeValues={
-                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
-                        ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                        ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
-                        ':type': {'N': str(typeAppo)}
-                    }
-                )
-            else:
-                response = dynamodb.query(
-                    TableName="TuCita247",
-                    IndexName="TuCita247_Index09",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :gsi9sk_ini AND :gsi9sk_fin',
-                    ExpressionAttributeNames=n,
-                    FilterExpression=f,
-                    ExpressionAttributeValues={
-                        ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId },
-                        ':gsi9sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                        ':gsi9sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
-                        ':type': {'N': str(typeAppo)}
-                    }
-                )
+        if providerId != '0':
+            response = dynamodb.query(
+                TableName="TuCita247",
+                IndexName="TuCita247_Index",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
+                ExpressionAttributeValues={
+                    ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
+                    ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
+                    ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
+                }
+            )
         else:
-            if providerId != '0':
-                response = dynamodb.query(
-                    TableName="TuCita247",
-                    IndexName="TuCita247_Index",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
-                    ExpressionAttributeValues={
-                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
-                        ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                        ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
-                    }
-                )
-            else:
-                response = dynamodb.query(
-                    TableName="TuCita247",
-                    IndexName="TuCita247_Index09",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :gsi9sk_ini AND :gsi9sk_fin',
-                    ExpressionAttributeValues={
-                        ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId },
-                        ':gsi9sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                        ':gsi9sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
-                    }
-                )
+            response = dynamodb.query(
+                TableName="TuCita247",
+                IndexName="TuCita247_Index09",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :gsi9sk_ini AND :gsi9sk_fin',
+                ExpressionAttributeValues={
+                    ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId },
+                    ':gsi9sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
+                    ':gsi9sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
+                }
+            )
         
         record = []
         recordset = {}
@@ -160,69 +130,32 @@ def lambda_handler(event, context):
         lastItem = ''
         while 'LastEvaluatedKey' in response:
             lastItem = response['LastEvaluatedKey']
-            if typeAppo != '_':
-                n = {'#t': 'TYPE'}
-                f = '#t = :type'
-                if providerId != '0':
-                    response = dynamodb.query(
-                        TableName="TuCita247",
-                        IndexName="TuCita247_Index",
-                        ReturnConsumedCapacity='TOTAL',
-                        ExclusiveStartKey= lastItem,
-                        KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
-                        FilterExpression=f,
-                        ExpressionAttributeNames=n,
-                        ExpressionAttributeValues={
-                            ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
-                            ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                            ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
-                            ':type': {'N': str(typeAppo)}
-                        }
-                    )
-                else:
-                    response = dynamodb.query(
-                        TableName="TuCita247",
-                        IndexName="TuCita247_Index09",
-                        ReturnConsumedCapacity='TOTAL',
-                        ExclusiveStartKey= lastItem,
-                        KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :gsi9sk_ini AND :gsi9sk_fin',
-                        FilterExpression=f,
-                        ExpressionAttributeNames=n,
-                        ExpressionAttributeValues={
-                            ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                            ':gsi9sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                            ':gsi9sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
-                            ':type': {'N': str(typeAppo)}
-                        }
-                    )
+            if providerId != '0':
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    IndexName="TuCita247_Index",
+                    ReturnConsumedCapacity='TOTAL',
+                    ExclusiveStartKey= lastItem,
+                    KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
+                    ExpressionAttributeValues={
+                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
+                        ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
+                        ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
+                    }
+                )
             else:
-                if providerId != '0':
-                    response = dynamodb.query(
-                        TableName="TuCita247",
-                        IndexName="TuCita247_Index",
-                        ReturnConsumedCapacity='TOTAL',
-                        ExclusiveStartKey= lastItem,
-                        KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
-                        ExpressionAttributeValues={
-                            ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
-                            ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                            ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
-                        }
-                    )
-                else:
-                    response = dynamodb.query(
-                        TableName="TuCita247",
-                        IndexName="TuCita247_Index09",
-                        ReturnConsumedCapacity='TOTAL',
-                        ExclusiveStartKey= lastItem,
-                        KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :gsi9sk_ini AND :gsi9sk_fin',
-                        ExpressionAttributeValues={
-                            ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                            ':gsi9sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                            ':gsi9sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
-                        }
-                    )
-
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    IndexName="TuCita247_Index09",
+                    ReturnConsumedCapacity='TOTAL',
+                    ExclusiveStartKey= lastItem,
+                    KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :gsi9sk_ini AND :gsi9sk_fin',
+                    ExpressionAttributeValues={
+                        ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                        ':gsi9sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
+                        ':gsi9sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
+                    }
+                )
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'BusinessId': businessId,

@@ -32,7 +32,6 @@ def lambda_handler(event, context):
         statusCode = ''
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
-        providerId = event['pathParameters']['providerId']
         qty = int(event['pathParameters']['qtyGuests'])
 
         items = []
@@ -45,31 +44,14 @@ def lambda_handler(event, context):
                 },
                 "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
                 "ExpressionAttributeValues": { 
-                    ":increment": {"N": str(qty)}
+                    ":increment": {"N": str(qty)},
+                    ":cero": {"N": str(0)}
                 },
-                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND PEOPLE_CHECK_IN >= :cero",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
             }
         }
         items.append(recordset)
-
-        # recordset = {
-        #     "Update": {
-        #         "TableName": "TuCita247",
-        #         "Key": {
-        #             "PKID": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-        #             "SKID": {"S": 'PRO#' + providerId}, 
-        #         },
-        #         "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
-        #         "ExpressionAttributeValues": { 
-        #             ":increment": {"N": str(qty)}
-        #         },
-        #         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-        #         "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-        #     }
-        # }
-        # items.append(recordset)
-
         tranAppo = dynamodb.transact_write_items(
             TransactItems = items
         )
