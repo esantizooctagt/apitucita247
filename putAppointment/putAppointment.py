@@ -133,7 +133,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'APPO#' + appointmentId}, 
                         "SKID": {"S": 'APPO#' + appointmentId}, 
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key01, REASONID = :reason, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, GSI9SK = :key01, TIMECANCEL = :dateope REMOVE GSI8PK, GSI8SK",
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key01, REASONID = :reason, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, GSI9SK = :key01, TIMECANCEL = :dateope, STATUS_CANCEL = :statCancel REMOVE GSI8PK, GSI8SK",
                     "ExpressionAttributeValues": { 
                         ":status": {"N": str(status)}, 
                         ":key01": {"S": str(status) + '#DT#' + str(dateAppo)}, 
@@ -145,7 +145,8 @@ def lambda_handler(event, context):
                         ":skey06": {"S": appoData}, 
                         ":pkey07": {"S": providerId}, 
                         ":skey07": {"S": appoData},
-                        ":dateope": {"S": dateOpe}
+                        ":dateope": {"S": dateOpe},
+                        ":statCancel": {"N": str(3)}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",

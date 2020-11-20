@@ -293,6 +293,7 @@ def lambda_handler(event, context):
                         "SKID": {"S": 'SER#'+serviceId},
                         "NAME": {"S": data['CategoryName']},
                         "TIME_SERVICE": {"N": str(1)},
+                        "BUFFER_TIME": {"N": str(10)},
                         "CUSTOMER_PER_TIME": {"N": str(1)},
                         "CUSTOMER_PER_BOOKING": {"N": str(1)},
                         "COLOR": {"S": str('#D9E1F2')},

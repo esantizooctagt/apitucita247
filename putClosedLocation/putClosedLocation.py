@@ -173,7 +173,7 @@ def lambda_handler(event, context):
                                 'PKID': appo['PKID'],
                                 'SKID': appo['PKID']
                             },
-                            UpdateExpression="SET GSI1SK = :dtkey, GSI2SK = :dtkey, GSI5PK = :buskey, GSI5SK = :skey5, GSI6PK = :pkey6, GSI6SK = :skey5, GSI7PK = :pkey7, GSI7SK = :skey5, GSI9SK = :dtkey, #s = :stat, TIMECANCEL = :timeNow",
+                            UpdateExpression="SET GSI1SK = :dtkey, GSI2SK = :dtkey, GSI5PK = :buskey, GSI5SK = :skey5, GSI6PK = :pkey6, GSI6SK = :skey5, GSI7PK = :pkey7, GSI7SK = :skey5, GSI9SK = :dtkey, #s = :stat, TIMECANCEL = :timeNow, STATUS_CANCEL = :statCancel",
                             ExpressionAttributeNames={'#s': 'STATUS'},
                             ExpressionAttributeValues={
                                 ':dtkey': str('5#DT#'+appo['DATE_APPO']),
@@ -183,6 +183,7 @@ def lambda_handler(event, context):
                                 ':pkey6': 'BUS#'+businessId+'#LOC#'+locationId+'#5',
                                 ':pkey7': 'BUS#'+businessId+'#LOC#'+locationId+'#'+provider['SKID']+'#5',
                                 ':stat': 5,
+                                ':statCancel': 5,
                                 ':timeNow': dateOpe
                             }
                             # ReturnValues="UPDATED_NEW"
