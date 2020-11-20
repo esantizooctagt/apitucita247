@@ -454,7 +454,7 @@ def lambda_handler(event, context):
                         locTime = str(int(hourDate[0:2])+z).zfill(2)+':'+str(hourDate[3:5])
                         hrArr, start, available, ser = findHours(locTime, hoursData)
                         if hrArr != '':
-                            if (ser == serviceId and int(available)-int(guest) >= 0 and hrArr['Cancel'] == 0) or or (ser == '' and hrArr['Cancel'] == 0):
+                            if (ser == serviceId and int(available)-int(guest) >= 0 and hrArr['Cancel'] == 0) or (ser == '' and hrArr['Cancel'] == 0):
                                 validAppo = 1
                             else:
                                 validAppo = -1
