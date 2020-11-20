@@ -5,6 +5,7 @@ import json
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
+from dynamodb_json import json_util as json_dynamodb
 
 import datetime
 import dateutil.tz
@@ -30,10 +31,26 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
+        peopleQty=0
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         qty = int(event['pathParameters']['qtyGuests'])
 
+        guests = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':locationId': {'S': 'LOC#' + locationId}
+            }
+        )
+        for row in json_dynamodb.loads(guests['Items']):
+            peopleQty = row['PEOPLE_CHECK_IN']
+
+        if peopleQty-qty < 0:
+            qty = peopleQty
+        
         items = []
         recordset = {
             "Update": {

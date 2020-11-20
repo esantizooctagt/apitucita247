@@ -84,7 +84,23 @@ def lambda_handler(event, context):
 
         if appointmentId != '':
             items = []
+            peopleQty =0
             dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
+            guests = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + businessId},
+                    ':locationId': {'S': 'LOC#' + locationId}
+                }
+            )
+            for row in json_dynamodb.loads(guests['Items']):
+                peopleQty = row['PEOPLE_CHECK_IN']
+
+            if peopleQty-qty < 0:
+                qty = peopleQty
 
             if timeCheckIn != '':
                 inTime = datetime.datetime.strptime(timeCheckIn, '%Y-%m-%d-%H-%M-%S-%f')
