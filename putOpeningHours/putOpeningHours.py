@@ -34,6 +34,8 @@ def lambda_handler(event, context):
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         providerId = event['pathParameters']['providerId']
+        parentData = event['pathParameters']['parentData']
+
         data = json.loads(event['body'])
         opeHours = data['OpeHours']
 
@@ -96,14 +98,28 @@ def lambda_handler(event, context):
                 )
 
         if locationId != '_' and providerId == '_':
+            if parentData == 1:
+                locs = dynamodb.query(
+                    TableName='TuCita247',
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':metadata': {'S': 'METADATA'}
+                    }
+                )
+                for loc in json_dynamodb.loads(locs['Items']):
+                    opeHours = loc['OPERATIONHOURS']
+
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId,
                     'SKID': 'LOC#' + locationId
                 },
-                UpdateExpression="SET OPERATIONHOURS = :opeHours",
+                UpdateExpression="SET OPERATIONHOURS = :opeHours, PARENTHOURS = :parentData",
                 ExpressionAttributeValues={
-                    ':opeHours': opeHours
+                    ':opeHours': opeHours,
+                    ':parentData': parentData
                 },
                 ReturnValues="UPDATED_NEW"
             )
@@ -130,13 +146,29 @@ def lambda_handler(event, context):
                 )
 
         if providerId != '_':
+            if parentData == 1:
+                locs = dynamodb.query(
+                    TableName='TuCita247',
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId AND SKID = :locs',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':locs': {'S': 'LOC#' + locationId}
+                    }
+                )
+                for loc in json_dynamodb.loads(locs['Items']):
+                    opeHours = loc['OPERATIONHOURS']
+
             response = table.update_item(
                 Key={
                     'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
                     'SKID': 'PRO#' + providerId
                 },
-                UpdateExpression="SET OPERATIONHOURS = :opeHours",
-                ExpressionAttributeValues={':opeHours': opeHours},
+                UpdateExpression="SET OPERATIONHOURS = :opeHours, PARENTHOURS = :parentData",
+                ExpressionAttributeValues={
+                    ':opeHours': opeHours,
+                    ':parentData': parentData
+                },
                 ReturnValues="UPDATED_NEW"
             )
 

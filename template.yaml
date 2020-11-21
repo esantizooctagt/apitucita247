@@ -1660,7 +1660,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/openinghours/{businessId}/{locationId}/{providerId}
+            Path: /business/openinghours/{businessId}/{locationId}/{providerId}/{parentData}
             Method: put
             ApiId: !Ref HttpApi
 

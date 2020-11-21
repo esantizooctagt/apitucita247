@@ -174,7 +174,7 @@ def lambda_handler(event, context):
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
-        appoDate = dateOpe
+        appoDate = today
 
         dayName = appoDate.strftime("%A")[0:3].upper()
         dateStd = appoDate.strftime("%Y-%m-%d")
