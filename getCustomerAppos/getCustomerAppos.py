@@ -28,10 +28,10 @@ def lambda_handler(event, context):
     try:
         customerId = event['pathParameters']['customerId']
         typeAppo = int(event['pathParameters']['typeAppo'])
+        dateAppo = event['pathParameters']['dateAppo']
         
         data = json.loads(event['body'])
         lastItem = data['lastItem'] if 'lastItem' in data else  '_'
-        
         if lastItem != '_':
             lastItem = json.loads(lastItem)
 
@@ -41,6 +41,7 @@ def lambda_handler(event, context):
         newDate = (today + datetime.timedelta(days=365)).strftime("%Y-%m-%d-00-00")
         endToday = today.strftime("%Y-%m-%d-23-59")
         dateYest = (today + datetime.timedelta(days=-1)).strftime("%Y-%m-%d-23-59")
+        oldDate = '2020-10-01-23-59' if dateAppo == '_' else dateAppo 
         dateHoy = dateOpe
         
         if typeAppo == 0:
@@ -67,7 +68,7 @@ def lambda_handler(event, context):
                         ':customerId': {'S': 'CUS#' + customerId},
                         ':dateYest': {'S': dateYest}
                     },
-                    Limit=10
+                    Limit=5
                 )
             else:
                 details = dynamodb.query(
@@ -81,7 +82,7 @@ def lambda_handler(event, context):
                         ':customerId': {'S': 'CUS#' + customerId},
                         ':dateYest': {'S': dateYest}
                     },
-                    Limit=10
+                    Limit=5
                 )
 
         recordset = {}

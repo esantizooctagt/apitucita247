@@ -38,7 +38,6 @@ def lambda_handler(event, context):
 
         data = json.loads(event['body'])
         opeHours = data['OpeHours']
-
         table = dynamodbData.Table('TuCita247')
         if businessId != '_' and locationId == '_':
             response = table.update_item(
@@ -98,7 +97,7 @@ def lambda_handler(event, context):
                 )
 
         if locationId != '_' and providerId == '_':
-            if parentData == 1:
+            if parentData == '1':
                 locs = dynamodb.query(
                     TableName='TuCita247',
                     ReturnConsumedCapacity='TOTAL',
@@ -146,7 +145,7 @@ def lambda_handler(event, context):
                 )
 
         if providerId != '_':
-            if parentData == 1:
+            if parentData == '1':
                 locs = dynamodb.query(
                     TableName='TuCita247',
                     ReturnConsumedCapacity='TOTAL',
