@@ -35,8 +35,8 @@ def lambda_handler(event, context):
         locationId = event['pathParameters']['locationId']
         providerId = event['pathParameters']['providerId']
         parentData = event['pathParameters']['parentData']
-
         data = json.loads(event['body'])
+        
         opeHours = data['OpeHours']
         table = dynamodbData.Table('TuCita247')
         if businessId != '_' and locationId == '_':

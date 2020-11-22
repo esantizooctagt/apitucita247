@@ -104,7 +104,6 @@ def lambda_handler(event, context):
                     "ExpressionAttributeValues": { 
                         ":status": {"N": str(5)}, 
                         ":key01": {"S": '5#DT#' + str(dateAppo)}, 
-                        # ":key02": {"S": '#5'}, 
                         ":reason": {"S": 'NOT SHOW'},  
                         ":pkey05": {"S": 'BUS#'+businessId+'#5'}, 
                         ":skey05": {"S": appoData}, 
