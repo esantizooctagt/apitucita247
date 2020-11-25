@@ -576,6 +576,7 @@ def lambda_handler(event, context):
                                 "QRCODE": {"S": qrCode},
                                 "TYPE": {"N": "2" if qrCode == 'VALID' else "1"},
                                 "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
+                                "DATE_TRANS": {"S": str(dateOpe)},
                                 "SERVICEID": {"S": serviceId},
                                 "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId}, 
                                 "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment}, 
@@ -793,18 +794,23 @@ def lambda_handler(event, context):
 
                         hrAppo = datetime.datetime.strptime(dateAppointment, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
                         dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
+                        strQrCode = ''
                         if language == 'en':
+                            if qrCode != 'VALID':
+                                strQrCode = 'Code :'+qrCode
                             if playerId != '':
-                                msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Thanks, Tu Cita 24/7.'
+                                msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
                             else:
-                                msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Download Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247. Thanks'
-                            msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. Thanks, Tu Cita 24/7.'
+                                msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Download Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247.' + strQrCode
+                            msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. '+strQrCode
                         else:
+                            if qrCode != 'VALID':
+                                strQrCode = 'Código :'+qrCode
                             if playerId != '':
-                                msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Gracias, Tu Cita 24/7.'
+                                msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
                             else:
-                                msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Descarga Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247. Gracias'
-                            msgPush = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + '. Gracias, Tu Cita 24/7.'
+                                msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Descarga Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247.'+ strQrCode
+                            msgPush = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + '. '+strQrCode
 
                         #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                         if playerId != '':

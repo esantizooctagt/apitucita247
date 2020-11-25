@@ -51,9 +51,9 @@ def lambda_handler(event, context):
         #BOOKINGS -6 HORAS A LA HORA ACTUAL
         if status == '1' and typeAppo == '1':
             dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-00-00")
-            dateAppoFin = today.strftime("%Y-%m-%d-%H-59")
+            dateAppoFin = (today + datetime.timedelta(hours=-1)).strftime("%Y-%m-%d-%H-59")
         if status == '1' and typeAppo == '2':
-            dateAppoIni = (today + datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H-00")
+            dateAppoIni = today.strftime("%Y-%m-%d-%H-00")
             dateAppoFin = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-59")
         if status == '2':
             dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-%H-00")
@@ -123,6 +123,7 @@ def lambda_handler(event, context):
                 'Unread': row['UNREAD'] if 'UNREAD' in row else 0,
                 'CheckInTime': row['TIMECHEK'] if 'TIMECHEK' in row else '',
                 'Purpose': row['PURPOSE'] if 'PURPOSE' in row else '',
+                'DateTrans': row['DATE_TRANS'] if 'DATE_TRANS' in row else today.strftime("%Y-%m-%d-%H-%M"),
                 'Status': row['STATUS']
             }
             record.append(recordset)
@@ -175,6 +176,7 @@ def lambda_handler(event, context):
                     'Unread': row['UNREAD'] if 'UNREAD' in row else 0,
                     'CheckInTime': row['TIMECHEK'] if 'TIMECHEK' in row else '',
                     'Purpose': row['PURPOSE'] if 'PURPOSE' in row else '',
+                    'DateTrans': row['DATE_TRANS'] if 'DATE_TRANS' in row else today.strftime("%Y-%m-%d-%H-%M"),
                     'Status': row['STATUS']
                 }
                 record.append(recordset)

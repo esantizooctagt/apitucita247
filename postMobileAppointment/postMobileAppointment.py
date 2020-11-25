@@ -498,6 +498,7 @@ def lambda_handler(event, context):
                                 "SERVICEID": {"S": serviceId},
                                 "QRCODE": {"S": qrCode},
                                 "TYPE": {"N": "1"},
+                                "DATE_TRANS": {"S": str(dateOpe)},
                                 "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId}, 
                                 "GSI1SK": {"S": '1#DT#' + dateAppointment}, 
                                 "GSI2PK": {"S": 'CUS#' + customerId},
@@ -648,12 +649,15 @@ def lambda_handler(event, context):
                         
                         hrAppo = datetime.datetime.strptime(dateAppointment, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
                         dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
+                        strQrCode = ''
                         if language == 'en':
-                            msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Thanks, Tu Cita 24/7.'
-                            msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. Thanks, Tu Cita 24/7.'
+                            strQrCode = 'Code :'+qrCode
+                            msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. '+strQrCode+'. Tu Cita 24/7.'
+                            msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. '+strQrCode+'. Tu Cita 24/7.'
                         else:
-                            msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Gracias, Tu Cita 24/7.'
-                            msgPush = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + '. Gracias, Tu Cita 24/7.'
+                            strQrCode = 'Código :'+qrCode
+                            msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. '+strQrCode+'. Tu Cita 24/7.'
+                            msgPush = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + '. '+strQrCode+'. Tu Cita 24/7.'
 
                         logger.info(msg)
                         logger.info(msgPush)

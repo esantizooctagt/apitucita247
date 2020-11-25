@@ -10,8 +10,7 @@ from dynamodb_json import json_util as json_dynamodb
 
 import datetime
 import dateutil.tz
-from datetime import timezone
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 import os
 
@@ -46,6 +45,7 @@ def lambda_handler(event, context):
         statusCode = ''
         dateAppo = ''
         appointmentId = ''
+        serviceId = ''
         
         data = json.loads(event['body'])
         status = data['Status']
@@ -79,17 +79,29 @@ def lambda_handler(event, context):
         for row in json_dynamodb.loads(response['Items']):
             appointmentId = row['PKID'].replace('APPO#','')
             dateAppo = row['DATE_APPO']
+            serviceId = row['SERVICEID']
             customerId = row['GSI2PK'].replace('CUS#','')
             providerId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#','')
 
-        newAppoDate = datetime.strptime(dateAppo, '%Y-%m-%d-%H-%M')
-        newAppoNow = datetime.strptime(newOpe, '%Y-%m-%d-%H-%M-%S')
-        time_delta = (newAppoNow - newAppoDate)
-        total_seconds = time_delta.total_seconds()
-        minutes = total_seconds/60
+        service = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :pkid AND SKID = :skid',
+            ExpressionAttributeValues={
+                ':pkid': {'S': 'BUS#' + businessId},
+                ':skid': {'S': 'SER#' + serviceId}
+            }
+        )
+        for serv in json_dynamodb.loads(service['Items']):
+            timeService = int(serv['TIME_SERVICE'])*60
+            bufferTime = int(serv['BUFFER_TIME'])
 
-        if minutes < -40:
-            dateAppo = today.strftime("%Y-%m-%d-%H-00")
+        initDate = ((datetime.strptime(today.strftime("%Y-%m-%d-%H-00"),"%Y-%m-%d-%H-%M"))+timedelta(minutes=bufferTime*2)).strftime("%Y-%m-%d-%H-%M")
+        if today.strftime("%Y-%m-%d-%H-%M") > initDate:
+            dateAppo = (today + datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H-00")
+        else:
+            if dateAppo > today.strftime("%Y-%m-%d-%H-%M"):
+                dateAppo = today.strftime("%Y-%m-%d-%H-00")
 
         items = []
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
