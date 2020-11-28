@@ -797,7 +797,7 @@ def lambda_handler(event, context):
                         strQrCode = ''
                         if language == 'en':
                             if qrCode != 'VALID':
-                                strQrCode = 'Code :'+qrCode
+                                strQrCode = 'Code: '+qrCode+'. Tu Cita 24/7.'
                             if playerId != '':
                                 msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
                             else:
@@ -805,7 +805,7 @@ def lambda_handler(event, context):
                             msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. '+strQrCode
                         else:
                             if qrCode != 'VALID':
-                                strQrCode = 'Código :'+qrCode
+                                strQrCode = 'Código: '+qrCode+'. Tu Cita 24/7.'
                             if playerId != '':
                                 msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
                             else:

@@ -620,6 +620,7 @@ Resources:
         - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
         - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
         - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:requests:7
       Events:
         RootGet:
           Type: HttpApi

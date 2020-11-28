@@ -651,11 +651,11 @@ def lambda_handler(event, context):
                         dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
                         strQrCode = ''
                         if language == 'en':
-                            strQrCode = 'Code :'+qrCode
+                            strQrCode = 'Code: '+qrCode
                             msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. '+strQrCode+'. Tu Cita 24/7.'
                             msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. '+strQrCode+'. Tu Cita 24/7.'
                         else:
-                            strQrCode = 'Código :'+qrCode
+                            strQrCode = 'Código: '+qrCode
                             msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. '+strQrCode+'. Tu Cita 24/7.'
                             msgPush = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + '. '+strQrCode+'. Tu Cita 24/7.'
 

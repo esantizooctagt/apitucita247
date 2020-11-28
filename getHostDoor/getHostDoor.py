@@ -50,10 +50,10 @@ def lambda_handler(event, context):
         locationId = ''
         door = '' 
         for row in json_dynamodb.loads(response['Items']):
-            locationId = row['LOCATIONID'] if 'LOCATIONID' in row else ''
+            locationId = row['LOCATIONID'] if 'LOCATIONID' in row else '0'
             door = row['DOOR'] if 'DOOR' in row else ''
             locations = []
-            if locationId != '':
+            if locationId != '0':
                 locs = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',

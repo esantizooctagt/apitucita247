@@ -50,8 +50,8 @@ def lambda_handler(event, context):
             }
         )
 
-        record = []
-        recordset = {}
+        daysOff = []
+        opeHours = ''
         for row in json_dynamodb.loads(response['Items']):
             daysOff = row['DAYS_OFF'] if 'DAYS_OFF' in row else []
             opeHours = json.loads(row['OPERATIONHOURS']) if 'OPERATIONHOURS' in row else ''
@@ -60,6 +60,7 @@ def lambda_handler(event, context):
             dayOffValid = today.strftime("%Y-%m-%d") not in daysOff
         
         record = []
+        recordset = {}
         currHour = today.strftime("%H")
         if dayOffValid:
             dateAppo = opeHours[dayName] if dayName in opeHours else []
