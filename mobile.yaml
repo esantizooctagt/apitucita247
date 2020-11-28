@@ -418,24 +418,24 @@ Resources:
             Method: put
             ApiId: !Ref HttpApi
 
-  PutAppoCommingFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: PutAppoComming
-      CodeUri: putAppoComming/
-      Handler: putAppoComming.lambda_handler
-      Role: arn:aws:iam::821843840552:role/LambdaDynamo
-      Layers: 
-        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
-        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
-        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
-      Events:
-        RootGet:
-          Type: HttpApi
-          Properties:
-            Path: /mobile/ready/{appointmentId}
-            Method: put
-            ApiId: !Ref HttpApi
+  # PutAppoCommingFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: PutAppoComming
+  #     CodeUri: putAppoComming/
+  #     Handler: putAppoComming.lambda_handler
+  #     Role: arn:aws:iam::821843840552:role/LambdaDynamo
+  #     Layers: 
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+  #       - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+  #     Events:
+  #       RootGet:
+  #         Type: HttpApi
+  #         Properties:
+  #           Path: /mobile/ready/{appointmentId}
+  #           Method: put
+  #           ApiId: !Ref HttpApi
 
   GetMobileBusinessFunction:
     Type: AWS::Serverless::Function

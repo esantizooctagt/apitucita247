@@ -92,7 +92,7 @@ def lambda_handler(event, context):
 
         initDate = ((datetime.strptime(today.strftime("%Y-%m-%d-%H-00"),"%Y-%m-%d-%H-%M"))+timedelta(minutes=bufferTime*2)).strftime("%Y-%m-%d-%H-%M")
         if today.strftime("%Y-%m-%d-%H-%M") > initDate:
-            dateAppo = (today + datetime.timedelta(hours=1)).strftime("%Y-%m-%d-%H-00")
+            dateAppo = (today + timedelta(hours=1)).strftime("%Y-%m-%d-%H-00")
         else:
             if dateAppo > today.strftime("%Y-%m-%d-%H-%M"):
                 dateAppo = today.strftime("%Y-%m-%d-%H-00")
