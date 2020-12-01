@@ -34,11 +34,53 @@ def lambda_handler(event, context):
         )
         recordset = {}
         record = []
+        # RES#BUS#12345#LOC#9065a9e82c914582a0f75b63dfcbab01#PRO#10001
         for item in json_dynamodb.loads(details['Items']):
+            businessId = item['GSI1PK'].split('#')[2]
+            locationId = item['GSI1PK'].split('#')[4]
+            providerId = item['GSI1PK'].split('#')[6]
+
+            provs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :busLoc AND begins_with(SKID, :prov)',
+                ExpressionAttributeValues={
+                    ':busLoc': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                    ':prov': {'S': 'PRO#'}
+                }
+            )
+            count = 0
+            for prov in json_dynamodb.loads(provs['Items']):
+                count = count + 1
+                if prov['SKID'].replace('PRO#','') == providerId:
+                    provName = prov['NAME']
+            if count == 1:
+                provName = ''
+
+            servs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with(SKID, :serv)',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + businessId},
+                    ':serv': {'S': 'SER#'}
+                }
+            )
+            count = 0
+            for serv in json_dynamodb.loads(servs['Items']):
+                count = count + 1
+
+            if count == 1:
+                servName = ''
+            else:
+                servName = item['SERVICE_NAME']
+
             recordset = {
                 'AppointmentId': item['SKID'].replace('APPO#',''),
                 'NameBusiness': item['BUSINESS_NAME'],
-                'ServiceName': item['SERVICE_NAME'],
+                'Name': item['NAME'],
+                'ServiceName': servName,
+                'ProviderName': provName,
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
                 'PeopleQty': item['PEOPLE_QTY'] if 'PEOPLE_QTY' in item else 0,
                 'Address': item['BUSINESS_ADDR'],

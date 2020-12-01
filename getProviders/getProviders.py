@@ -17,6 +17,12 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def findLoc(locs, locId):
+    for item in range(len(locs)):
+        if locs[item]['LocationId'] == locId:
+            return locs[item]['Name']
+    return ''
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -47,6 +53,23 @@ def lambda_handler(event, context):
                 salir = 1
             else:
                 lastItem = {'GSI1PK': {'S': 'BUS#' + businessId },'GSI1SK': {'S': 'PRO#' + lastItem }}
+
+        locs=[]
+        locsName = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :locs)',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#'+businessId},
+                ':locs': {'S': 'LOC#'}
+            }
+        )
+        for item in json_dynamodb.loads(locsName['Items']):
+            data = {
+                'LocationId': item['SKID'].replace('LOC#',''),
+                'Name': item['NAME']
+            }
+            locs.append(data)
 
         if salir == 0:
             if lastItem == '':
@@ -79,6 +102,7 @@ def lambda_handler(event, context):
                     'ProviderId': row['SKID'].replace('PRO#',''),
                     'Name': row['NAME'],
                     'LocationId': row['PKID'].replace('BUS#' + businessId + '#LOC#',''),
+                    'Location': findLoc(locs, row['PKID'].replace('BUS#' + businessId + '#LOC#','')),
                     'Status': row['STATUS']
                 }
                 records.append(recordset)
