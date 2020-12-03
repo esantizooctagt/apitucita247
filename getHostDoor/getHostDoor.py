@@ -53,7 +53,7 @@ def lambda_handler(event, context):
             locationId = row['LOCATIONID'] if 'LOCATIONID' in row else '0'
             door = row['DOOR'] if 'DOOR' in row else ''
             locations = []
-            if locationId != '0':
+            if locationId != '0' and locationId != '':
                 locs = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',

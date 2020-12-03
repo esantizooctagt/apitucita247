@@ -477,6 +477,42 @@ def lambda_handler(event, context):
                                         break
                 #PROCEDE A GUARDAR LA CITA
                 if validAppo == 1:
+                    servs = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serv)',
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': 'BUS#'+businessId},
+                            ':serv': {'S': 'SER#' }
+                        }
+                    )
+                    count = 0
+                    servName = ''
+                    for serv in json_dynamodb.loads(servs['Items']):
+                        count = count + 1
+                        if serv['SKID'].replace('SER#','') == serviceId:
+                            servName = serv['NAME']
+                    if count == 1:
+                        servName = ''
+                    
+                    provs =  dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :key AND begins_with(SKID , :provs)',
+                        ExpressionAttributeValues={
+                            ':key': {'S': 'BUS#'+businessId+'#LOC#'+locationId},
+                            ':provs': {'S': 'PRO#' }
+                        }
+                    )
+                    countp = 0
+                    provName = ''
+                    for prov in json_dynamodb.loads(provs['Items']):
+                        countp = countp + 1
+                        if prov['SKID'].replace('PRO#','') == providerId:
+                            provName = prov['NAME']
+                    if countp == 1:
+                        provName = ''
+
                     recordset = {}
                     items = []
                     appoId = str(uuid.uuid4()).replace("-","")
@@ -592,6 +628,8 @@ def lambda_handler(event, context):
                         'ProviderId': providerId,
                         'BufferTime': bufferTime,
                         'Name': name,
+                        'Provider': provName,
+                        'Service': servName,
                         'Phone': phone,
                         'OnBehalf': str(onbehalf),
                         'Guests': 0 if str(guest) == '' else int(guest),
@@ -599,7 +637,11 @@ def lambda_handler(event, context):
                         'Disability': 0 if disability == '' else int(disability),
                         'DateFull': dateAppointment,
                         'Type': '1',
-                        'DateAppo': sTime
+                        'DateAppo': sTime,
+                        'QRCode': qrCode,
+                        'DateTrans': str(dateOpe),
+                        'Status': 1,
+                        'UnRead': ''
                     }
 
                     validAppo = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-%M")

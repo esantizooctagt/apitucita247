@@ -27,6 +27,22 @@ def findService(serviceId, servs):
             return int(item['BufferTime'])
     return 1
 
+def findServiceName(serviceId, servs, items):
+    if items <= 1:
+        return ''
+    for item in servs:
+        if item['ServiceId'] == serviceId:
+            return item['Name']
+    return ''
+
+def findProvider(providerId, providers, items):
+    if items <= 1:
+        return ''
+    for item in providers:
+        if item['ProviderId'] == providerId:
+            return item['Name']
+    return ''
+
 def lambda_handler(event, context):
     stage = event['headers']
 
@@ -44,20 +60,45 @@ def lambda_handler(event, context):
         providerId = event['pathParameters']['providerId']
         status = event['pathParameters']['status']
         typeAppo = event['pathParameters']['type']
+        appoType = int(event['pathParameters']['appoType'])
 
         dateAppoIni = ''
         dateAppoFin = ''
 
         #BOOKINGS -6 HORAS A LA HORA ACTUAL
-        if status == '1' and typeAppo == '1':
-            dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-00-00")
-            dateAppoFin = (today + datetime.timedelta(hours=-1)).strftime("%Y-%m-%d-%H-59")
-        if status == '1' and typeAppo == '2':
-            dateAppoIni = today.strftime("%Y-%m-%d-%H-00")
-            dateAppoFin = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-59")
-        if status == '2':
+        if appoType != 2:
+            if status == '1' and typeAppo == '1':
+                dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-%H-00") #00
+                dateAppoFin = (today + datetime.timedelta(hours=-1)).strftime("%Y-%m-%d-%H-59")
+            if status == '1' and typeAppo == '2':
+                dateAppoIni = today.strftime("%Y-%m-%d-%H-00")
+                dateAppoFin = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-59")
+            if status == '2':
+                dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-%H-00")
+                dateAppoFin = today.strftime("%Y-%m-%d-23-59")
+        else:
             dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-%H-00")
-            dateAppoFin = today.strftime("%Y-%m-%d-23-59")
+            dateAppoFin = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-59")
+
+        #GET PROVS INFO
+        provs = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :key AND begins_with(SKID , :skey)',
+            ExpressionAttributeValues={
+                ':key': {'S': 'BUS#'+businessId+'#LOC#'+locationId},
+                ':skey': {'S': 'PRO#'}
+            }
+        )
+        providers = []
+        count = 0
+        for prov in json_dynamodb.loads(provs['Items']):
+            count = count + 1
+            recordset = {
+                'ProviderId': prov['SKID'].replace('PRO#',''),
+                'Name': prov['NAME']
+            }
+            providers.append(recordset)
 
         #GET SERVICES INFO
         servs = dynamodb.query(
@@ -70,9 +111,12 @@ def lambda_handler(event, context):
             }
         )
         services = []
+        counts = 0
         for serv in json_dynamodb.loads(servs['Items']):
+            counts = counts + 1
             recordset = {
                 'ServiceId': serv['SKID'].replace('SER#',''),
+                'Name': serv['NAME'],
                 'BufferTime': serv['BUFFER_TIME']
             }
             services.append(recordset)
@@ -83,10 +127,13 @@ def lambda_handler(event, context):
                 IndexName="TuCita247_Index",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
+                FilterExpression='#t = :appoType',
+                ExpressionAttributeNames={'#t': 'TYPE'},
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
                     ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                    ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
+                    ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
+                    ':appoType': {'N': str(appoType)}
                 }
             )
         else:
@@ -95,10 +142,13 @@ def lambda_handler(event, context):
                 IndexName="TuCita247_Index09",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :gsi9sk_ini AND :gsi9sk_fin',
+                FilterExpression='#t = :appoType',
+                ExpressionAttributeNames={'#t': 'TYPE'},
                 ExpressionAttributeValues={
                     ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId },
                     ':gsi9sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                    ':gsi9sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
+                    ':gsi9sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
+                    ':appoType': {'N': str(appoType)}
                 }
             )
         
@@ -114,6 +164,8 @@ def lambda_handler(event, context):
                 'ClientId': row['GSI2PK'].replace('CUS#',''),
                 'Name': row['NAME'],
                 'Phone': row['PHONE'],
+                'Provider': findProvider(row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#',''), providers, count),
+                'Service': findServiceName(row['SERVICEID'], services, counts),
                 'OnBehalf': row['ON_BEHALF'],
                 'Guests': row['PEOPLE_QTY'] if 'PEOPLE_QTY' in row else 0,
                 'Door': row['DOOR'] if 'DOOR' in row else '',
@@ -123,6 +175,7 @@ def lambda_handler(event, context):
                 'Unread': row['UNREAD'] if 'UNREAD' in row else 0,
                 'CheckInTime': row['TIMECHEK'] if 'TIMECHEK' in row else '',
                 'Purpose': row['PURPOSE'] if 'PURPOSE' in row else '',
+                'QrCode': row['QRCODE'] if 'QRCODE' in row else '',
                 'DateTrans': row['DATE_TRANS'] if 'DATE_TRANS' in row else today.strftime("%Y-%m-%d-%H-%M"),
                 'Status': row['STATUS']
             }
@@ -138,10 +191,13 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     ExclusiveStartKey= lastItem,
                     KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
+                    FilterExpression='#t = :appoType',
+                    ExpressionAttributeNames={'#t': 'TYPE'},
                     ExpressionAttributeValues={
                         ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
                         ':gsi1sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                        ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
+                        ':gsi1sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
+                        ':appoType': {'N': str(appoType)}
                     }
                 )
             else:
@@ -151,10 +207,13 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     ExclusiveStartKey= lastItem,
                     KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :gsi9sk_ini AND :gsi9sk_fin',
+                    FilterExpression='#t = :appoType',
+                    ExpressionAttributeNames={'#t': 'TYPE'},
                     ExpressionAttributeValues={
                         ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                         ':gsi9sk_ini': {'S': str(status) +'#DT#' + dateAppoIni},
-                        ':gsi9sk_fin': {'S': str(status) +'#DT#' + dateAppoFin}
+                        ':gsi9sk_fin': {'S': str(status) +'#DT#' + dateAppoFin},
+                        ':appoType': {'N': str(appoType)}
                     }
                 )
             for row in json_dynamodb.loads(response['Items']):
@@ -167,6 +226,8 @@ def lambda_handler(event, context):
                     'ClientId': row['GSI2PK'].replace('CUS#',''),
                     'Name': row['NAME'],
                     'Phone': row['PHONE'],
+                    'Provider': findProvider(row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#',''), providers, count),
+                    'Service': findServiceName(row['SERVICEID'], services, counts),
                     'OnBehalf': row['ON_BEHALF'],
                     'Guests': row['PEOPLE_QTY'] if 'PEOPLE_QTY' in row else 0,
                     'Door': row['DOOR'] if 'DOOR' in row else '',
@@ -176,6 +237,7 @@ def lambda_handler(event, context):
                     'Unread': row['UNREAD'] if 'UNREAD' in row else 0,
                     'CheckInTime': row['TIMECHEK'] if 'TIMECHEK' in row else '',
                     'Purpose': row['PURPOSE'] if 'PURPOSE' in row else '',
+                    'QrCode': row['QRCODE'] if 'QRCODE' in row else '',
                     'DateTrans': row['DATE_TRANS'] if 'DATE_TRANS' in row else today.strftime("%Y-%m-%d-%H-%M"),
                     'Status': row['STATUS']
                 }

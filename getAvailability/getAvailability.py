@@ -512,7 +512,7 @@ def lambda_handler(event, context):
                                     'Time24': item['Hour'],
                                     'ServiceId': item['ServiceId'],
                                     'TimeService': item['TimeService'],
-                                    'Available': custPerTime-item['People'],
+                                    'Available': item['People'] if custPerTime == 0 else custPerTime-item['People'],
                                     'Cancel': 0
                                 }
                                 hoursData.append(recordset)
@@ -574,6 +574,7 @@ def lambda_handler(event, context):
                                     }
                                     hours.append(recordset)
                         else:
+                            # DEBE VALIDAR BIEN LA HORA, VER CUANDO SE ABRIO Y NO TIENE SERVICIO ASOCIADO Y VER SI SE PUEDE A ESA HORA ASIGNAR EL SERVICIO
                             if found != '0':
                                 if found['TimeService'] > 1:
                                     if found['Available'] > 0:

@@ -62,7 +62,6 @@ def lambda_handler(event, context):
             }
             records.append(recordset)
 
-
             resultSet = { 
                 'services': records
             }

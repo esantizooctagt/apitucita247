@@ -37,7 +37,7 @@ def lambda_handler(event, context):
     try:
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
-        dateOpe = today.strftime("%Y-%m-%d-%H-%M")
+        dateOpe = today.strftime("%Y-%m-%d-%H-00")
         
         appoId = event['pathParameters']['AppointmentId']
         response = dynamodb.query(
@@ -54,7 +54,6 @@ def lambda_handler(event, context):
             locationId = ''
             providerId = ''
             businessName = ''
-            busLanguage = ''
             appId = ''
 
             appId = row['PKID']
@@ -79,19 +78,59 @@ def lambda_handler(event, context):
             )
             for business in json_dynamodb.loads(getBusiness['Items']):
                 businessName = business['NAME']
-
-            getLanguage = dynamodb.query(
-                TableName="TuCita247",
-                ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :key AND SKID = :skey',
-                ExpressionAttributeValues={
-                    ':key': {'S': 'BUS#'+businessId},
-                    ':skey': {'S': 'METADATA'}
+            
+            getAddr = dynamodb.query(
+                TableName = "TuCita247",
+                ReturnConsumedCapacity = 'TOTAL',
+                KeyConditionExpression = 'PKID = :key01 AND SKID = :key02',
+                ExpressionAttributeValues = {
+                    ':key01': {"S": 'BUS#' + businessId},
+                    ':key02': {"S": 'LOC#' + locationId}
                 }
             )
-            for busLng in json_dynamodb.loads(getLanguage['Items']):
-                busLanguage = busLng['LANGUAGE'] if 'LANGUAGE' in busLng else 'en'
+            Addr = ''
+            for addr in json_dynamodb.loads(getAddr['Items']):
+                Addr = addr['ADDRESS']
             
+            servs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serv)',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#'+businessId},
+                    ':serv': {'S': 'SER#' }
+                }
+            )
+            count = 0
+            servName = ''
+            bufferTime = ''
+            for serv in json_dynamodb.loads(servs['Items']):
+                count = count + 1
+                if serv['SKID'].replace('SER#','') == row['SERVICEID']:
+                    servName = serv['NAME']
+                    bufferTime = serv['BUFFER_TIME']
+
+            if count == 1:
+                servName = ''
+            
+            provs =  dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :key AND begins_with(SKID , :provs)',
+                ExpressionAttributeValues={
+                    ':key': {'S': 'BUS#'+businessId+'#LOC#'+locationId},
+                    ':provs': {'S': 'PRO#' }
+                }
+            )
+            countp = 0
+            provName = ''
+            for prov in json_dynamodb.loads(provs['Items']):
+                countp = countp + 1
+                if prov['SKID'].replace('PRO#','') == providerId:
+                    provName = prov['NAME']
+            if countp == 1:
+                provName = ''
+                
             items = []
             recordset = {
                 "Update": {
@@ -100,19 +139,10 @@ def lambda_handler(event, context):
                         "PKID": {"S": appId}, 
                         "SKID": {"S": appId}, 
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key01, REASONID = :reason, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, GSI9SK = :key01, TIMECANCEL = :dateope, STATUS_CANCEL = :statCancel REMOVE GSI8PK, GSI8SK",
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key01, GSI9SK = :key01 REMOVE GSI8PK, GSI8SK, TIMECHEK",
                     "ExpressionAttributeValues": { 
-                        ":status": {"N": str(5)}, 
-                        ":key01": {"S": '5#DT#' + str(dateAppo)}, 
-                        ":reason": {"S": 'NOT SHOW'},  
-                        ":pkey05": {"S": 'BUS#'+businessId+'#5'}, 
-                        ":skey05": {"S": appoData}, 
-                        ":pkey06": {"S": 'BUS#'+businessId+'#LOC#'+locationId+'#5'}, 
-                        ":skey06": {"S": appoData}, 
-                        ":pkey07": {"S": 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId+'#5'}, 
-                        ":skey07": {"S": appoData},
-                        ":dateope": {"S": dateOpe},
-                        ":statCancel": {"N": str(1)}
+                        ":status": {"N": str(1)}, 
+                        ":key01": {"S": '1#DT#' + str(dateAppo)}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
@@ -125,113 +155,51 @@ def lambda_handler(event, context):
             response = dynamodb.transact_write_items(
                 TransactItems = items
             )
-            logger.info("Appo Cancelada")
+            
+            sTime = ''
+            dateAppointment = str(row['DATE_APPO'])
+            hTime = int(str(dateAppointment[-5:])[0:2])
+            if hTime >= 12:
+                if hTime == 12:
+                    sTime = str(hTime) + ':00 PM'
+                else:
+                    hTime = hTime-12
+                    sTime = str(hTime).rjust(2,'0') + ':00 PM'
+            else:
+                sTime = str(hTime).rjust(2,'0') + ':00 AM'
             data = {
                 'BusinessId': businessId,
                 'LocationId': locationId,
                 'AppId': appId.replace('APPO#',''),
                 'CustomerId': customerId.replace('CUS#',''),
-                'Tipo': 'CANCEL'
+                'ProviderId': providerId,
+                'BufferTime': bufferTime,
+                'Name': row['NAME'],
+                'Provider': provName,
+                'Service': servName,
+                'Phone': row['PHONE'],
+                'OnBehalf': row['ON_BEHALF'] if 'ON_BEHALF' in row else '',
+                'Guests': 0 if guests == '' else int(guests),
+                'Door': row['DOOR'] if 'DOOR' in row else '',
+                'Disability': row['DISABILITY'] if 'DISABILITY' in row else 0,
+                'DateFull': row['DATE_APPO'],
+                'Type': row['TYPE'],
+                'DateAppo': sTime,
+                'Status': 1,
+                'UnRead': '',
+                'QRCode': row['QRCODE'],
+                'Ready': 0,
+                'NameBusiness': businessName,
+                'Address': Addr,
+                'DateTrans': row['DATE_TRANS'],
+                'Qeue': 'PRE' if row['DATE_APPO'] < dateOpe else 'UPC',
+                'Tipo': 'REVERSE'
             }
             lambdaInv.invoke(
                 FunctionName='PostMessages',
                 InvocationType='Event',
                 Payload=json.dumps(data)
             )
-
-            # GET USER PREFERENCE NOTIFICATION
-            response = dynamodb.query(
-                TableName="TuCita247",
-                IndexName="TuCita247_Index",
-                ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='GSI1PK = :key AND GSI1SK = :key',
-                ExpressionAttributeValues={
-                    ':key': {'S': customerId}
-                }
-            )
-            preference = 0
-            playerId = ''
-            language = ''
-            for cust in json_dynamodb.loads(response['Items']):
-                preference = int(cust['PREFERENCES']) if 'PREFERENCES' in cust else 0
-                mobile = cust['PKID'].replace('MOB#','')
-                email = cust['EMAIL'] if 'EMAIL' in cust else ''
-                playerId = cust['PLAYERID'] if 'PLAYERID' in cust else ''
-                language = str(cust['LANGUAGE']).lower() if 'LANGUAGE' in cust else busLanguage
-
-            hrAppo = datetime.datetime.strptime(dateAppo, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
-            dayAppo = datetime.datetime.strptime(dateAppo[0:10], '%Y-%m-%d').strftime('%b %d %Y')
-            if language == "en":
-                textMess = businessName + ' has canceled your booking for ' + dayAppo  + ', ' + hrAppo + '. Reason: NOT SHOW'
-            else:
-                textMess = businessName + ' ha cancelado su cita para ' + dayAppo + ', ' + hrAppo + '. Razón: NO SE PRESENTO'
-
-            logger.info('Preference user ' + customerId + ' -- ' + str(preference))
-            #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
-            if playerId != '':
-                header = {"Content-Type": "application/json; charset=utf-8"}
-                payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
-                        "include_player_ids": [playerId],
-                        "contents": {"en": textMess }}
-                req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
-
-            if int(preference) == 1 and mobile != '00000000000':
-                #SMS
-                to_number = mobile
-                bodyStr = textMess
-                sms.publish(
-                    PhoneNumber="+"+to_number,
-                    Message=bodyStr,
-                    MessageAttributes={
-                            'AWS.SNS.SMS.SMSType': {
-                            'DataType': 'String',
-                            'StringValue': 'Transactional'
-                        }
-                    }
-                )
-                
-            if int(preference) == 2 and email != '':
-                #EMAIL
-                SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
-                RECIPIENT = email
-                SUBJECT = "Tu Cita 24/7 Pre Check-In"
-                BODY_TEXT = (textMess)
-                            
-                # The HTML body of the email.
-                BODY_HTML = """<html>
-                <head></head>
-                <body>
-                <h1>Tu Cita 24/7</h1>
-                <p>""" + textMess + """</p>
-                </body>
-                </html>"""
-
-                CHARSET = "UTF-8"
-
-                response = ses.send_email(
-                    Destination={
-                        'ToAddresses': [
-                            RECIPIENT,
-                        ],
-                    },
-                    Message={
-                        'Body': {
-                            'Html': {
-                                'Charset': CHARSET,
-                                'Data': BODY_HTML,
-                            },
-                            'Text': {
-                                'Charset': CHARSET,
-                                'Data': BODY_TEXT,
-                            },
-                        },
-                        'Subject': {
-                            'Charset': CHARSET,
-                            'Data': SUBJECT,
-                        },
-                    },
-                    Source=SENDER
-                )
         
             resultSet = { 
                 'Code': 200,
