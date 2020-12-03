@@ -127,7 +127,7 @@ def lambda_handler(event, context):
                 IndexName="TuCita247_Index",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
-                FilterExpression='#t = :appoType',
+                FilterExpression='#t = :appoType' if status == '1' else '#t >= :appoType',
                 ExpressionAttributeNames={'#t': 'TYPE'},
                 ExpressionAttributeValues={
                     ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
@@ -142,7 +142,7 @@ def lambda_handler(event, context):
                 IndexName="TuCita247_Index09",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :gsi9sk_ini AND :gsi9sk_fin',
-                FilterExpression='#t = :appoType',
+                FilterExpression='#t = :appoType' if status == '1' else '#t >= :appoType',
                 ExpressionAttributeNames={'#t': 'TYPE'},
                 ExpressionAttributeValues={
                     ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId },
@@ -191,7 +191,7 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     ExclusiveStartKey= lastItem,
                     KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
-                    FilterExpression='#t = :appoType',
+                    FilterExpression='#t = :appoType' if status == '1' else '#t >= :appoType',
                     ExpressionAttributeNames={'#t': 'TYPE'},
                     ExpressionAttributeValues={
                         ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
@@ -207,7 +207,7 @@ def lambda_handler(event, context):
                     ReturnConsumedCapacity='TOTAL',
                     ExclusiveStartKey= lastItem,
                     KeyConditionExpression='GSI9PK = :gsi9pk AND GSI9SK BETWEEN :gsi9sk_ini AND :gsi9sk_fin',
-                    FilterExpression='#t = :appoType',
+                    FilterExpression='#t = :appoType' if status == '1' else '#t >= :appoType',
                     ExpressionAttributeNames={'#t': 'TYPE'},
                     ExpressionAttributeValues={
                         ':gsi9pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
