@@ -46,6 +46,8 @@ def lambda_handler(event, context):
         typeAppo = ''
         businessId = ''
         serviceId = ''
+        customerId = ''
+        manualCheckIn = 0
         timeService = 0
         bufferTime = 0
         realTimeService = 0
@@ -64,6 +66,18 @@ def lambda_handler(event, context):
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
         initDate = ''
 
+        operation = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :pkid AND SKID = :skid',
+            ExpressionAttributeValues={
+                ':pkid': {'S': 'BUS#' + businessId},
+                ':skid': {'S': 'LOC#' + locationId}
+            }
+        )
+        for ope in json_dynamodb.loads(operation['Items']):
+            manualCheckIn = int(ope['MANUAL_CHECK_OUT'])
+
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -76,6 +90,7 @@ def lambda_handler(event, context):
         for row in json_dynamodb.loads(response['Items']):
             typeAppo = row['TYPE']
             serviceId = row['SERVICEID']
+            customerId = row['GSI2PK'].replace('CUS#','')
         
         service = dynamodb.query(
             TableName="TuCita247",
@@ -154,8 +169,10 @@ def lambda_handler(event, context):
             'BusinessId': businessId,
             'LocationId': locationId,
             'AppId': appointmentId,
+            'CustomerId': customerId,
             'Guests': qty,
             'Tipo': 'MOVE',
+            'ManualCheckIn': manualCheckIn,
             'To': 'CHECKIN'
         }
         lambdaInv.invoke(

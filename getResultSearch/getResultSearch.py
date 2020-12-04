@@ -48,7 +48,11 @@ def lambda_handler(event, context):
                 size=10
             )
         if city == '_' and sector == '_':
-            data = str(queryStd+' ').replace(' ', '~1 ')
+            words = queryStd.split(' ')
+            data = ''
+            for word in words:
+                data = data + word + '* '
+            
             response = cloudsearch.search(
                 query=data,
                 queryParser='simple',

@@ -639,6 +639,9 @@ def lambda_handler(event, context):
                         'Type': '1',
                         'DateAppo': sTime,
                         'QRCode': qrCode,
+                        'OpenMess': 0,
+                        'OpenCanc': 0,
+                        'OpenItem': 0,
                         'DateTrans': str(dateOpe),
                         'Status': 1,
                         'UnRead': ''

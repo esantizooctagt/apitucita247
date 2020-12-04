@@ -114,6 +114,7 @@ def lambda_handler(event, context):
                 data = {
                     'BusinessId': busId,
                     'LocationId': locId,
+                    'CustomerId': customerId,
                     'AppId': appointmentId,
                     'Time': dateOpe,
                     'Tipo': 'MOVE',

@@ -44,6 +44,10 @@ def lambda_handler(event, context):
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
+        dateAppoIni = (today + datetime.timedelta(hours=-4)).strftime("%Y-%m-%d-%H-00")
+        dateAppoFin = (today + datetime.timedelta(hours=-1)).strftime("%Y-%m-%d-%H-59")
+
         dateNow = today.strftime("%Y-%m-%d-%H")
         dateFin = today.strftime("%Y-%m-%d")
         hourNow = today.strftime("%H")
@@ -58,8 +62,10 @@ def lambda_handler(event, context):
             }
         )
         businessName = ''
+        Address = ''
         for bus in json_dynamodb.loads(busName['Items']):
-            businessName = bus['NAME']
+            businessName = bus['NAME'],
+            Address = bus['ADDRESS']
 
         table = dynamodb.Table('TuCita247')
         if closed == 0:
@@ -118,6 +124,59 @@ def lambda_handler(event, context):
                 }
             )
             for provider in json_dynamodb.loads(providers['Items']):
+                appos = dynamoQr.query(
+                    TableName="TuCita247",
+                    IndexName="TuCita247_Index",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
+                    ExpressionAttributeValues={
+                        ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + provider['SKID'].replace('PRO#','')},
+                        ':gsi1sk_ini': {'S': '1#DT#' + dateAppoIni},
+                        ':gsi1sk_fin': {'S': '1#DT#' + dateAppoFin}
+                    }
+                )
+                table = dynamodb.Table('TuCita247')
+                for appo in json_dynamodb.loads(appos['Items']):
+                    updAppo = table.update_item(
+                        Key={
+                            'PKID': appo['PKID'],
+                            'SKID': appo['PKID']
+                        },
+                        UpdateExpression="SET GSI1SK = :dtkey, GSI2SK = :dtkey, GSI9SK = :dtkey, #s = :stat",
+                        ExpressionAttributeNames={'#s': 'STATUS'},
+                        ExpressionAttributeValues={
+                            ':dtkey': str('6#DT#'+appo['DATE_APPO']),
+                            ':stat': 6
+                        }
+                    )
+                    logger.info(updAppo)
+
+                    data = {
+                        'BusinessId': businessId,
+                        'CustomerId': appo['GSI2PK'].replace('CUS#',''),
+                        'LocationId': locationId,
+                        'AppId': appo['PKID'].replace('APPO#',''),
+                        'Address': Address,
+                        'NameBusiness': businessName,
+                        'Guests': int(appo['PEOPLE_QTY']),
+                        'QRCode': appo['QRCODE'],
+                        'UnRead': 0,
+                        'Ready': 0,
+                        'DateFull': appo['DATE_APPO'],
+                        'Disability': appo['DISABILITY'],
+                        'Door': appo['DOOR'],
+                        'Name': appo['NAME'],
+                        'OnBehalf': appo['ON_BEHALF'],
+                        'Phone': appo['PHONE'],
+                        'Tipo': 'MOVE',
+                        'To': 'EXPIRED'
+                    }
+                    lambdaInv.invoke(
+                        FunctionName='PostMessages',
+                        InvocationType='Event',
+                        Payload=json.dumps(data)
+                    )
+                    
                 for i in range(1, 3):
                     appos = dynamoQr.query(
                         TableName="TuCita247",

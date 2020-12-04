@@ -68,13 +68,13 @@ def lambda_handler(event, context):
         #BOOKINGS -6 HORAS A LA HORA ACTUAL
         if appoType != 2:
             if status == '1' and typeAppo == '1':
-                dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-%H-00") #00
+                dateAppoIni = (today + datetime.timedelta(hours=-4)).strftime("%Y-%m-%d-%H-00") #00
                 dateAppoFin = (today + datetime.timedelta(hours=-1)).strftime("%Y-%m-%d-%H-59")
             if status == '1' and typeAppo == '2':
                 dateAppoIni = today.strftime("%Y-%m-%d-%H-00")
                 dateAppoFin = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-59")
             if status == '2':
-                dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-%H-00")
+                dateAppoIni = (today + datetime.timedelta(hours=-4)).strftime("%Y-%m-%d-%H-00")
                 dateAppoFin = today.strftime("%Y-%m-%d-23-59")
         else:
             dateAppoIni = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-%H-00")

@@ -46,7 +46,8 @@ def lambda_handler(event, context):
         dateAppo = ''
         appointmentId = ''
         serviceId = ''
-        
+        customerId = ''
+        manualCheckIn = 0
         data = json.loads(event['body'])
         status = data['Status']
         qty = data['Guests']
@@ -60,6 +61,18 @@ def lambda_handler(event, context):
         dateOpe = today.strftime("%Y-%m-%d")
         newOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
         service = ''
+
+        operation = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :pkid AND SKID = :skid',
+            ExpressionAttributeValues={
+                ':pkid': {'S': 'BUS#' + businessId},
+                ':skid': {'S': 'LOC#' + locationId}
+            }
+        )
+        for ope in json_dynamodb.loads(operation['Items']):
+            manualCheckIn = int(ope['MANUAL_CHECK_OUT'])
 
         e = {'#s': 'STATUS'}
         f = '#s <= :stat'
@@ -161,7 +174,9 @@ def lambda_handler(event, context):
                     'BusinessId': businessId,
                     'LocationId': locationId,
                     'AppId': appointmentId,
+                    'CustomerId': customerId,
                     'Guests': qty,
+                    'ManualCheckIn': manualCheckIn,
                     'Tipo': 'MOVE',
                     'To': 'CHECKIN'
                 }
