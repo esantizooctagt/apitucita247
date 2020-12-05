@@ -65,7 +65,8 @@ def lambda_handler(event, context):
         today = datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
         initDate = ''
-
+        businessName = ''
+        Address = ''
         operation = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -77,6 +78,8 @@ def lambda_handler(event, context):
         )
         for ope in json_dynamodb.loads(operation['Items']):
             manualCheckIn = int(ope['MANUAL_CHECK_OUT'])
+            businessName = ope['NAME'],
+            Address = ope['ADDRESS']
 
         response = dynamodb.query(
             TableName="TuCita247",
@@ -173,7 +176,21 @@ def lambda_handler(event, context):
             'Guests': qty,
             'Tipo': 'MOVE',
             'ManualCheckIn': manualCheckIn,
-            'To': 'CHECKIN'
+            'To': 'CHECKIN',
+            'AppointmentId': row['PKID'].replace('APPO#',''),
+            'Status': row['STATUS'],
+            'Address': Address,
+            'NameBusiness': businessName,
+            'PeopleQty': row['PEOPLE_QTY'],
+            'QRCode': row['QRCODE'],
+            'UnRead': 0,
+            'Ready': 0,
+            'DateAppo': row['DATE_APPO'],
+            'Disability': row['DISABILITY'] if 'DISABILITY' in row else '',
+            'Door': row['DOOR'],
+            'Name': row['NAME'],
+            'OnBehalf': row['ON_BEHALF'],
+            'Phone': row['PHONE']
         }
         lambdaInv.invoke(
             FunctionName='PostMessages',

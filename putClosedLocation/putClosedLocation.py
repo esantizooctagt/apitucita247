@@ -64,7 +64,7 @@ def lambda_handler(event, context):
         businessName = ''
         Address = ''
         for bus in json_dynamodb.loads(busName['Items']):
-            businessName = bus['NAME'],
+            businessName = bus['NAME']
             Address = bus['ADDRESS']
 
         table = dynamodb.Table('TuCita247')
@@ -163,11 +163,12 @@ def lambda_handler(event, context):
                         'UnRead': 0,
                         'Ready': 0,
                         'DateFull': appo['DATE_APPO'],
-                        'Disability': appo['DISABILITY'],
+                        'Disability': appo['DISABILITY'] if 'DISABILITY' in appo else '',
                         'Door': appo['DOOR'],
                         'Name': appo['NAME'],
                         'OnBehalf': appo['ON_BEHALF'],
                         'Phone': appo['PHONE'],
+                        'Status': 5,
                         'Tipo': 'MOVE',
                         'To': 'EXPIRED'
                     }
@@ -249,6 +250,46 @@ def lambda_handler(event, context):
                         )
                         logger.info(updAppo)
                         
+                        data = {
+                            'BusinessId': businessId,
+                            'LocationId': locationId,
+                            'AppId': appo['PKID'].replace('APPO#',''),
+                            'CustomerId': appo['GSI2PK'].replace('CUS#',''),
+                            'Tipo': 'CANCEL'
+                        }
+                        lambdaInv.invoke(
+                            FunctionName='PostMessages',
+                            InvocationType='Event',
+                            Payload=json.dumps(data)
+                        )
+
+                        data = {
+                            'BusinessId': businessId,
+                            'CustomerId': appo['GSI2PK'].replace('CUS#',''),
+                            'LocationId': locationId,
+                            'AppId': appo['PKID'].replace('APPO#',''),
+                            'Address': Address,
+                            'NameBusiness': businessName,
+                            'Guests': int(appo['PEOPLE_QTY']),
+                            'QRCode': appo['QRCODE'],
+                            'UnRead': 0,
+                            'Ready': 0,
+                            'DateFull': appo['DATE_APPO'],
+                            'Disability': appo['DISABILITY'] if 'DISABILITY' in appo else '',
+                            'Door': appo['DOOR'],
+                            'Name': appo['NAME'],
+                            'OnBehalf': appo['ON_BEHALF'],
+                            'Phone': appo['PHONE'],
+                            'Status': 5,
+                            'Tipo': 'MOVE',
+                            'To': 'EXPIRED'
+                        }
+                        lambdaInv.invoke(
+                            FunctionName='PostMessages',
+                            InvocationType='Event',
+                            Payload=json.dumps(data)
+                        )
+
                         # GET USER PREFERENCE NOTIFICATION
                         customer = dynamoQr.query(
                             TableName="TuCita247",

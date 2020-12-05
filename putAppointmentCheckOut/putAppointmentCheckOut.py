@@ -81,6 +81,14 @@ def lambda_handler(event, context):
             customerId = row['GSI2PK'].replace('CUS#','')
             timeCheckIn = row['TIMECHECKIN'] + '-000000' if 'TIMECHECKIN' in row else ''
             providerId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#','')
+            Address = row['ADDRESS']
+            status = row['STATUS']
+            qrCode = row['QRCODE']
+            disability = row['DISABILITY'] if 'DISABILITY' in row else ''
+            door = row['DOOR']
+            name = row['NAME']
+            phone = row['PHONE']
+            onBehalf = row['ON_BEHALF']
 
         if appointmentId != '':
             items = []
@@ -98,6 +106,7 @@ def lambda_handler(event, context):
             )
             for row in json_dynamodb.loads(guests['Items']):
                 peopleQty = row['PEOPLE_CHECK_IN']
+                manualCheckIn = row['MANUAL_CHECK_OUT']
 
             if peopleQty-qty < 0:
                 qty = peopleQty
@@ -226,9 +235,26 @@ def lambda_handler(event, context):
             data = {
                 'BusinessId': businessId,
                 'LocationId': locationId,
+                'CustomerId': customerId,
+                'AppId': appointmentId.replace('APPO#',''),
                 'Guests': qty,
                 'Tipo': 'MOVE',
-                'To': 'CHECKOUT'
+                'To': 'CHECKOUT',
+                'ManualCheckIn': manualCheckIn,
+                'AppointmentId': appointmentId.replace('APPO#',''),
+                'Status': status,
+                'Address': Address,
+                'NameBusiness': businessName,
+                'PeopleQty': qty,
+                'QRCode': qrCode,
+                'UnRead': 0,
+                'Ready': 0,
+                'DateAppo': dateAppo,
+                'Disability': disability,
+                'Door': door,
+                'Name': name,
+                'OnBehalf': onBehalf,
+                'Phone': phone
             }
             lambdaInv.invoke(
                 FunctionName='PostMessages',

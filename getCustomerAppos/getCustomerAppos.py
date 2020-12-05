@@ -34,7 +34,7 @@ def lambda_handler(event, context):
         lastItem = data['lastItem'] if 'lastItem' in data else  '_'
         if lastItem != '_':
             lastItem = json.loads(lastItem)
-
+        lastItemPrev = lastItem
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-00-00")
@@ -170,30 +170,34 @@ def lambda_handler(event, context):
                     provName = prov['NAME']
             if countp == 1:
                 provName = ''
-
-            recordset = {
-                'AppointmentId': item['PKID'].replace('APPO#',''),
-                'Status': item['STATUS'],
-                'Address': Address,
-                'NameBusiness': Name,
-                'Name': item['NAME'],
-                'Phone': item['PHONE'],
-                'DateAppo': item['DATE_APPO'],
-                'Door': item['DOOR'] if 'DOOR' in item else '',
-                'OnBehalf': item['ON_BEHALF'] if 'ON_BEHALF' in item else 0,
-                'PeopleQty': item['PEOPLE_QTY'] if 'PEOPLE_QTY' in item else 0,
-                'QRCode': item['QRCODE'] if 'QRCODE' in item else '',
-                'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
-                'UnRead': item['UNREAD'] if 'UNREAD' in item else '',
-                'Ready': item['READY'] if 'READY' in item else 0,
-                'ServName': servName,
-                'ProvName': provName,
-                'ManualCheckIn': ManualCheckIn
-            }
-            record.append(recordset)
+            
+            aplica = 1
+            if typeAppo == 0 and ManualCheckIn == 1 and item['STATUS'] == 3:
+                aplica = 0
+            if aplica == 1:
+                recordset = {
+                    'AppointmentId': item['PKID'].replace('APPO#',''),
+                    'Status': item['STATUS'],
+                    'Address': Address,
+                    'NameBusiness': Name,
+                    'Name': item['NAME'],
+                    'Phone': item['PHONE'],
+                    'DateAppo': item['DATE_APPO'],
+                    'Door': item['DOOR'] if 'DOOR' in item else '',
+                    'OnBehalf': item['ON_BEHALF'] if 'ON_BEHALF' in item else 0,
+                    'PeopleQty': item['PEOPLE_QTY'] if 'PEOPLE_QTY' in item else 0,
+                    'QRCode': item['QRCODE'] if 'QRCODE' in item else '',
+                    'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
+                    'UnRead': item['UNREAD'] if 'UNREAD' in item else '',
+                    'Ready': item['READY'] if 'READY' in item else 0,
+                    'ServName': servName,
+                    'ProvName': provName,
+                    'ManualCheckIn': ManualCheckIn
+                }
+                record.append(recordset)
 
         if typeAppo != 0:
-            if lastItem == '_':
+            if lastItemPrev == '_':
                 completed = dynamodb.query(
                     TableName="TuCita247",
                     IndexName="TuCita247_Index10",
@@ -204,7 +208,7 @@ def lambda_handler(event, context):
                     ExpressionAttributeValues={
                         ':customerId': {'S': 'CUS#' + customerId},
                         ':today': {'S': dateOpe},
-                        ':status': {'N': str(4)}
+                        ':status': {'N': str(3)}
                     }
                 )
                 recordset = {}
@@ -273,26 +277,30 @@ def lambda_handler(event, context):
                     if countp == 1:
                         provName = ''
 
-                    recordset = {
-                        'AppointmentId': item['PKID'].replace('APPO#',''),
-                        'Status': item['STATUS'],
-                        'Address': Address,
-                        'NameBusiness': Name,
-                        'Name': item['NAME'],
-                        'Phone': item['PHONE'],
-                        'DateAppo': item['DATE_APPO'],
-                        'Door': item['DOOR'] if 'DOOR' in item else '',
-                        'OnBehalf': item['ON_BEHALF'] if 'ON_BEHALF' in item else 0,
-                        'PeopleQty': item['PEOPLE_QTY'] if 'PEOPLE_QTY' in item else 0,
-                        'QRCode': item['QRCODE'] if 'QRCODE' in item else '',
-                        'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
-                        'UnRead': item['UNREAD'] if 'UNREAD' in item else '',
-                        'Ready': item['READY'] if 'READY' in item else 0,
-                        'ServName': servName,
-                        'ManualCheckIn': ManualCheckIn,
-                        'ProvName': provName
-                    }
-                    record.append(recordset)
+                    aplica = 1
+                    if ManualCheckIn == 0 and item['STATUS'] == 3:
+                        aplica = 0
+                    if aplica == 1:
+                        recordset = {
+                            'AppointmentId': item['PKID'].replace('APPO#',''),
+                            'Status': item['STATUS'],
+                            'Address': Address,
+                            'NameBusiness': Name,
+                            'Name': item['NAME'],
+                            'Phone': item['PHONE'],
+                            'DateAppo': item['DATE_APPO'],
+                            'Door': item['DOOR'] if 'DOOR' in item else '',
+                            'OnBehalf': item['ON_BEHALF'] if 'ON_BEHALF' in item else 0,
+                            'PeopleQty': item['PEOPLE_QTY'] if 'PEOPLE_QTY' in item else 0,
+                            'QRCode': item['QRCODE'] if 'QRCODE' in item else '',
+                            'Disability': item['DISABILITY'] if 'DISABILITY' in item else 0,
+                            'UnRead': item['UNREAD'] if 'UNREAD' in item else '',
+                            'Ready': item['READY'] if 'READY' in item else 0,
+                            'ServName': servName,
+                            'ManualCheckIn': ManualCheckIn,
+                            'ProvName': provName
+                        }
+                        record.append(recordset)
 
         record.sort(key=getKey)
         statusCode = 200
