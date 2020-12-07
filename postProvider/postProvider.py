@@ -63,6 +63,23 @@ def lambda_handler(event, context):
             for day in daysOff:
                 resDays.append(json.loads('{"S": "' + day + '"}'))
 
+            for service in data['Services']:
+                if int(service['Selected']) == 1:
+                    recordset = {
+                        "Put": {
+                            "TableName": "TuCita247",
+                            "Item": {
+                                "PKID": {"S": 'BUS#' + data['BusinessId'] + '#SER#' + service['ServiceId']},
+                                "SKID": {"S": 'PRO#' + providerId},
+                                "GSI1PK": {"S": 'BUS#' + data['BusinessId'] + '#PRO#' + providerId},
+                                "GSI1SK": {"S": 'SER#' + service['ServiceId']}
+                            },
+                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                            "ReturnValuesOnConditionCheckFailure": "NONE"
+                        },
+                    }
+                    items.append(cleanNullTerms(recordset))
+
             recordset = {
                 "Put": {
                     "TableName": "TuCita247",
@@ -84,6 +101,48 @@ def lambda_handler(event, context):
             }
         else:
             providerId = data['ProviderId']
+            for service in data['Services']:
+                response = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId AND SKID = :prov',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + data['BusinessId'] + '#SER#' + service['ServiceId']},
+                        ':prov': {'S': 'PRO#' + providerId}
+                    }
+                )
+                count = 0
+                for row in json_dynamodb.loads(response['Items']):
+                    count = 1
+                    if int(service['Selected']) == 0:
+                        recordset = {
+                            "Delete": {
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'BUS#' + data['BusinessId'] + '#SER#' + service['ServiceId']},
+                                    "SKID": {"S": 'PRO#' + providerId}
+                                },
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                            }
+                        }
+                        items.append(cleanNullTerms(recordset))
+
+                if count == 0 and int(service['Selected']) == 1:
+                    recordset = {
+                        "Put": {
+                            "TableName": "TuCita247",
+                            "Item": {
+                                "PKID": {"S": 'BUS#' + data['BusinessId'] + '#SER#' + service['ServiceId']},
+                                "SKID": {"S": 'PRO#' + providerId},
+                                "GSI1PK": {"S": 'BUS#' + data['BusinessId'] + '#PRO#' + providerId},
+                                "GSI1SK": {"S": 'SER#' + service['ServiceId']}
+                            },
+                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                            "ReturnValuesOnConditionCheckFailure": "NONE"
+                        },
+                    }
+                    items.append(cleanNullTerms(recordset))
+
             recordset = {
                 "Update": {
                     "TableName": "TuCita247",
