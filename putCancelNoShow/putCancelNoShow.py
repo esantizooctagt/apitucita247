@@ -66,10 +66,6 @@ def lambda_handler(event, context):
             providerId = ''
             businessName = ''
             appId = ''
-
-            country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
-            today = datetime.datetime.now(tz=country_date)
-            dateOpe = today.strftime("%Y-%m-%d-%H-00")
             
             appId = row['PKID']
             dateAppo = row['DATE_APPO']
@@ -81,6 +77,10 @@ def lambda_handler(event, context):
             businessId = data[1]
             locationId = data[3]
             providerId = data[5]
+
+            country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
+            today = datetime.datetime.now(tz=country_date)
+            dateOpe = today.strftime("%Y-%m-%d-%H-00")
 
             getBusiness = dynamodb.query(
                 TableName="TuCita247",

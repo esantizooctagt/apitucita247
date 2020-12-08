@@ -52,10 +52,7 @@ def lambda_handler(event, context):
 
         appointmentId = event['pathParameters']['appointmentId']
         dateAppo = event['pathParameters']['dateAppo']
-
         status = 5
-        
-
         response = dynamodbQuery.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -76,7 +73,7 @@ def lambda_handler(event, context):
                 providerId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#5'
                 keyUpd = 'LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#DT#'+dateAppo[0:10]
         
-        country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
+        country_date = dateutil.tz.gettz(findTimeZone(busId, locId))
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
