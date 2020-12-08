@@ -2038,6 +2038,7 @@ Resources:
       FunctionName: PutBusinessSearch
       CodeUri: putBusinessSearch/
       Handler: putBusinessSearch.lambda_handler
+      Timeout: 180
       Role: arn:aws:iam::821843840552:role/LambdaDynamoSearch
       Environment:
         Variables:

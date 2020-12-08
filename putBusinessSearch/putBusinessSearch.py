@@ -70,12 +70,12 @@ def lambda_handler(event, context):
                     "name_esp" : row['NAME'],
                     "city": cities,
                     "sector": sectors,
-                    "tags": row['TAGS'].split(","),
+                    "tags": row['TAGS'].split(",") if 'TAGS' in row else '',
                     "tipo": "2"
                     }
                 }
             record.append(recordset)
-
+            logger.info(recordset)
             table = dynamodbData.Table('TuCita247')
             updateBusiness = table.update_item(
                 Key={
@@ -85,7 +85,7 @@ def lambda_handler(event, context):
                 UpdateExpression="REMOVE GSI4PK, GSI4SK",
                 ReturnValues="NONE"
             )
-
+        logger.info(record)
         response = search.upload_documents(
             documents=json.dumps(record),
             contentType='application/json'
