@@ -71,6 +71,7 @@ def lambda_handler(event, context):
                 'Doors': row['DOORS'] if 'DOORS' in row else '',
                 'Status': row['STATUS'] if 'STATUS' in row else 0,
                 'ManualCheckOut': row['MANUAL_CHECK_OUT'] if 'MANUAL_CHECK_OUT' in row else 0,
+                'TimeZone': row['TIME_ZONE'] if 'TIME_ZONE' in row else '',
                 'Sectors': items
             }
             

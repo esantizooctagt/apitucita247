@@ -27,6 +27,21 @@ ses = boto3.client('ses', region_name=REGION)
 lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def findTimeZone(businessId, locationId):
+    timeZone='America/Puerto_Rico'
+    locZone = dynamodbQuery.query(
+        TableName="TuCita247",
+        ReturnConsumedCapacity='TOTAL',
+        KeyConditionExpression='PKID = :key AND SKID = :skey',
+        ExpressionAttributeValues={
+            ':key': {'S': 'BUS#'+businessId},
+            ':skey': {'S': 'LOC#'+locationId}
+        }
+    )
+    for timeLoc in json_dynamodb.loads(locZone['Items']):
+        timeZone = timeLoc['TIME_ZONE'] if 'TIME_ZONE' in timeLoc else 'America/Puerto_Rico'
+    return timeZone
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -56,10 +71,6 @@ def lambda_handler(event, context):
         businessName = data['BusinessName']
         busLanguage = data['Language']
 
-        country_date = dateutil.tz.gettz('America/Puerto_Rico')
-        today = datetime.datetime.now(tz=country_date)
-        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
-
         response = dynamodbQuery.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -79,6 +90,10 @@ def lambda_handler(event, context):
                 locationId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#5'
                 providerId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#5'
                 keyUpd = 'LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#DT#'+dateAppo[0:10]
+
+        country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
+        today = datetime.datetime.now(tz=country_date)
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
         table = dynamodb.Table('TuCita247')
         e = {'#s': 'STATUS'}

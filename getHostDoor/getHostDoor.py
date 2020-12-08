@@ -27,10 +27,6 @@ def lambda_handler(event, context):
         cors = os.environ['prodCors']
     else:
         cors = os.environ['devCors']
-    
-    country_date = dateutil.tz.gettz('America/Puerto_Rico')
-    today = datetime.datetime.now(tz=country_date)
-    dateOpe = today.strftime("%Y-%m-%d")
 
     try:
         statusCode = ''
@@ -88,6 +84,7 @@ def lambda_handler(event, context):
                         'Name': loc['NAME'],
                         'MaxCustomers': loc['MAX_CUSTOMER'],
                         'ManualCheckOut': loc['MANUAL_CHECK_OUT'],
+                        'TimeZone': loc['TIME_ZONE'] if 'TIME_ZONE' in loc else 'America/Puerto_Rico',
                         'Open': loc['OPEN']
                     }
                     locations.append(recordset)
@@ -126,6 +123,7 @@ def lambda_handler(event, context):
                         'Name': loc['NAME'],
                         'MaxCustomers': loc['MAX_CUSTOMER'],
                         'ManualCheckOut': loc['MANUAL_CHECK_OUT'],
+                        'TimeZone': loc['TIME_ZONE'] if 'TIME_ZONE' in loc else 'America/Puerto_Rico',
                         'Open': loc['OPEN']
                     }
                     locations.append(recordset)

@@ -62,6 +62,7 @@ def lambda_handler(event, context):
                 'Name': row['NAME'] if 'NAME' in row else '',
                 'Doors': row['DOORS'] if 'DOORS' in row else '',
                 'Status': row['STATUS'] if 'STATUS' in row else 0,
+                'TimeZone': row['TIME_ZONE'] if 'TIME_ZONE' in row else 'America/Puerto_Rico',
                 'Providers': providers
             }
             record.append(recordset)

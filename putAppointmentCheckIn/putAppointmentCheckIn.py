@@ -33,7 +33,22 @@ def cleanNullTerms(d):
       elif v is not None:
          clean[k] = v
    return clean
-   
+
+def findTimeZone(businessId, locationId):
+    timeZone='America/Puerto_Rico'
+    locZone = dynamodb.query(
+        TableName="TuCita247",
+        ReturnConsumedCapacity='TOTAL',
+        KeyConditionExpression='PKID = :key AND SKID = :skey',
+        ExpressionAttributeValues={
+            ':key': {'S': 'BUS#'+businessId},
+            ':skey': {'S': 'LOC#'+locationId}
+        }
+    )
+    for timeLoc in json_dynamodb.loads(locZone['Items']):
+        timeZone = timeLoc['TIME_ZONE'] if 'TIME_ZONE' in timeLoc else 'America/Puerto_Rico'
+    return timeZone
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -61,7 +76,7 @@ def lambda_handler(event, context):
         locationId = data['LocationId'] if 'LocationId' in data else ''
         providerId = data['ProviderId'] if 'ProviderId' in data else ''
 
-        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
         today = datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
         initDate = ''

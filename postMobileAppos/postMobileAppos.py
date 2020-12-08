@@ -120,6 +120,21 @@ def availableHour(hour, time, dayArr, loc, prov, serv, dtAppo):
             return True
     return value
 
+def findTimeZone(businessId, locationId):
+    timeZone='America/Puerto_Rico'
+    locZone = dynamodb.query(
+        TableName="TuCita247",
+        ReturnConsumedCapacity='TOTAL',
+        KeyConditionExpression='PKID = :key AND SKID = :skey',
+        ExpressionAttributeValues={
+            ':key': {'S': 'BUS#'+businessId},
+            ':skey': {'S': 'LOC#'+locationId}
+        }
+    )
+    for timeLoc in json_dynamodb.loads(locZone['Items']):
+        timeZone = timeLoc['TIME_ZONE'] if 'TIME_ZONE' in timeLoc else 'America/Puerto_Rico'
+    return timeZone
+
 def lambda_handler(event, context):
     try:
         statusCode = ''
@@ -127,13 +142,6 @@ def lambda_handler(event, context):
 
         data = json.loads(event['body'])
         customerId = data['CustomerId']
-        country_date = dateutil.tz.gettz('America/Puerto_Rico')
-        today = datetime.datetime.now(tz=country_date)
-        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
-        dateIni = today.strftime("%Y-%m-%d")
-        dateFin = today + datetime.timedelta(days=90)
-        dateFin = dateFin.strftime("%Y-%m-%d")
-
         custBooking = dynamodb.query(
             TableName = "TuCita247",
             ReturnConsumedCapacity = 'TOTAL',
@@ -163,6 +171,13 @@ def lambda_handler(event, context):
             appoDate = datetime.datetime.strptime(custBooks['DATE_APPO'][0:10], '%Y-%m-%d')
             hourDate = custBooks['DATE_APPO'][-5:].replace('-',':')
             dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + hourDate.replace(':','-')
+
+            country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
+            today = datetime.datetime.now(tz=country_date)
+            dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+            dateIni = today.strftime("%Y-%m-%d")
+            dateFin = today + datetime.timedelta(days=90)
+            dateFin = dateFin.strftime("%Y-%m-%d")
 
             #STATUS DEL PAQUETE ADQUIRIDO 1 ACTIVO Y TRAE TOTAL DE NUMERO DE CITAS
             statPlan = dynamodb.query(

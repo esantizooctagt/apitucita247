@@ -43,6 +43,21 @@ def findProvider(providerId, providers, items):
             return item['Name']
     return ''
 
+def findTimeZone(businessId, locationId):
+    timeZone='America/Puerto_Rico'
+    locZone = dynamodb.query(
+        TableName="TuCita247",
+        ReturnConsumedCapacity='TOTAL',
+        KeyConditionExpression='PKID = :key AND SKID = :skey',
+        ExpressionAttributeValues={
+            ':key': {'S': 'BUS#'+businessId},
+            ':skey': {'S': 'LOC#'+locationId}
+        }
+    )
+    for timeLoc in json_dynamodb.loads(locZone['Items']):
+        timeZone = timeLoc['TIME_ZONE'] if 'TIME_ZONE' in timeLoc else 'America/Puerto_Rico'
+    return timeZone
+
 def lambda_handler(event, context):
     stage = event['headers']
 
@@ -52,15 +67,15 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
     
     try:
-        country_date = dateutil.tz.gettz('America/Puerto_Rico')
-        today = datetime.datetime.now(tz=country_date)
-
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
         providerId = event['pathParameters']['providerId']
         status = event['pathParameters']['status']
         typeAppo = event['pathParameters']['type']
         appoType = int(event['pathParameters']['appoType'])
+
+        country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
+        today = datetime.datetime.now(tz=country_date)
 
         dateAppoIni = ''
         dateAppoFin = ''

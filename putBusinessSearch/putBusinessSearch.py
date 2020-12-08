@@ -30,11 +30,6 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
     try:
-
-        country_date = dateutil.tz.gettz('America/Puerto_Rico')
-        today = datetime.datetime.now(tz=country_date)
-        dayName = today.strftime("%A")[0:3].upper()
-
         business = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_TypeAppos",
@@ -76,7 +71,6 @@ def lambda_handler(event, context):
                     "city": cities,
                     "sector": sectors,
                     "tags": row['TAGS'].split(","),
-                    # "location_field": item['GEOLOCATION'].replace('"LAT": ','').replace('"LNG": ',''),
                     "tipo": "2"
                     }
                 }

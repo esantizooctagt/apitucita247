@@ -20,8 +20,24 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
+dynamodbQry = boto3.client('dynamodb', region_name=REGION)
 lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
+
+def findTimeZone(businessId, locationId):
+    timeZone='America/Puerto_Rico'
+    locZone = dynamodbQry.query(
+        TableName="TuCita247",
+        ReturnConsumedCapacity='TOTAL',
+        KeyConditionExpression='PKID = :key AND SKID = :skey',
+        ExpressionAttributeValues={
+            ':key': {'S': 'BUS#'+businessId},
+            ':skey': {'S': 'LOC#'+locationId}
+        }
+    )
+    for timeLoc in json_dynamodb.loads(locZone['Items']):
+        timeZone = timeLoc['TIME_ZONE'] if 'TIME_ZONE' in timeLoc else 'America/Puerto_Rico'
+    return timeZone
 
 def lambda_handler(event, context):
     stage = event['headers']
@@ -35,7 +51,7 @@ def lambda_handler(event, context):
         locationId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
         
-        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
         today = datetime.datetime.now(tz=country_date)
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 

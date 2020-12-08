@@ -87,6 +87,7 @@ def lambda_handler(event, context):
                         "OPERATIONHOURS": {"S": operationHours},
                         "OPEN": {"N": str(0)},
                         "DOORS": {"S": str(data['Doors'])},
+                        "TIME_ZONE":{"S": data['TimeZone']},
                         "STATUS": {"N": str(data['Status'])}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
@@ -102,7 +103,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'BUS#' + data['BusinessId']},
                         "SKID": {"S": 'LOC#' + locationId}
                     },
-                    "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, ZIPCODE = :zipcode, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, DOORS = :doors, #s = :status, MANUAL_CHECK_OUT = :manualCheckOut",
+                    "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, ZIPCODE = :zipcode, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, DOORS = :doors, #s = :status, TIME_ZONE = :timezone, MANUAL_CHECK_OUT = :manualCheckOut",
                     "ExpressionAttributeNames": {"#n":"NAME", "#s":"STATUS"},
                     "ExpressionAttributeValues": {
                         ":name": {"S": str(data['Name'])},
@@ -115,6 +116,7 @@ def lambda_handler(event, context):
                         ":maxCustomer": {"N": str(data['MaxConcurrentCustomer'])},
                         ":manualCheckOut": {"N": str(data['ManualCheckOut'])},
                         ":doors": {"S": str(data['Doors'])},
+                        ":timezone": {"S": data['TimeZone']},
                         ":status": {"N": str(data['Status'])}
                     },
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
