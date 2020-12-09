@@ -58,6 +58,7 @@ def lambda_handler(event, context):
                 'Geolocation': row['GEOLOCATION'] if 'GEOLOCATION' in row else '',
                 'Status': row['STATUS'] if 'STATUS' in row else 0,
                 'Door': row['DOORS'] if 'DOORS' in row else '',
+                'TimeZone': row['TIME_ZONE'] if 'TIME_ZONE' in row else 'America/Puerto_Rico',
                 'City_ENG': cityENG,
                 'City_ESP': cityESP
             }

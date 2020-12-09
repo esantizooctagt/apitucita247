@@ -775,7 +775,7 @@ def lambda_handler(event, context):
                         'DateFull': dateAppointment,
                         'Type': typeCita,
                         'DateAppo': sTime,
-                        'Status': status,
+                        'Status': 1 if status == 0 else status,
                         'UnRead': '',
                         'QRCode': qrCode,
                         'OpenMess': 0,

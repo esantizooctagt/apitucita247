@@ -121,6 +121,7 @@ def lambda_handler(event, context):
             for locations in json_dynamodb.loads(locs['Items']):
                 Address = locations['ADDRESS']
                 ManualCheckIn = int(locations['MANUAL_CHECK_OUT'])
+                TimeZone = locations['TIME_ZONE'] if 'TIME_ZONE' in locations else 'America/Puerto_Rico'
 
             bus = dynamodb.query(
                 TableName="TuCita247",
@@ -192,7 +193,8 @@ def lambda_handler(event, context):
                     'Ready': item['READY'] if 'READY' in item else 0,
                     'ServName': servName,
                     'ProvName': provName,
-                    'ManualCheckIn': ManualCheckIn
+                    'ManualCheckIn': ManualCheckIn,
+                    'TimeZone': TimeZone
                 }
                 record.append(recordset)
 
@@ -227,6 +229,7 @@ def lambda_handler(event, context):
                     for locations in json_dynamodb.loads(locs['Items']):
                         Address = locations['ADDRESS']
                         ManualCheckIn = int(locations['MANUAL_CHECK_OUT'])
+                        TimeZone = locations['TIME_ZONE'] if 'TIME_ZONE' in locations else 'America/Puerto_Rico'
 
                     bus = dynamodb.query(
                         TableName="TuCita247",
@@ -298,6 +301,7 @@ def lambda_handler(event, context):
                             'Ready': item['READY'] if 'READY' in item else 0,
                             'ServName': servName,
                             'ManualCheckIn': ManualCheckIn,
+                            'TimeZone': TimeZone,
                             'ProvName': provName
                         }
                         record.append(recordset)
