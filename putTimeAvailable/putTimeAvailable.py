@@ -25,7 +25,7 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def findTimeZone(businessId, locationId):
     timeZone='America/Puerto_Rico'
-    locZone = dynamodb.query(
+    locZone = dynamodbQuery.query(
         TableName="TuCita247",
         ReturnConsumedCapacity='TOTAL',
         KeyConditionExpression='PKID = :key AND SKID = :skey',

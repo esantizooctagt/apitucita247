@@ -197,7 +197,7 @@ def lambda_handler(event, context):
             'Address': Address,
             'NameBusiness': businessName,
             'PeopleQty': row['PEOPLE_QTY'],
-            'QRCode': row['QRCODE'],
+            'QrCode': row['QRCODE'],
             'UnRead': 0,
             'Ready': 0,
             'DateAppo': row['DATE_APPO'],

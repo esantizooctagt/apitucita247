@@ -82,7 +82,7 @@ def lambda_handler(event, context):
 
         country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
         today = datetime.datetime.now(tz=country_date)
-        dateOpe = today.strftime("%Y-%m-%d")
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
         timeChat = today.strftime("%d %B, %I:%M %p")
 
         conversation = []
@@ -123,6 +123,7 @@ def lambda_handler(event, context):
             'CustomerId': customerId,
             'User': 'U' if userType == '1' else 'H',
             'Message': conver,
+            'DateFull': dateOpe,
             'Tipo': 'MESS'
         }
         # if dateOpe[0:10] == dateAppointment[0:10]:

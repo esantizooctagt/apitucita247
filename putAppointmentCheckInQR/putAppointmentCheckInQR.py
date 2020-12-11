@@ -88,7 +88,7 @@ def lambda_handler(event, context):
         )
         for ope in json_dynamodb.loads(operation['Items']):
             manualCheckIn = int(ope['MANUAL_CHECK_OUT'])
-            businessName = ope['NAME'],
+            businessName = str(ope['NAME']),
             Address = ope['ADDRESS']
 
         e = {'#s': 'STATUS'}
@@ -201,7 +201,7 @@ def lambda_handler(event, context):
                     'Address': Address,
                     'NameBusiness': businessName,
                     'PeopleQty': row['PEOPLE_QTY'],
-                    'QRCode': row['QRCODE'],
+                    'QrCode': row['QRCODE'],
                     'UnRead': 0,
                     'Ready': 0,
                     'DateAppo': row['DATE_APPO'],

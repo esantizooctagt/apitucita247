@@ -53,6 +53,7 @@ def lambda_handler(event, context):
         appointmentId = ''
         dateAppo = ''
         timeCheckIn = ''
+        Address = ''
         pollId = ''
         qty = 0
         existe = 0
@@ -95,7 +96,6 @@ def lambda_handler(event, context):
             customerId = row['GSI2PK'].replace('CUS#','')
             timeCheckIn = row['TIMECHECKIN'] + '-000000' if 'TIMECHECKIN' in row else ''
             providerId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#','')
-            Address = row['ADDRESS']
             status = row['STATUS']
             qrCode = row['QRCODE']
             disability = row['DISABILITY'] if 'DISABILITY' in row else ''
@@ -121,6 +121,7 @@ def lambda_handler(event, context):
             for row in json_dynamodb.loads(guests['Items']):
                 peopleQty = row['PEOPLE_CHECK_IN']
                 manualCheckIn = row['MANUAL_CHECK_OUT']
+                Address = row['ADDRESS']
 
             if peopleQty-qty < 0:
                 qty = peopleQty
@@ -250,6 +251,7 @@ def lambda_handler(event, context):
                 'BusinessId': businessId,
                 'LocationId': locationId,
                 'CustomerId': customerId,
+                'ClientId': customerId,
                 'AppId': appointmentId.replace('APPO#',''),
                 'Guests': qty,
                 'Tipo': 'MOVE',
@@ -260,7 +262,7 @@ def lambda_handler(event, context):
                 'Address': Address,
                 'NameBusiness': businessName,
                 'PeopleQty': qty,
-                'QRCode': qrCode,
+                'QrCode': qrCode,
                 'UnRead': 0,
                 'Ready': 0,
                 'DateAppo': dateAppo,

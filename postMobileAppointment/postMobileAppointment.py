@@ -653,7 +653,7 @@ def lambda_handler(event, context):
                         'DateFull': dateAppointment,
                         'Type': '1',
                         'DateAppo': sTime,
-                        'QRCode': qrCode,
+                        'QrCode': qrCode,
                         'OpenMess': 0,
                         'OpenCanc': 0,
                         'OpenItem': 0,
