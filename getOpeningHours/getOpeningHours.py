@@ -53,9 +53,12 @@ def lambda_handler(event, context):
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :locs )',
+                FilterExpression='#s = :stat',
+                ExpressionAttributeNames={'#s': 'STATUS'},
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
-                    ':locs': {'S': 'LOC#'}
+                    ':locs': {'S': 'LOC#'},
+                    ':stat' : {'N': '1'}
                 }
             )
             recordset = {}
@@ -73,9 +76,12 @@ def lambda_handler(event, context):
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
+                FilterExpression='#s = :stat',
+                ExpressionAttributeNames={'#s': 'STATUS'},
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
-                    ':metadata': {'S': 'LOC#'}
+                    ':metadata': {'S': 'LOC#'},
+                    ':stat' : {'N': '1'}
                 },
             )
             locs = {}
@@ -84,9 +90,12 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :servs )',
+                    FilterExpression='#s = :stat',
+                    ExpressionAttributeNames={'#s': 'STATUS'},
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#' + location['SKID']},
-                        ':servs': {'S': 'PRO#'}
+                        ':servs': {'S': 'PRO#'},
+                        ':stat' : {'N': '1'}
                     }
                 )
                 recordset = {}

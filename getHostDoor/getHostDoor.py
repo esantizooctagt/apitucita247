@@ -54,9 +54,12 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
+                    FilterExpression='#s = :stat',
+                    ExpressionAttributeNames={'#s': 'STATUS'},
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId},
-                        ':locationId': {'S': 'LOC#' + locationId}
+                        ':locationId': {'S': 'LOC#' + locationId},
+                        ':stat' : {'N': '1'}
                     }
                 )
                 providers = []
@@ -65,9 +68,12 @@ def lambda_handler(event, context):
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
                         KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :locationId)',
+                        FilterExpression='#s = :stat',
+                        ExpressionAttributeNames={'#s': 'STATUS'},
                         ExpressionAttributeValues={
                             ':businessId': {'S': 'BUS#' + businessId + '#LOC#'+ locationId },
-                            ':locationId': {'S': 'PRO#' }
+                            ':locationId': {'S': 'PRO#' },
+                            ':stat' : {'N': '1'}
                         }
                     )
                     for item in json_dynamodb.loads(provs['Items']):
@@ -93,9 +99,12 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :businessId AND begins_with(SKID, :locs)',
+                    FilterExpression='#s = :stat',
+                    ExpressionAttributeNames={'#s': 'STATUS'},
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId },
-                        ':locs': {'S': 'LOC#'}
+                        ':locs': {'S': 'LOC#'},
+                        ':stat' : {'N': '1'}
                     }
                 )
                 for loc in json_dynamodb.loads(locs['Items']):
@@ -103,9 +112,12 @@ def lambda_handler(event, context):
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
                         KeyConditionExpression='PKID = :key01 AND begins_with(SKID, :provs)',
+                        FilterExpression='#s = :stat',
+                        ExpressionAttributeNames={'#s': 'STATUS'},
                         ExpressionAttributeValues={
                             ':key01': {'S': 'BUS#' + businessId + '#' + loc['SKID']},
-                            ':provs': {'S': 'PRO#'}
+                            ':provs': {'S': 'PRO#'},
+                            ':stat' : {'N': '1'}
                         }
                     )
                     providers = []

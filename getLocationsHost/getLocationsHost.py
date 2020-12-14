@@ -31,9 +31,12 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :locations )',
+            FilterExpression='#s = :stat',
+            ExpressionAttributeNames={'#s': 'STATUS'},
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
-                ':locations': {'S': 'LOC#'}
+                ':locations': {'S': 'LOC#'},
+                ':stat' : {'N': '1'}
             }
         )
         record = []
@@ -43,9 +46,12 @@ def lambda_handler(event, context):
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :providerId )',
+                FilterExpression='#s = :stat',
+                ExpressionAttributeNames={'#s': 'STATUS'},
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId + '#' + row['SKID']},
-                    ':providerId': {'S': 'PRO#'}
+                    ':providerId': {'S': 'PRO#'},
+                    ':stat' : {'N': '1'}
                 }
             )
             providers = []

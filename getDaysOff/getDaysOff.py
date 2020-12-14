@@ -67,9 +67,12 @@ def lambda_handler(event, context):
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
+                FilterExpression='#s = :stat',
+                ExpressionAttributeNames={'#s': 'STATUS'},
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
-                    ':metadata': {'S': 'LOC#'}
+                    ':metadata': {'S': 'LOC#'},
+                    ':stat' : {'N': '1'}
                 },
             )
             record = []
@@ -90,9 +93,12 @@ def lambda_handler(event, context):
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
+                FilterExpression='#s = :stat',
+                ExpressionAttributeNames={'#s': 'STATUS'},
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
-                    ':metadata': {'S': 'LOC#'}
+                    ':metadata': {'S': 'LOC#'},
+                    ':stat' : {'N': '1'}
                 },
             )
             record = []
@@ -102,9 +108,12 @@ def lambda_handler(event, context):
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :businessId AND begins_with( SKID , :metadata )',
+                    FilterExpression='#s = :stat',
+                    ExpressionAttributeNames={'#s': 'STATUS'},
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + location['SKID'].replace('LOC#','')},
-                        ':metadata': {'S': 'PRO#'}
+                        ':metadata': {'S': 'PRO#'},
+                        ':stat' : {'N': '1'}
                     },
                 )
                 services = []

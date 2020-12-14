@@ -34,8 +34,8 @@ def lambda_handler(event, context):
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='PKID = :businessId AND begins_with ( SKID, :services )',
             ExpressionAttributeNames={'#s': 'STATUS'},
-            ExpressionAttributeValues={':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '2'}, ':services': {'S':'SER#'}},
-            FilterExpression='#s < :stat'
+            ExpressionAttributeValues={':businessId': {'S': 'BUS#' + businessId}, ':stat': {'N': '1'}, ':services': {'S':'SER#'}},
+            FilterExpression='#s = :stat'
         )
 
         recordset ={}

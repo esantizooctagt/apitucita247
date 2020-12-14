@@ -30,8 +30,8 @@ def lambda_handler(event, context):
         locationId = event['pathParameters']['locationId']
 
         e = {'#s': 'STATUS'}
-        a = {':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId}, ':stat': {'N': '2'}, ':providers': {'S': 'PRO#'} }
-        f = '#s < :stat'
+        a = {':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId}, ':stat': {'N': '1'}, ':providers': {'S': 'PRO#'} }
+        f = '#s = :stat'
 
         response = dynamodb.query(
             TableName="TuCita247",

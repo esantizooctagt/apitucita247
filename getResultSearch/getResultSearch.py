@@ -51,6 +51,8 @@ def lambda_handler(event, context):
             words = queryStd.split(' ')
             data = ''
             for word in words:
+                if len(word) > 2:
+                    word = word[0:len(word)-1]
                 data = data + word + '* '
             
             response = cloudsearch.search(

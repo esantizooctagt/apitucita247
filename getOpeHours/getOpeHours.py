@@ -246,6 +246,36 @@ def lambda_handler(event, context):
                                 recordset['People'] = int(hours['PEOPLE_QTY'])+int(resAppo['People']) 
                                 hoursBooks.append(recordset)
                     
+                    #OBTIENE LAS CITAS DEL DIA ACTUAL Y CON ESTADO 3
+                    if nextDate.strftime("%Y-%m-%d") == dateOpe:
+                        getAppos02 = dynamodb.query(
+                            TableName="TuCita247",
+                            IndexName="TuCita247_Index",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='GSI1PK = :key01 and begins_with(GSI1SK, :key02)',
+                            ExpressionAttributeValues={
+                                ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
+                                ':key02': {'S': '3#DT#'+nextDate.strftime("%Y-%m-%d")}
+                            }
+                        )
+                        for hours in json_dynamodb.loads(getAppos02['Items']):
+                            timeBooking = int(hours['GSI1SK'].replace('3#DT#'+nextDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                            cxTime = findServiceTime(hours['SERVICEID'], services)
+                            recordset = {
+                                'Time': timeBooking,
+                                'ServiceId': hours['SERVICEID'],
+                                'People': hours['PEOPLE_QTY'],
+                                'TimeService': cxTime,
+                                'Cancel': 0
+                            }
+                            resAppo = findHoursAppo(timeBooking, hoursBooks, hours['SERVICEID'])
+                            if resAppo == '':
+                                hoursBooks.append(recordset)
+                            else:
+                                hoursBooks.remove(resAppo)
+                                recordset['People'] = int(hours['PEOPLE_QTY'])+int(resAppo['People']) 
+                                hoursBooks.append(recordset)
+
                     #OBTIENE LAS CITAS EN RESERVA DE UN DIA
                     getReservas = dynamodb.query(
                         TableName="TuCita247",

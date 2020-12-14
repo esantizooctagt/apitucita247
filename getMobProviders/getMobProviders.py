@@ -27,9 +27,12 @@ def lambda_handler(event, context):
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='PKID = :key01 AND begins_with( SKID , :providers )',
+            FilterExpression='#s = :stat',
+            ExpressionAttributeNames={'#s': 'STATUS'},
             ExpressionAttributeValues={
                 ':key01': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                ':providers': {'S': 'PRO#'}
+                ':providers': {'S': 'PRO#'},
+                ':stat' : {'N': '1'}
             }
         )
         recordset = {}

@@ -40,9 +40,12 @@ def lambda_handler(event, context):
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with ( SKID , :locationId )',
+                FilterExpression='#s = :stat',
+                ExpressionAttributeNames={'#s': 'STATUS'},
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
-                    ':locationId': {'S': 'LOC#'}
+                    ':locationId': {'S': 'LOC#'},
+                    ':stat' : {'N': '1'}
                 }
             )
         else:
@@ -50,9 +53,12 @@ def lambda_handler(event, context):
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND SKID = :locationId',
+                FilterExpression='#s = :stat',
+                ExpressionAttributeNames={'#s': 'STATUS'},
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
-                    ':locationId': {'S': 'LOC#' + locationId}
+                    ':locationId': {'S': 'LOC#' + locationId},
+                    ':stat' : {'N': '1'}
                 }
             )
 
@@ -64,9 +70,12 @@ def lambda_handler(event, context):
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :key01 AND begins_with(SKID, :provs)',
+                FilterExpression='#s = :stat',
+                ExpressionAttributeNames={'#s': 'STATUS'},
                 ExpressionAttributeValues={
                     ':key01': {'S': 'BUS#' + businessId + '#' + row['SKID']},
-                    ':provs': {'S': 'PRO#'}
+                    ':provs': {'S': 'PRO#'},
+                    ':stat' : {'N': '1'}
                 }
             )
             services = []
