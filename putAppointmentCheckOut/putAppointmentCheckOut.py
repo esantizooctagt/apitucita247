@@ -186,23 +186,6 @@ def lambda_handler(event, context):
             }
             items.append(recordset)
 
-            # recordset = {
-            #     "Update": {
-            #         "TableName": "TuCita247",
-            #         "Key": {
-            #             "PKID": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
-            #             "SKID": {"S": 'PRO#' + providerId}, 
-            #         },
-            #         "UpdateExpression": "SET PEOPLE_CHECK_IN = PEOPLE_CHECK_IN - :increment",
-            #         "ExpressionAttributeValues": { 
-            #             ":increment": {"N": str(qty)}
-            #         },
-            #         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-            #         "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
-            #     }
-            # }
-            # items.append(recordset)
-
             if citaTime != '':
                 if existe == 1:
                     recordset = {
@@ -287,12 +270,14 @@ def lambda_handler(event, context):
                 TableName="TuCita247",
                 IndexName="TuCita247_CustAppos",
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='GSI2PK = :key AND GSI2SK <= :datePoll',
+                KeyConditionExpression='GSI2PK = :key AND begins_with(GSI2SK, :stat)',
                 ScanIndexForward=False,
-                FilterExpression='DATE_FIN_POLL >= :datePoll',
+                FilterExpression='DATE_FIN_POLL >= :datePoll OR DATE_FIN_POLL = :empty',
                 ExpressionAttributeValues={
                     ':key': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
-                    ':datePoll': {'S': '1#DT#' + dateOpe}
+                    ':stat': {'S': '1#DT#'},
+                    ':datePoll': {'S': dateOpe},
+                    ':empty': {'S': ''}
                 },
                 Limit=1
             )
