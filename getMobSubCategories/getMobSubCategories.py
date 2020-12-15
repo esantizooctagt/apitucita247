@@ -28,12 +28,12 @@ def lambda_handler(event, context):
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :categories AND begins_with (SKID , :subcat)',
+            KeyConditionExpression='PKID = :categories',
             ExpressionAttributeNames=e,
             FilterExpression=f,
             ExpressionAttributeValues={
                 ':categories': {'S': 'CAT#' + categoryId},
-                ':subcat': {'S': 'SUB#'},
+                # ':subcat': {'S': 'SUB#'},
                 ':stat' : {'N': '1'}
             },
         )

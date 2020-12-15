@@ -53,8 +53,8 @@ def lambda_handler(event, context):
                         ':customerId': {'S': 'CUS#' + customerId},
                         ':today': {'S': dateOpe},
                         ':status': {'N': str(3)}
-                    },
-                    Limit=5
+                    }
+                    # Limit=5
                 )
             else:
                 details = dynamodb.query(
@@ -69,8 +69,8 @@ def lambda_handler(event, context):
                         ':customerId': {'S': 'CUS#' + customerId},
                         ':today': {'S': dateOpe},
                         ':status': {'N': str(3)}
-                    },
-                    Limit=5
+                    }
+                    # Limit=5
                 )
 
         else:

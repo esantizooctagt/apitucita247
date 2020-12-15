@@ -78,9 +78,11 @@ def lambda_handler(event, context):
         )
         businessName = ''
         Address = ''
+        TimeZone = ''
         for bus in json_dynamodb.loads(busName['Items']):
             businessName = bus['NAME']
             Address = bus['ADDRESS']
+            TimeZone = bus['TIME_ZONE']
 
         table = dynamodb.Table('TuCita247')
         if closed == 0:
@@ -184,6 +186,7 @@ def lambda_handler(event, context):
                         'OnBehalf': appo['ON_BEHALF'],
                         'Phone': appo['PHONE'],
                         'Status': 5,
+                        'TimeZone': TimeZone,
                         'Tipo': 'MOVE',
                         'To': 'EXPIRED'
                     }
@@ -297,6 +300,7 @@ def lambda_handler(event, context):
                             'Phone': appo['PHONE'],
                             'Status': 5,
                             'Tipo': 'MOVE',
+                            'TimeZone': TimeZone,
                             'To': 'EXPIRED'
                         }
                         lambdaInv.invoke(

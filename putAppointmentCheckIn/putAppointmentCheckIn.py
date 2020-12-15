@@ -82,6 +82,7 @@ def lambda_handler(event, context):
         initDate = ''
         businessName = ''
         Address = ''
+        TimeZone = ''
         operation = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -94,7 +95,8 @@ def lambda_handler(event, context):
         for ope in json_dynamodb.loads(operation['Items']):
             manualCheckIn = int(ope['MANUAL_CHECK_OUT'])
             businessName = ope['NAME'],
-            Address = ope['ADDRESS']
+            Address = ope['ADDRESS'],
+            TimeZone = ope['TIME_ZONE'] if 'TIME_ZONE' in ope else 'America/Puerto_Rico'
 
         response = dynamodb.query(
             TableName="TuCita247",
@@ -205,7 +207,8 @@ def lambda_handler(event, context):
             'Door': row['DOOR'],
             'Name': row['NAME'],
             'OnBehalf': row['ON_BEHALF'],
-            'Phone': row['PHONE']
+            'Phone': row['PHONE'],
+            'TimeZone': TimeZone
         }
         lambdaInv.invoke(
             FunctionName='PostMessages',

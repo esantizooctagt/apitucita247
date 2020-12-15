@@ -54,6 +54,7 @@ def lambda_handler(event, context):
         dateAppo = ''
         timeCheckIn = ''
         Address = ''
+        TimeZone = ''
         pollId = ''
         qty = 0
         existe = 0
@@ -96,7 +97,7 @@ def lambda_handler(event, context):
             customerId = row['GSI2PK'].replace('CUS#','')
             timeCheckIn = row['TIMECHECKIN'] + '-000000' if 'TIMECHECKIN' in row else ''
             providerId = row['GSI1PK'].replace('BUS#'+businessId+'#LOC#'+locationId+'#PRO#','')
-            status = row['STATUS']
+            # status = row['STATUS']
             qrCode = row['QRCODE']
             disability = row['DISABILITY'] if 'DISABILITY' in row else ''
             door = row['DOOR']
@@ -122,6 +123,7 @@ def lambda_handler(event, context):
                 peopleQty = row['PEOPLE_CHECK_IN']
                 manualCheckIn = row['MANUAL_CHECK_OUT']
                 Address = row['ADDRESS']
+                TimeZone = row['TIME_ZONE'] if 'TIME_ZONE' in row else 'America/Puerto_Rico'
 
             if peopleQty-qty < 0:
                 qty = peopleQty
@@ -270,7 +272,8 @@ def lambda_handler(event, context):
                 'Door': door,
                 'Name': name,
                 'OnBehalf': onBehalf,
-                'Phone': phone
+                'Phone': phone,
+                'TimeZone': TimeZone
             }
             lambdaInv.invoke(
                 FunctionName='PostMessages',

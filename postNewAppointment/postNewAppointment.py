@@ -753,8 +753,10 @@ def lambda_handler(event, context):
                         }
                     )
                     Addr = ''
+                    TimeZone = ''
                     for addr in json_dynamodb.loads(getAddr['Items']):
                         Addr = addr['ADDRESS']
+                        TimeZone = addr['TIME_ZONE']
 
                     appoInfo = {
                         'Tipo': 'APPO',
@@ -785,7 +787,8 @@ def lambda_handler(event, context):
                         'Ready': 0,
                         'NameBusiness': businessName,
                         'DateTrans': str(dateOpe),
-                        'Address': Addr
+                        'Address': Addr,
+                        'TimeZone': TimeZone
                     }
 
                     validAppo = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-%M")
