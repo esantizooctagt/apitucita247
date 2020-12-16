@@ -173,4 +173,43 @@ Resources:
             Path: /business/validemail/{email}
             Method: get
             ApiId: !Ref HttpApi
+
+  PutBusinessPlanFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutBusinessPlan
+      CodeUri: putBusinessPlan/
+      Handler: putBusinessPlan.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /business/plan/{businessId}/{plan}/{appos}/{order}
+            Method: put
+            ApiId: !Ref HttpApi
+  
+  PutBusinessPackFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutBusinessPack
+      CodeUri: putBusinessPack/
+      Handler: putBusinessPack.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+      VpcConfig: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /business/pack/{businessId}/{appos}/{order}
+            Method: put
+            ApiId: !Ref HttpApi
   
