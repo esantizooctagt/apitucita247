@@ -25,17 +25,17 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 def lambda_handler(event, context):
     stage = event['headers']
     cors = stage['origin']
-    # stage = event['headers']
-    # if stage['origin'] != "http://localhost:4200":
-    #     cors = os.environ['prodCors']
-    # else:
-    #     cors = os.environ['devCors']
         
     try:
         businessId = event['pathParameters']['businessId']
         plan = event['pathParameters']['plan']
         appos = event['pathParameters']['appos']
         order = event['pathParameters']['order']
+
+        dueDate = ''
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
+        dueDate = (today + datetime.timedelta(days=31)).strftime("%Y-%m-%d")
         
         items = []
         rows = {}
@@ -46,12 +46,14 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'PLAN' }
                 },
-                "UpdateExpression":"SET #n = :name, APPOINTMENTS = :appos, AVAILABLE = :appos, #o = :order",
-                "ExpressionAttributeNames":{'#n': 'NAME','#o': 'ORDER'},
+                "UpdateExpression":"SET #n = :name, APPOINTMENTS = :appos, AVAILABLE = :appos, #o = :order, #s = :status, GSI1PK = :duedate, DUE_DATE = :duedate",
+                "ExpressionAttributeNames":{'#n': 'NAME','#o': 'ORDER','#s': 'STATUS'},
                 "ExpressionAttributeValues": { 
                     ":name": {"S": plan},
                     ":appos": {"N": str(appos)},
-                    ":order": {"S": order}
+                    ":order": {"S": order},
+                    ":status": {"N", str(1)},
+                    ":duedate": {"S": dueDate}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },

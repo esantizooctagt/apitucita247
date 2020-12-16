@@ -212,4 +212,23 @@ Resources:
             Path: /business/pack/{businessId}/{appos}/{order}
             Method: put
             ApiId: !Ref HttpApi
+
+  PutCancelPlanWPFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutCancelPlanWP
+      CodeUri: putCancelPlanWP/
+      Handler: putCancelPlanWP.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamo
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+      VpcConfig: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /business/cancel/{businessId}/{order}
+            Method: put
+            ApiId: !Ref HttpApi
   
