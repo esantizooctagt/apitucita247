@@ -38,7 +38,7 @@ def lambda_handler(event, context):
                 "ExpressionAttributeNames":{'#o': 'ORDER','#s': 'STATUS'},
                 "ExpressionAttributeValues": {
                     ":order": {"S": order},
-                    ":status": {"N", str(0)}
+                    ":status": {"N": str(0)}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },
@@ -54,7 +54,7 @@ def lambda_handler(event, context):
                 },
                 "UpdateExpression":"set #s = :status",
                 "ExpressionAttributeValues": { 
-                    ":status": {"N", str(0)}
+                    ":status": {"N": str(0)}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },

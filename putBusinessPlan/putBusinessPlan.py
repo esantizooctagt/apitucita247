@@ -52,7 +52,7 @@ def lambda_handler(event, context):
                     ":name": {"S": plan},
                     ":appos": {"N": str(appos)},
                     ":order": {"S": order},
-                    ":status": {"N", str(1)},
+                    ":status": {"N": str(1)},
                     ":duedate": {"S": dueDate}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"

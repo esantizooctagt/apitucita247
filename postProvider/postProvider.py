@@ -99,6 +99,7 @@ def lambda_handler(event, context):
                     "ReturnValuesOnConditionCheckFailure": "NONE"
                 },
             }
+            items.append(cleanNullTerms(recordset))
         else:
             providerId = data['ProviderId']
             for service in data['Services']:
@@ -143,24 +144,87 @@ def lambda_handler(event, context):
                     }
                     items.append(cleanNullTerms(recordset))
 
-            recordset = {
-                "Update": {
-                    "TableName": "TuCita247",
-                    "Key": {
-                        "PKID": {"S": 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
-                        "SKID": {"S": 'PRO#' + providerId}
+            validateProv = dynamodb.query(
+                    TableName="TuCita247",
+                    IndexName="TuCita247_Index",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='GSI1PK = :businessId AND GSI1SK = :prov',
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + data['BusinessId']},
+                        ':prov': {'S': 'PRO#' + providerId}
+                    }
+                )
+            loc = ''
+            name = ''
+            opeH = ''
+            daysO = ''
+            parD = ''
+            parH = ''
+            stat = 0
+            daysOff = []
+            for prov in json_dynamodb.loads(validateProv['Items']):
+                loc = str(prov['PKID']).split('#')[3]
+                name = prov['NAME']
+                opeH = prov['OPERATIONHOURS']
+                for x in prov['DAYS_OFF']:
+                    daysO = {'S': x}
+                    daysOff.append(daysO)
+                parD = prov['PARENTDAYSOFF']
+                parH = prov['PARENTHOURS']
+                stat = prov['STATUS']
+
+            if loc == data['LocationId']:
+                recordset = {
+                    "Update": {
+                        "TableName": "TuCita247",
+                        "Key": {
+                            "PKID": {"S": 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
+                            "SKID": {"S": 'PRO#' + providerId}
+                        },
+                        "UpdateExpression": "SET #n = :name,  #s = :status",
+                        "ExpressionAttributeValues": {
+                            ':name': {'S': data['Name']},
+                            ':status': {'N': str(data['Status'])}
+                        },
+                        "ExpressionAttributeNames": {'#s': 'STATUS','#n': 'NAME'},
+                        "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "NONE"
                     },
-                    "UpdateExpression": "SET #n = :name,  #s = :status",
-                    "ExpressionAttributeValues": {
-                        ':name': {'S': data['Name']},
-                        ':status': {'N': str(data['Status'])}
+                }
+                items.append(cleanNullTerms(recordset))
+            else:
+                recordset = {
+                    "Delete": {
+                        "TableName": "TuCita247",
+                        "Key": {
+                            "PKID": {"S": 'BUS#' + data['BusinessId'] + '#LOC#' + loc},
+                            "SKID": {"S": 'PRO#' + providerId}
+                        },
+                        "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                    }
+                }
+                items.append(cleanNullTerms(recordset))
+
+                recordset = {
+                    "Put": {
+                        "TableName": "TuCita247",
+                        "Item": {
+                            "PKID": {"S": 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
+                            "SKID": {"S": 'PRO#' + providerId},
+                            "GSI1PK": {"S": 'BUS#' + data['BusinessId']},
+                            "GSI1SK": {"S": 'PRO#' + providerId},
+                            "NAME": {"S": name},
+                            "OPERATIONHOURS": {"S": opeH},
+                            "DAYS_OFF": {"L": daysOff},
+                            "PARENTDAYSOFF": {"N": str(parD)},
+                            "PARENTHOURS": {"N": str(parH)},
+                            "STATUS": {"N": str(stat)}
+                        },
+                        "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                        "ReturnValuesOnConditionCheckFailure": "NONE"
                     },
-                    "ExpressionAttributeNames": {'#s': 'STATUS','#n': 'NAME'},
-                    "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
-                    "ReturnValuesOnConditionCheckFailure": "NONE"
-                },
-            }
-        items.append(cleanNullTerms(recordset))
+                }
+                items.append(cleanNullTerms(recordset))
         
         logger.info(items)
         response = dynamodb.transact_write_items(
