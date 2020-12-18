@@ -56,8 +56,12 @@ def lambda_handler(event, context):
         Address = ''
         TimeZone = ''
         pollId = ''
+        servName = ''
+        provName = ''
+        serviceId = ''
         qty = 0
         existe = 0
+        manualCheckIn = 0
         data = json.loads(event['body'])
         status = data['Status']
         qrCode = data['qrCode'].upper()
@@ -104,11 +108,46 @@ def lambda_handler(event, context):
             name = row['NAME']
             phone = row['PHONE']
             onBehalf = row['ON_BEHALF']
+            serviceId = row['SERVICEID']
 
         if appointmentId != '':
             items = []
             peopleQty =0
             dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
+            servs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serv)',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + businessId},
+                    ':serv': {'S': 'SER#' }
+                }
+            )
+            count = 0
+            for serv in json_dynamodb.loads(servs['Items']):
+                count = count + 1
+                if serv['SKID'].replace('SER#','') == serviceId:
+                    servName = serv['NAME']
+            if count == 1:
+                servName = ''
+            
+            provs =  dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :key AND begins_with(SKID , :provs)',
+                ExpressionAttributeValues={
+                    ':key': {'S': 'BUS#' + businessId + '#LOC#'+locationId},
+                    ':provs': {'S': 'PRO#' }
+                }
+            )
+            countp = 0
+            for prov in json_dynamodb.loads(provs['Items']):
+                countp = countp + 1
+                if prov['SKID'].replace('PRO#','') == providerId:
+                    provName = prov['NAME']
+            if countp == 1:
+                provName = ''
 
             guests = dynamodb.query(
                 TableName="TuCita247",
@@ -241,7 +280,7 @@ def lambda_handler(event, context):
                 'Guests': qty,
                 'Tipo': 'MOVE',
                 'To': 'CHECKOUT',
-                'ManualCheckIn': manualCheckIn,
+                'ManualCheckOut': manualCheckIn,
                 'AppointmentId': appointmentId.replace('APPO#',''),
                 'Status': status,
                 'Address': Address,
@@ -251,12 +290,15 @@ def lambda_handler(event, context):
                 'UnRead': 0,
                 'Ready': 0,
                 'DateAppo': dateAppo,
+                'DateFull': dateAppo,
                 'Disability': disability,
                 'Door': door,
                 'Name': name,
                 'OnBehalf': onBehalf,
                 'Phone': phone,
-                'TimeZone': TimeZone
+                'TimeZone': TimeZone,
+                'Service': servName,
+                'Provider': provName
             }
             lambdaInv.invoke(
                 FunctionName='PostMessages',

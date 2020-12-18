@@ -66,6 +66,9 @@ def lambda_handler(event, context):
             providerId = ''
             businessName = ''
             appId = ''
+            TimeZone = ''
+            Addr = ''
+            manualCheckOut = 0
             
             appId = row['PKID']
             dateAppo = row['DATE_APPO']
@@ -93,19 +96,9 @@ def lambda_handler(event, context):
             )
             for business in json_dynamodb.loads(getBusiness['Items']):
                 businessName = business['NAME']
-            
-            getAddr = dynamodb.query(
-                TableName = "TuCita247",
-                ReturnConsumedCapacity = 'TOTAL',
-                KeyConditionExpression = 'PKID = :key01 AND SKID = :key02',
-                ExpressionAttributeValues = {
-                    ':key01': {"S": 'BUS#' + businessId},
-                    ':key02': {"S": 'LOC#' + locationId}
-                }
-            )
-            Addr = ''
-            for addr in json_dynamodb.loads(getAddr['Items']):
-                Addr = addr['ADDRESS']
+                manualCheckOut = int(business['MANUAL_CHECK_OUT'])
+                Addr = business['ADDRESS']
+                TimeZone = business['TIME_ZONE'] if 'TIME_ZONE' in business else 'America/Puerto_Rico'
             
             servs = dynamodb.query(
                 TableName="TuCita247",
@@ -207,6 +200,8 @@ def lambda_handler(event, context):
                 'NameBusiness': businessName,
                 'Address': Addr,
                 'DateTrans': row['DATE_TRANS'],
+                'TimeZone': TimeZone,
+                'ManualCheckOut': manualCheckOut,
                 'Qeue': 'PRE' if row['DATE_APPO'] < dateOpe else 'UPC',
                 'Tipo': 'REVERSE'
             }

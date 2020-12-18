@@ -62,6 +62,8 @@ def lambda_handler(event, context):
         businessId = ''
         serviceId = ''
         customerId = ''
+        servName = ''
+        provName = ''
         manualCheckIn = 0
         timeService = 0
         bufferTime = 0
@@ -124,6 +126,40 @@ def lambda_handler(event, context):
         for serv in json_dynamodb.loads(service['Items']):
             timeService = int(serv['TIME_SERVICE'])*60
             bufferTime = int(serv['BUFFER_TIME'])
+
+        servs = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :serv)',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':serv': {'S': 'SER#' }
+            }
+        )
+        count = 0
+        for serv in json_dynamodb.loads(servs['Items']):
+            count = count + 1
+            if serv['SKID'].replace('SER#','') == serviceId:
+                servName = serv['NAME']
+        if count == 1:
+            servName = ''
+        
+        provs =  dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :key AND begins_with(SKID , :provs)',
+            ExpressionAttributeValues={
+                ':key': {'S': 'BUS#' + businessId + '#LOC#'+locationId},
+                ':provs': {'S': 'PRO#' }
+            }
+        )
+        countp = 0
+        for prov in json_dynamodb.loads(provs['Items']):
+            countp = countp + 1
+            if prov['SKID'].replace('PRO#','') == providerId:
+                provName = prov['NAME']
+        if countp == 1:
+            provName = ''
 
         initDate = ((datetime.strptime(today.strftime("%Y-%m-%d-%H-00"),"%Y-%m-%d-%H-%M"))+timedelta(minutes=bufferTime*2)).strftime("%Y-%m-%d-%H-%M")
         if today.strftime("%Y-%m-%d-%H-%M") > initDate:
@@ -192,7 +228,7 @@ def lambda_handler(event, context):
             'CustomerId': customerId,
             'Guests': qty,
             'Tipo': 'MOVE',
-            'ManualCheckIn': manualCheckIn,
+            'ManualCheckOut': manualCheckIn,
             'To': 'CHECKIN',
             'AppointmentId': row['PKID'].replace('APPO#',''),
             'Status': row['STATUS'],
@@ -203,12 +239,15 @@ def lambda_handler(event, context):
             'UnRead': 0,
             'Ready': 0,
             'DateAppo': row['DATE_APPO'],
+            'DateFull': row['DATE_APPO'],
             'Disability': row['DISABILITY'] if 'DISABILITY' in row else '',
             'Door': row['DOOR'],
             'Name': row['NAME'],
             'OnBehalf': row['ON_BEHALF'],
             'Phone': row['PHONE'],
-            'TimeZone': TimeZone
+            'TimeZone': TimeZone,
+            'Service': servName,
+            'Provider': provName
         }
         lambdaInv.invoke(
             FunctionName='PostMessages',

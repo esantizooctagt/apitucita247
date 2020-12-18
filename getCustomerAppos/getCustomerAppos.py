@@ -37,7 +37,7 @@ def lambda_handler(event, context):
         lastItemPrev = lastItem
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
-        dateOpe = today.strftime("%Y-%m-%d-00-00")
+        dateOpe = (today + datetime.timedelta(hours=-6)).strftime("%Y-%m-%d-%H-00")
         dateYest = (today + datetime.timedelta(days=-1)).strftime("%Y-%m-%d-23-59")
         
         if typeAppo == 0:
@@ -193,7 +193,7 @@ def lambda_handler(event, context):
                     'Ready': item['READY'] if 'READY' in item else 0,
                     'ServName': servName,
                     'ProvName': provName,
-                    'ManualCheckIn': ManualCheckIn,
+                    'ManualCheckOut': ManualCheckIn,
                     'TimeZone': TimeZone
                 }
                 record.append(recordset)
@@ -300,7 +300,7 @@ def lambda_handler(event, context):
                             'UnRead': item['UNREAD'] if 'UNREAD' in item else '',
                             'Ready': item['READY'] if 'READY' in item else 0,
                             'ServName': servName,
-                            'ManualCheckIn': ManualCheckIn,
+                            'ManualCheckOut': ManualCheckIn,
                             'TimeZone': TimeZone,
                             'ProvName': provName
                         }

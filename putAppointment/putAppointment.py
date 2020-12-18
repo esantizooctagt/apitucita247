@@ -62,7 +62,6 @@ def lambda_handler(event, context):
 
         data = json.loads(event['body'])
         appointmentId = event['pathParameters']['id']
-        
         status = data['Status']
         dateAppo = data['DateAppo']
         guests = data['Guests'] if 'Guests' in data else ''
@@ -96,6 +95,7 @@ def lambda_handler(event, context):
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
         table = dynamodb.Table('TuCita247')
         e = {'#s': 'STATUS'}
+        logger.info("prev todo ok")
         if str(status) != "5":
             if str(status) != "2":
                 v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
@@ -111,6 +111,7 @@ def lambda_handler(event, context):
                 )
                 appo = json_dynamodb.loads(response['Attributes'])
             else:
+                logger.info("status 2 ok")
                 v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe, ':precheckin': 'PRECHECKIN'}
                 response = table.update_item(
                     Key={
