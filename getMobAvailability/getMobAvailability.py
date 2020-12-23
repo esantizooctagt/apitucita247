@@ -103,10 +103,10 @@ def searchHours(time, hours):
 
 def searchTime(time, hours, serviceId):
     for item in hours:
-        if item['Time24'] == time and item['ServiceId'] == serviceId:
+        if item['Time24'] == time and (item['ServiceId'] == serviceId or item['ServiceId'] == ''):
             return item
-        if item['Time24'] == time and item['ServiceId'] != serviceId:
-            return '0'
+        # if item['Time24'] == time and item['ServiceId'] != serviceId:
+        #     return '0'
     item = ''
     return item
     
@@ -199,6 +199,7 @@ def lambda_handler(event, context):
         hours = []
         currHour = ''
         isCurrDay = 0
+        bucket = 0
 
         if appoDate.strftime("%Y-%m-%d") < today.strftime("%Y-%m-%d"):
             statusCode = 200
@@ -248,19 +249,18 @@ def lambda_handler(event, context):
                 avaiAppoPack = dynamodb.query(
                     TableName = "TuCita247",
                     ReturnConsumedCapacity = 'TOTAL',
-                    KeyConditionExpression = 'PKID = :businessId AND SKID BETWEEN :key and :fin',
+                    KeyConditionExpression = 'PKID = :businessId',
+                    FilterExpression = 'AVAILABLE > :cero',
                     ExpressionAttributeValues = {
                         ':businessId': {'S': 'BUS#' + businessId},
-                        ':key': {'S': 'PACK#' + appoDate.strftime("%Y-%m-%d")},
-                        ':fin': {'S': 'PACK#' + dateFin}
+                        ':cero': {'N': str(0)}
                     }
                 )
                 for availablePlan in json_dynamodb.loads(avaiAppoPack['Items']):
-                    if availablePlan['AVAILABLE'] > 0:
-                        numberAppos = availablePlan['AVAILABLE']
-                        typeAppo = 2
-                        code = availablePlan['SKID']
-                        break
+                    numberAppos = availablePlan['AVAILABLE']
+                    typeAppo = 2
+                    code = availablePlan['SKID']
+                    break
                 
             #SIN DISPONIBILIDAD DE CITAS
             if numberAppos == 0:
@@ -286,20 +286,9 @@ def lambda_handler(event, context):
                         'TimeService': int(serv['TIME_SERVICE'])
                     }
                     services.append(recordset)
-
-                #GET SERVICES 
-                service = dynamodb.query(
-                    TableName="TuCita247",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
-                    ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#'+businessId},
-                        ':serviceId': {'S': 'SER#'+serviceId}
-                    }
-                )
-                for serv in json_dynamodb.loads(service['Items']):
-                    bucket = serv['TIME_SERVICE']
-                    numCustomer = serv['CUSTOMER_PER_TIME']
+                    if serv['SKID'].replace('SER#','') == serviceId:
+                        bucket = serv['TIME_SERVICE']
+                        numCustomer = serv['CUSTOMER_PER_TIME']
 
                 if bucket == 0:
                     statusCode = 500
@@ -479,7 +468,8 @@ def lambda_handler(event, context):
                         else:
                             custPerTime = 0
                             if 'ServiceId' in item:
-                                custPerTime = findService(item['ServiceId'], services)
+                                if item['ServiceId'] != '':
+                                    custPerTime = findService(item['ServiceId'], services)
                             
                             if (int(item['TimeService']) > 1):
                                 times = range(0, item['TimeService'])
@@ -520,7 +510,7 @@ def lambda_handler(event, context):
                                     'Time24': item['Hour'],
                                     'ServiceId': item['ServiceId'],
                                     'TimeService': item['TimeService'],
-                                    'Available': custPerTime-item['People'],
+                                    'Available': custPerTime-item['People'] if custPerTime > 0 else item['People'],
                                     'Cancel': 0
                                 }
                                 hoursData.append(recordset)
@@ -539,33 +529,53 @@ def lambda_handler(event, context):
                             count = 0
                             for item in dateAppo:
                                 ini = int(item['I'])
-                                fin = int(item['F'])
+                                fin = int(item['F'])-1
                                 prevCount = -1
+                                # logger.info('Data hr: ' + hStd[0:2] + ' -- ini: ' + str(ini) + ' -- fin: ' + str(fin))
                                 if int(hStd[0:2]) >= ini and int(hStd[0:2]) <= fin:
                                     if int(bucket) > 1:
-                                        for citas in range(1, bucket):
+                                        for citas in range(0, bucket-1):
                                             nextHr = time24hr+citas
                                             getApp = searchTime(int(nextHr), hoursData, serviceId)
                                             if getApp != '':
-                                                if getApp != '0':
-                                                    if prevCount == -1:
-                                                        count = getApp['Available']
-                                                        prevCount = 0
-                                                    if prevCount == 0:
-                                                        if count > getApp['Available']:
-                                                            count = getApp['Available']
-                                                else:
+                                                if getApp['Available'] <= 0:
                                                     count = 0
                                                     break
+                                                else:
+                                                    if count == 0 or count > getApp['Available']:
+                                                        count = getApp['Available']
+                                                # if getApp != '0':
+                                                #     if prevCount == -1:
+                                                #         count = getApp['Available']
+                                                #         prevCount = 0
+                                                #     if prevCount == 0:
+                                                #         if count > getApp['Available']:
+                                                #             count = getApp['Available']
+                                                # else:
+                                                #     count = 0
+                                                #     break
                                             else:
-                                                if prevCount == -1:
+                                                entro = 0
+                                                for item02 in dateAppo:
+                                                    ini02 = int(item02['I'])
+                                                    fin02 = int(item02['F'])-1
+                                                    if int(nextHr) >= ini and int(nextHr) <= fin:
+                                                        entro = 1
+                                                        break
+                                                if entro == 0:
+                                                    count = 0
+                                                    break
+                                                if count == 0 or count >= +numCustomer:
                                                     count = +numCustomer
-                                                    prevCount = 0
-                                                if prevCount == 0:
-                                                    if count > numCustomer:
-                                                        count = +numCustomer
+                                                # if prevCount == -1:
+                                                #     count = +numCustomer
+                                                #     prevCount = 0
+                                                # if prevCount == 0:
+                                                #     if count > numCustomer:
+                                                #         count = +numCustomer
                                     else:
                                         count = +numCustomer
+                                    break
                             if count > 0:
                                 if isCurrDay == 1 and time24hr > currHour:
                                     recordset = {
@@ -582,74 +592,98 @@ def lambda_handler(event, context):
                                     }
                                     hours.append(recordset)
                         else:
-                            if found != '0':
-                                if found['TimeService'] > 1:
-                                    if found['Available'] > 0:
-                                        count = 0
-                                        for item in dateAppo:
-                                            ini = int(item['I'])
-                                            fin = int(item['F'])
-                                            prevCount = -1
-                                            if int(hStd[0:2]) >= ini and int(hStd[0:2]) <= fin:
-                                                for citas in range(1, bucket):
-                                                    nextHr = time24hr+citas
-                                                    if nextHr == 24:
-                                                        count = 0
-                                                        break
-                                                    if nextHr >= ini and nextHr <= fin:
-                                                        getApp = searchTime(int(nextHr), hoursData, serviceId)
-                                                        if getApp != '':
-                                                            if getApp != '0':
-                                                                if prevCount == -1:
-                                                                    count = getApp['Available']
-                                                                    prevCount = 0
-                                                                if prevCount == 0:
-                                                                    if count > getApp['Available']:
-                                                                        count = getApp['Available']
-                                                            else:
-                                                                count = 0
-                                                                break
-                                                        else:
-                                                            if prevCount == -1:
-                                                                count = +numCustomer
-                                                                prevCount = 0
-                                                            if prevCount == 0:
-                                                                if count > numCustomer:
-                                                                    count = +numCustomer
-                                                    else:
-                                                        count = 0
-                                                        break
-                                        if count > 0:
-                                            if isCurrDay == 1 and time24hr > currHour:
-                                                recordset = {
-                                                    'Hour': h,
-                                                    'Time24': time24hr,
-                                                    'Available': count
-                                                }
-                                                hours.append(recordset)
-                                            if isCurrDay == 0:
-                                                recordset = {
-                                                    'Hour': h,
-                                                    'Time24': time24hr,
-                                                    'Available': count
-                                                }
-                                                hours.append(recordset)
-                                else:
-                                    if int(found['Cancel']) == 0 and int(found['Available']) > 0:
-                                        if isCurrDay == 1 and time24hr > currHour:
-                                            recordset = {
-                                                'Hour': h,
-                                                'Time24': time24hr,
-                                                'Available': found['Available']
-                                            }
-                                            hours.append(recordset)
-                                        if isCurrDay == 0:
-                                            recordset = {
-                                                'Hour': h,
-                                                'Time24': time24hr,
-                                                'Available': found['Available']
-                                            }
-                                            hours.append(recordset)
+                            # if found != '0':
+                            if bucket > 1:
+                                count = 0
+                                for citas in range(0,bucket-1):
+                                    available = searchTime(int(found['Time24'])+citas, hoursData, serviceId)
+                                    if available != '':
+                                        if available['Available'] <= 0:
+                                            count = 0
+                                            break
+                                        else:
+                                            if count == 0 or count > available['Available']:
+                                                count = available['Available']
+                                    else:
+                                        entro = 0
+                                        for item02 in dateAppo:
+                                            ini02 = int(item02['I'])
+                                            fin02 = int(item02['F'])-1
+                                            if int(int(found['Time24'])+citas) >= ini and int(int(found['Time24'])+citas) <= fin:
+                                                entro = 1
+                                                break
+                                        if entro == 0:
+                                            count = 0
+                                            break
+                                if count == 99:
+                                    count = numCustomer
+                                # if found['Available'] > 0:
+                                #     count = 0
+                                    
+                                    # for item in dateAppo:
+                                    #     ini = int(item['I'])
+                                    #     fin = int(item['F'])
+                                    #     prevCount = -1
+                                    #     if int(hStd[0:2]) >= ini and int(hStd[0:2]) <= fin:
+                                    #         for citas in range(1, bucket):
+                                    #             nextHr = time24hr+citas
+                                    #             if nextHr == 24:
+                                    #                 count = 0
+                                    #                 break
+                                    #             if nextHr >= ini and nextHr <= fin:
+                                    #                 getApp = searchTime(int(nextHr), hoursData, serviceId)
+                                    #                 if getApp != '':
+                                    #                     if getApp != '0':
+                                    #                         if prevCount == -1:
+                                    #                             count = getApp['Available']
+                                    #                             prevCount = 0
+                                    #                         if prevCount == 0:
+                                    #                             if count > getApp['Available']:
+                                    #                                 count = getApp['Available']
+                                    #                     else:
+                                    #                         count = 0
+                                    #                         break
+                                    #                 else:
+                                    #                     if prevCount == -1:
+                                    #                         count = +numCustomer
+                                    #                         prevCount = 0
+                                    #                     if prevCount == 0:
+                                    #                         if count > numCustomer:
+                                    #                             count = +numCustomer
+                                    #             else:
+                                    #                 count = 0
+                                    #                 break
+                                if count > 0:
+                                    if isCurrDay == 1 and time24hr > currHour:
+                                        recordset = {
+                                            'Hour': h,
+                                            'Time24': time24hr,
+                                            'Available': count
+                                        }
+                                        hours.append(recordset)
+                                    if isCurrDay == 0:
+                                        recordset = {
+                                            'Hour': h,
+                                            'Time24': time24hr,
+                                            'Available': count
+                                        }
+                                        hours.append(recordset)
+                            else:
+                                if int(found['Cancel']) == 0 and int(found['Available']) > 0:
+                                    if isCurrDay == 1 and time24hr > currHour:
+                                        recordset = {
+                                            'Hour': h,
+                                            'Time24': time24hr,
+                                            'Available': found['Available']
+                                        }
+                                        hours.append(recordset)
+                                    if isCurrDay == 0:
+                                        recordset = {
+                                            'Hour': h,
+                                            'Time24': time24hr,
+                                            'Available': found['Available']
+                                        }
+                                        hours.append(recordset)
                         hours.sort(key=getKey)
                 statusCode = 200
                 body = json.dumps({'Hours': hours, 'Code': 200})

@@ -254,19 +254,18 @@ def lambda_handler(event, context):
                 avaiAppoPack = dynamodb.query(
                     TableName = "TuCita247",
                     ReturnConsumedCapacity = 'TOTAL',
-                    KeyConditionExpression = 'PKID = :businessId AND SKID BETWEEN :key and :fin',
+                    KeyConditionExpression = 'PKID = :businessId',
+                    FilterExpression = 'AVAILABLE > :cero',
                     ExpressionAttributeValues = {
                         ':businessId': {'S': 'BUS#' + businessId},
-                        ':key': {'S': 'PACK#' + appoDate.strftime("%Y-%m-%d")},
-                        ':fin': {'S': 'PACK#' + dateFin}
+                        ':cero': {'N': str(0)}
                     }
                 )
                 for availablePlan in json_dynamodb.loads(avaiAppoPack['Items']):
-                    if availablePlan['AVAILABLE'] > 0:
-                        numberAppos = availablePlan['AVAILABLE']
-                        typeAppo = 2
-                        code = availablePlan['SKID']
-                        break
+                    numberAppos = availablePlan['AVAILABLE']
+                    typeAppo = 2
+                    code = availablePlan['SKID']
+                    break
                 
             #SIN DISPONIBILIDAD DE CITAS
             if numberAppos == 0:
