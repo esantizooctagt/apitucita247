@@ -75,14 +75,14 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaCognitoDB
       Environment:
         Variables:
-            cognitoId: "us-east-1_iJ3F3HhWH"
-            cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
-            cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
+          cognitoId: "us-east-1_iJ3F3HhWH"
+          cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
+          cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
         - arn:aws:lambda:us-east-1:374759743337:layer:Cryptodome:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:jwt:1
       VpcConfig: !Ref AWS::NoValue
       Events:
@@ -102,12 +102,12 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaCognitoDB
       Environment:
         Variables:
-            cognitoId: "us-east-1_iJ3F3HhWH"
-            cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
-            cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
+          cognitoId: "us-east-1_iJ3F3HhWH"
+          cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
+          cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
       VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
@@ -126,12 +126,12 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaCognitoDB
       Environment:
         Variables:
-            cognitoId: "us-east-1_iJ3F3HhWH"
-            cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
-            cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
+          cognitoId: "us-east-1_iJ3F3HhWH"
+          cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
+          cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:Cryptodome:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       VpcConfig: !Ref AWS::NoValue
@@ -152,7 +152,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
       Events:
         RootGet:
           Type: HttpApi
@@ -172,7 +172,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -193,7 +193,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -214,7 +214,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -235,7 +235,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -256,7 +256,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -277,7 +277,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -298,7 +298,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -319,7 +319,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
       Events:
         RootGet:
           Type: HttpApi
@@ -339,12 +339,12 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaCognitoDB
       Environment:
         Variables:
-            cognitoId: "us-east-1_iJ3F3HhWH"
-            cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
-            cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
+          cognitoId: "us-east-1_iJ3F3HhWH"
+          cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
+          cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:Cryptodome:1
       VpcConfig: !Ref AWS::NoValue
       Events:
@@ -366,7 +366,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -387,7 +387,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -408,12 +408,12 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaCognitoDB
       Environment:
         Variables:
-            cognitoId: "us-east-1_iJ3F3HhWH"
-            cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
-            cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
+          cognitoId: "us-east-1_iJ3F3HhWH"
+          cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
+          cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:Cryptodome:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       VpcConfig: !Ref AWS::NoValue
@@ -434,7 +434,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -455,7 +455,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -476,7 +476,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -497,7 +497,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -518,7 +518,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -539,7 +539,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -560,7 +560,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -581,7 +581,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -589,7 +589,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointments/{businessId}/{locationId}/{providerId}/{dateAppoIni}/{dateAppoFin}/{status}/{type}/{lastItem}/{appoId}
+            Path: /appointments/{businessId}/{locationId}/{providerId}/{status}/{type}/{appoType}
             Method: get
             ApiId: !Ref HttpApi
     
@@ -602,7 +602,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -645,7 +645,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -663,11 +663,13 @@ Resources:
       FunctionName: PostNewAppointment
       CodeUri: postNewAppointment/
       Handler: postNewAppointment.lambda_handler
-      Role: arn:aws:iam::374759743337:role/LambdaDynamo
+      Role: arn:aws:iam::374759743337:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
+        - arn:aws:lambda:us-east-1:374759743337:layer:requests:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -684,11 +686,13 @@ Resources:
       FunctionName: PutMessage
       CodeUri: putMessage/
       Handler: putMessage.lambda_handler
-      Role: arn:aws:iam::374759743337:role/LambdaDynamo
+      Role: arn:aws:iam::374759743337:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
+        - arn:aws:lambda:us-east-1:374759743337:layer:requests:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -708,7 +712,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers:
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -729,7 +733,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers:
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -750,7 +754,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -758,7 +762,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/opehours/{businessId}/{locationId}/{providerId}
+            Path: /business/opehours/{businessId}/{locationId}
             Method: get
             ApiId: !Ref HttpApi
   
@@ -771,7 +775,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -789,11 +793,13 @@ Resources:
       FunctionName: PutAppointmentCheckIn
       CodeUri: putAppointmentCheckIn/
       Handler: putAppointmentCheckIn.lambda_handler
-      Role: arn:aws:iam::374759743337:role/LambdaDynamo
+      Role: arn:aws:iam::374759743337:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
+        - arn:aws:lambda:us-east-1:374759743337:layer:requests:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -810,11 +816,12 @@ Resources:
       FunctionName: PutAppointmentCheckInQR
       CodeUri: putAppointmentCheckInQR/
       Handler: putAppointmentCheckInQR.lambda_handler
-      Role: arn:aws:iam::374759743337:role/LambdaDynamo
+      Role: arn:aws:iam::374759743337:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -834,7 +841,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -846,16 +853,37 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
 
-  GetPreviousAppointmentsFunction:
+  # GetPreviousAppointmentsFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: GetPreviousAppointments
+  #     CodeUri: getPreviousAppointments/
+  #     Handler: getPreviousAppointments.lambda_handler
+  #     Role: arn:aws:iam::374759743337:role/LambdaDynamo
+  #     Layers: 
+  #       - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
+  #       # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
+  #       - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
+  #     Events:
+  #       RootGet:
+  #         Type: HttpApi
+  #         Properties:
+  #           Auth:
+  #             Authorizer: CognitoAuth
+  #           Path: /appointments/previous/{businessId}/{locationId}/{providerId}/{dateAppo}/{status}
+  #           Method: get
+  #           ApiId: !Ref HttpApi
+
+  GetAvailabilityFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: GetPreviousAppointments
-      CodeUri: getPreviousAppointments/
-      Handler: getPreviousAppointments.lambda_handler
+      FunctionName: GetAvailability
+      CodeUri: getAvailability/
+      Handler: getAvailability.lambda_handler
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -863,7 +891,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointments/previous/{businessId}/{locationId}/{providerId}/{dateAppo}/{status}
+            Path: /appointments/availability/{businessId}/{locationId}/{providerId}/{serviceId}
             Method: get
             ApiId: !Ref HttpApi
     
@@ -876,7 +904,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamoS3
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -894,11 +922,12 @@ Resources:
       FunctionName: PutOpenLocation
       CodeUri: putOpenLocation/
       Handler: putOpenLocation.lambda_handler
-      Role: arn:aws:iam::374759743337:role/LambdaDynamo
+      Role: arn:aws:iam::374759743337:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -915,18 +944,20 @@ Resources:
       FunctionName: PutClosedLocation
       CodeUri: putClosedLocation/
       Handler: putClosedLocation.lambda_handler
-      Role: arn:aws:iam::374759743337:role/LambdaDynamo
+      Role: arn:aws:iam::374759743337:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
+        - arn:aws:lambda:us-east-1:374759743337:layer:requests:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /location/closed/{id}/{businessId}
+            Path: /location/closed/{id}/{businessId}/{closed}/{busLanguage}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -958,17 +989,19 @@ Resources:
       FunctionName: PutAppointmentManualCO
       CodeUri: putAppointmentManualCO/
       Handler: putAppointmentManualCO.lambda_handler
-      Role: arn:aws:iam::374759743337:role/LambdaDynamo
-      Layers: 
+      Role: arn:aws:iam::374759743337:role/LambdaDynamoSNS
+      Layers:
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
+        - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointment/checkout/manual/{businessId}/{locationId}/{providerId}/{qtyGuests}
+            Path: /appointment/checkout/manual/{businessId}/{locationId}/{qtyGuests}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -981,7 +1014,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamoS3
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1002,7 +1035,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1023,7 +1056,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1042,7 +1075,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1063,7 +1096,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1084,7 +1117,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1105,7 +1138,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1126,7 +1159,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1147,7 +1180,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1168,7 +1201,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1187,7 +1220,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1208,7 +1241,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1227,7 +1260,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1248,7 +1281,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1269,7 +1302,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamoS3
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1290,7 +1323,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1311,7 +1344,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1332,7 +1365,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1351,7 +1384,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1372,7 +1405,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1391,7 +1424,7 @@ Resources:
         Role: arn:aws:iam::374759743337:role/LambdaDynamo
         Layers: 
           - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-          # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+          # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
           - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
         Events:
           RootGet:
@@ -1412,7 +1445,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1431,7 +1464,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1450,12 +1483,12 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaCognitoDB
       Environment:
         Variables:
-            cognitoId: "us-east-1_iJ3F3HhWH"
-            cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
-            cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
+          cognitoId: "us-east-1_gXhBD4bsG"
+          cognitoClientId: "52k0o8239mueu31uu5fihccbbf"
+          cognitoSecret: "1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt"
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       VpcConfig: !Ref AWS::NoValue
       Events:
@@ -1475,7 +1508,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers:
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1484,6 +1517,27 @@ Resources:
             Auth:
               Authorizer: CognitoAuth
             Path: /appointment/opeHours/{businessId}/{locationId}/{providerId}/{initDay}
+            Method: get
+            ApiId: !Ref HttpApi
+      
+  GetAppoDataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GetAppoData
+      CodeUri: getAppoData/
+      Handler: getAppoData.lambda_handler
+      Role: arn:aws:iam::374759743337:role/LambdaDynamo
+      Layers:
+        - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
+        - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Auth:
+              Authorizer: CognitoAuth
+            Path: /appointment/data/{businessId}/{locationId}/{providerId}/{qrCode}
             Method: get
             ApiId: !Ref HttpApi
 
@@ -1505,7 +1559,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /appointment/{businessId}/{locationId}/{providerId}/{dateAppo}
+            Path: /appointment/{businessId}/{locationId}/{providerId}/{dateAppo}/{busLanguage}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -1518,7 +1572,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers:
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1559,7 +1613,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers:
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1580,7 +1634,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers:
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1588,7 +1642,7 @@ Resources:
           Properties:
             Auth:
               Authorizer: CognitoAuth
-            Path: /business/openinghours/{businessId}/{locationId}/{providerId}
+            Path: /business/openinghours/{businessId}/{locationId}/{providerId}/{parentData}
             Method: put
             ApiId: !Ref HttpApi
 
@@ -1601,7 +1655,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1620,7 +1674,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       VpcConfig: !Ref AWS::NoValue
       Events:
@@ -1640,7 +1694,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1661,7 +1715,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1682,7 +1736,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1703,7 +1757,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1719,11 +1773,13 @@ Resources:
       FunctionName: DelProvider
       CodeUri: delProvider/
       Handler: delProvider.lambda_handler
-      Role: arn:aws:iam::374759743337:role/LambdaDynamo
+      Role: arn:aws:iam::374759743337:role/LambdaDynamoSNS
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
+        - arn:aws:lambda:us-east-1:374759743337:layer:requests:1
+      VpcConfig: !Ref AWS::NoValue
       Events:
         RootGet:
           Type: HttpApi
@@ -1743,7 +1799,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1764,7 +1820,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1785,7 +1841,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1806,7 +1862,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1825,7 +1881,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1846,7 +1902,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1858,27 +1914,6 @@ Resources:
             Method: get
             ApiId: !Ref HttpApi
 
-  PutServiceProviderFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: PutServiceProvider
-      CodeUri: putServiceProvider/
-      Handler: putServiceProvider.lambda_handler
-      Role: arn:aws:iam::374759743337:role/LambdaDynamo
-      Layers: 
-        - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
-        - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
-      Events:
-        RootGet:
-          Type: HttpApi
-          Properties:
-            Auth:
-              Authorizer: CognitoAuth
-            Path: /service/{businessId}/{providerId}/{serviceId}/{activo}
-            Method: put
-            ApiId: !Ref HttpApi
-
   GetLocationsDataFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -1888,7 +1923,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1909,7 +1944,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1930,7 +1965,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -1939,26 +1974,6 @@ Resources:
             Path: /location
             Method: post
             ApiId: !Ref HttpApi
-  
-  PutBusinessPlanFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: PutBusinessPlan
-      CodeUri: putBusinessPlan/
-      Handler: putBusinessPlan.lambda_handler
-      Role: arn:aws:iam::374759743337:role/LambdaDynamo
-      Layers: 
-        - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
-        - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
-      VpcConfig: !Ref AWS::NoValue
-      Events:
-        RootGet:
-          Type: HttpApi
-          Properties:
-            Path: /business/plan/{businessId}/{plan}/{appos}/{order}
-            Method: put
-            ApiId: !Ref HttpApi
 
   PutBusinessSearchFunction:
     Type: AWS::Serverless::Function
@@ -1966,13 +1981,14 @@ Resources:
       FunctionName: PutBusinessSearch
       CodeUri: putBusinessSearch/
       Handler: putBusinessSearch.lambda_handler
+      Timeout: 180
       Role: arn:aws:iam::374759743337:role/LambdaDynamoSearch
       Environment:
         Variables:
-          cloudSearch: "https://search-dev-tucita247-6tfdgrmlbjsqzmro2dtgz75rlm.us-east-1.cloudsearch.amazonaws.com"
+          cloudSearch: "https://search-tucita247-djl3mvkaapbmo5zjxat7pcnepu.us-east-1.cloudsearch.amazonaws.com"
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       VpcConfig: !Ref AWS::NoValue
       Events:
@@ -1992,12 +2008,12 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaCognitoDB
       Environment:
         Variables:
-            cognitoId: "us-east-1_iJ3F3HhWH"
-            cognitoClientId: "3ppiqd3e2ola0rgln223chuvr5"
-            cognitoSecret: "1mra1h7lej2jrcid35v0j4882r51jmgroq8k3j0lbh6rid4qe9rq"
+          cognitoId: "us-east-1_gXhBD4bsG"
+          cognitoClientId: "52k0o8239mueu31uu5fihccbbf"
+          cognitoSecret: "1r2k3dm8748i5dfu632eu8ptai7vocidm01vp3la82nhq91jgqqt"
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
         - arn:aws:lambda:us-east-1:374759743337:layer:Cryptodome:1
       VpcConfig: !Ref AWS::NoValue
@@ -2018,7 +2034,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -2039,7 +2055,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -2058,7 +2074,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
@@ -2077,7 +2093,7 @@ Resources:
       Role: arn:aws:iam::374759743337:role/LambdaDynamo
       Layers: 
         - arn:aws:lambda:us-east-1:374759743337:layer:boto3:2
-        # - arn:aws:lambda:us-east-1:821843840552:layer:botocore:1
+        # - arn:aws:lambda:us-east-1:374759743337:layer:botocore:1
         - arn:aws:lambda:us-east-1:374759743337:layer:dynamodb-json:1
       Events:
         RootGet:
