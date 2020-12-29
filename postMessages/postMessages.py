@@ -14,8 +14,9 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+APIID = os.environ['apiId']
 dynamodb = boto3.client('dynamodb', region_name=REGION)
-api_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://1wn0vx0tva.execute-api.us-east-1.amazonaws.com/prod')
+api_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://'+APIID+'.execute-api.'+REGION+'.amazonaws.com/prod')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
