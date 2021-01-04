@@ -172,6 +172,7 @@ def lambda_handler(event, context):
             x = range(0,7)
             minVal = 24
             maxVal = 0
+            # for n in range(3,4):
             for n in x:
                 dayOffValid = True
                 #DIA DE OPERACION
@@ -341,6 +342,42 @@ def lambda_handler(event, context):
                             timeExists = findHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
                             if timeExists == '':
                                 hoursBooks.append(recordset)
+                    # logger.info('display hoursbook')
+                    # logger.info(hoursBooks)
+                    mergeBooks = []
+                    for data in hoursBooks:
+                        if data['Cancel'] == 0 and (int(data['TimeService']) > 1):
+                            times = range(0, data['TimeService'])
+                            timeInterval = []
+                            count = 0
+                            for hr in times:
+                                newTime = str(int(data['Time'])+hr)
+                                time24hr = int(newTime) 
+                                newTime = newTime.rjust(2,'0')+':00'
+                                result = findHours(time24hr, mergeBooks)
+                                if result != '':
+                                    recordset = {
+                                        'Time': time24hr,
+                                        'ServiceId': data['ServiceId'],
+                                        'People': int(data['People'])+int(result['People']),
+                                        'TimeService': data['TimeService'],
+                                        'Cancel': 0
+                                    }
+                                    mergeBooks.remove(result)
+                                    mergeBooks.append(recordset)
+                                else:
+                                    recordset = {
+                                        'Time': time24hr,
+                                        'ServiceId': data['ServiceId'],
+                                        'People': int(data['People']),
+                                        'TimeService': data['TimeService'],
+                                        'Cancel': 0
+                                    }
+                                    mergeBooks.append(recordset)
+                        else:
+                            mergeBooks.append(data)
+                    hoursBooks = []
+                    hoursBooks = mergeBooks
                     for item in hoursBooks:
                         if item['Cancel'] == 1:
                             timeExists = findHours(str(item['Time']).rjust(2,'0')+':00', hoursData)
@@ -363,40 +400,52 @@ def lambda_handler(event, context):
                                 custPerTime = findService(item['ServiceId'], services)
                             
                             if (int(item['TimeService']) > 1):
+                                logger.info('--eval--')
+                                logger.info(item)
                                 times = range(0, item['TimeService'])
-                                changes = range(0, item['TimeService'])
                                 timeInterval = []
                                 #CONSOLIDA HORAS DE BOOKINGS
+                                count = -1
                                 for hr in times:
-                                    count = 0
+                                    # logger.info(hr)
                                     newTime = str(int(item['Time'])+hr)
                                     time24hr = int(newTime) 
                                     newTime = newTime.rjust(2,'0')+':00'
-    
-                                    count = findUsedHours(time24hr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)
-                                    res = range(1, int(item['TimeService']))
-                                    for citas in res:
-                                        nextHr = time24hr+citas
-                                        newHr = str(nextHr).rjust(2,'0')+'-00'
-                                        getApp = findHours(nextHr, hoursBooks)
-                                        if getApp != '':
-                                            if getApp['ServiceId'] != item['ServiceId']:
-                                                count = custPerTime
+                                    result = findHours(time24hr, hoursBooks)
+                                    # logger.info(result)
+                                    if result != '':
+                                        if result['ServiceId'] == item['ServiceId'] or result['ServiceId'] == '':
+                                            if result['ServiceId'] != '':
+                                                if count == -1 or count < result['People']:
+                                                    count = result['People']
+                                        if result['ServiceId'] != item['ServiceId'] and result['ServiceId'] != '':
+                                            count = custPerTime
+                                            break
+                                    else:
+                                        noExiste = 0
+                                        for timeAv in dayHours:
+                                            ini = int(timeAv['I'])
+                                            fin = int(timeAv['F'])-1
+                                            # logger.info('ini ' + str(ini) + ' -- ' + str(fin) + ' hr ' + str(newTime[0:2]))
+                                            if int(newTime[0:2]) >= ini and int(newTime[0:2]) <= fin:
+                                                # logger.info('ingreso -- ' + str(count))
+                                                noExiste = 1
                                                 break
-                                        tempCount = findUsedHours(nextHr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)
-                                        if tempCount > count:
-                                            count = tempCount
-                                                
-                                    recordset = {
-                                        'Time': newTime,
-                                        'TimeService': item['TimeService'],
-                                        'ServiceId': item['ServiceId'],
-                                        'Bucket': custPerTime,
-                                        'Available': custPerTime-count,
-                                        'Used': count,
-                                        'Cancel': 0
-                                    }
-                                    hoursData.append(recordset)
+                                        if noExiste == 0:
+                                            count = -1
+                                            break
+                                if count == -1:
+                                    count = custPerTime          
+                                recordset = {
+                                    'Time': str(item['Time']).rjust(2,'0')+':00',
+                                    'TimeService': item['TimeService'],
+                                    'ServiceId': item['ServiceId'],
+                                    'Bucket': custPerTime,
+                                    'Available': custPerTime-count,
+                                    'Used': count,
+                                    'Cancel': 0
+                                }
+                                hoursData.append(recordset)
                             else:
                                 recordset = {
                                     'Time': str(item['Time']).rjust(2,'0')+':00',
@@ -408,6 +457,7 @@ def lambda_handler(event, context):
                                     'Cancel': 0
                                 }
                                 hoursData.append(recordset)
+                    logger.info('result hours data')
                     logger.info(hoursData)
                     ini = 0
                     fin = 0
