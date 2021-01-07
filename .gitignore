@@ -242,3 +242,14 @@ $RECYCLE.BIN/
 */build/*
 
 # End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
+admin.yaml
+dev-admin.yaml
+dev-mobile.yaml
+dev-reports.yaml
+dev-sockets.yaml
+dev-template.yaml
+mobile.yaml
+reports.yaml
+sockets.yaml
+template.yaml
+wordpress.yaml
