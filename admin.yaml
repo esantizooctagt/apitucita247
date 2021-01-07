@@ -16,9 +16,9 @@ Globals:
     MemorySize: 128
     Runtime: python3.8
     Environment:
-        Variables:
-            devCors: "http://localhost:4200"
-            prodCors: "https://console.tucita247.com"
+      Variables:
+        devCors: "http://localhost:4200"
+        prodCors: "https://console.tucita247.com"
     VpcConfig:
       SecurityGroupIds: 
         - sg-04131f24
@@ -411,5 +411,29 @@ Resources:
           Type: HttpApi
           Properties:
             Path: /appointments/cancel/precheckin/{AppointmentId}
+            Method: put
+            ApiId: !Ref HttpApi
+  
+  PutSuspendFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PutSuspend
+      CodeUri: putSuspend/
+      Handler: putSuspend.lambda_handler
+      Role: arn:aws:iam::821843840552:role/LambdaDynamoSearch
+      Environment:
+        Variables:
+          wpKey: "ck_3fcd8bc23ab2aa9b5cb27f3ff68c798a072b9662"
+          wpSecret: "cs_d3892fb3ca1c1f0345a71bf7fd702fedaa385fc9"
+      Layers: 
+        - arn:aws:lambda:us-east-1:821843840552:layer:boto3:3
+        - arn:aws:lambda:us-east-1:821843840552:layer:requests:7
+        - arn:aws:lambda:us-east-1:821843840552:layer:dynamodb-json:1
+      VpcConfig: !Ref AWS::NoValue
+      Events:
+        RootGet:
+          Type: HttpApi
+          Properties:
+            Path: /business/suspend/{businessId}/{sns}/{type}
             Method: put
             ApiId: !Ref HttpApi

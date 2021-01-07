@@ -331,6 +331,7 @@ def lambda_handler(event, context):
                         "PREMIUM": {"N": str(0)},
                         "DUE_DATE": {"S": dueDate},
                         "AVAILABLE": {"N": str(20)},
+                        "EXPIRE": {"N": str(1)},
                         "APPOINTMENTS": {"N": str(20)},
                         "STATUS": {"N": str(1)},
                         "GSI1PK": {"S": dueDate},

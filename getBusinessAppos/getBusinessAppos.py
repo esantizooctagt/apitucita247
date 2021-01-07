@@ -53,17 +53,18 @@ def lambda_handler(event, context):
         packs = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :businessId AND SKID between :packsIni AND :packsFin',
+            KeyConditionExpression='PKID = :businessId AND begins_with(SKID, :pack)', #AND SKID between :packsIni AND :packsFin
             ExpressionAttributeValues={
                 ':businessId': {'S': 'BUS#' + businessId},
-                ':packsIni': {'S': 'PACK#' + dateIni},
-                ':packsFin': {'S': 'PACK#' + dateFin}
+                ':pack': {'S': 'PACK#'}
+                # ':packsIni': {'S': 'PACK#' + dateIni},
+                # ':packsFin': {'S': 'PACK#' + dateFin}
             }
         )
         recordset ={}
         for pack in json_dynamodb.loads(packs['Items']):
             recordset = {
-                'DueDate': pack['SKID'].replace('PACK#',''),
+                'DueDate': '', #pack['SKID'].replace('PACK#',''),
                 'Available': pack['AVAILABLE'],
                 'Used': pack['APPOINTMENTS']-pack['AVAILABLE'],
                 'Appointments': pack['APPOINTMENTS']

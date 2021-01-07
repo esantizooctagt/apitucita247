@@ -14,6 +14,7 @@ from dynamodb_json import json_util as json_dynamodb
 import os
 
 REGION = 'us-east-1'
+CLOUDSEARCH = os.environ['cloudSearch']
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -21,7 +22,7 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
-cloudsearch = boto3.client('cloudsearchdomain', endpoint_url="https://search-tucita247-djl3mvkaapbmo5zjxat7pcnepu.us-east-1.cloudsearch.amazonaws.com")
+cloudsearch = boto3.client('cloudsearchdomain', endpoint_url=CLOUDSEARCH)
 logger.info("SUCCESS: Connection to CloudSearch")
 
 def lambda_handler(event, context):

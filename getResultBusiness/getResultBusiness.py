@@ -99,46 +99,57 @@ def lambda_handler(event, context):
         recordset = {}
         business = []
         for row in json_dynamodb.loads(response['Items']):
-            records = []
-            locsNumber = dynamodb.query(
+            statBusiness = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
-                KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :locs)',
+                KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
                 ExpressionAttributeValues={
                     ':businessId': {'S': row['PKID']},
-                    ':locs': {'S': 'LOC#'},
-                    ':stat' : {'N': '1'}
-                },
-                FilterExpression='#s = :stat',
-                ExpressionAttributeNames={'#s': 'STATUS'}
+                    ':metadata': {'S': 'METADATA'}
+                }
             )
-            number = 0
-            for item in json_dynamodb.loads(locsNumber['Items']):
-                number = number + 1
+            for item in json_dynamodb.loads(statBusiness['Items']):
+                if int(item['STATUS']) < 2:
+                    records = []
+                    locsNumber = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :locs)',
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': row['PKID']},
+                            ':locs': {'S': 'LOC#'},
+                            ':stat' : {'N': '1'}
+                        },
+                        FilterExpression='#s = :stat',
+                        ExpressionAttributeNames={'#s': 'STATUS'}
+                    )
+                    number = 0
+                    for item in json_dynamodb.loads(locsNumber['Items']):
+                        number = number + 1
 
-            existe = findBusiness(business, row['PKID'].replace('BUS#',''))
-            if existe == 0:
-                bus = dynamodb.query(
-                    TableName="TuCita247",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
-                    ExpressionAttributeValues={
-                        ':businessId': {'S': row['PKID']},
-                        ':metadata': {'S': 'METADATA'}
-                    }
-                )
-                for item in json_dynamodb.loads(bus['Items']):
-                    recordset = {
-                        'Business_Id': item['PKID'].replace('BUS#',''),
-                        'Name': item['NAME'],
-                        'LongDescription': item['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in item else '',
-                        'ShortDescription': item['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in item else '',
-                        'Imagen': item['IMGBUSINESS'] if 'IMGBUSINESS' in item else '',
-                        'Location_No': number,
-                        'Categories': records,
-                        'Status': item['STATUS']
-                    }
-                    business.append(recordset)
+                    existe = findBusiness(business, row['PKID'].replace('BUS#',''))
+                    if existe == 0:
+                        bus = dynamodb.query(
+                            TableName="TuCita247",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
+                            ExpressionAttributeValues={
+                                ':businessId': {'S': row['PKID']},
+                                ':metadata': {'S': 'METADATA'}
+                            }
+                        )
+                        for item in json_dynamodb.loads(bus['Items']):
+                            recordset = {
+                                'Business_Id': item['PKID'].replace('BUS#',''),
+                                'Name': item['NAME'],
+                                'LongDescription': item['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in item else '',
+                                'ShortDescription': item['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in item else '',
+                                'Imagen': item['IMGBUSINESS'] if 'IMGBUSINESS' in item else '',
+                                'Location_No': number,
+                                'Categories': records,
+                                'Status': item['STATUS']
+                            }
+                            business.append(recordset)
         
         if 'LastEvaluatedKey' in response:
             lastItem = json_dynamodb.loads(response['LastEvaluatedKey'])

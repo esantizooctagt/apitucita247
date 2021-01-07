@@ -190,7 +190,7 @@ Resources:
         RootGet:
           Type: HttpApi
           Properties:
-            Path: /business/plan/{businessId}/{plan}/{appos}/{order}
+            Path: /business/plan/{businessId}/{plan}/{appos}/{order}/{total}/{subId}
             Method: put
             ApiId: !Ref HttpApi
   

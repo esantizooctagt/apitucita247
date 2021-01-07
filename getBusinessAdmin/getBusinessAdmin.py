@@ -63,7 +63,8 @@ def lambda_handler(event, context):
                 'BusinessId': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME'],
                 'Email': email,
-                'UserId': user
+                'UserId': user,
+                'Status': row['STATUS']
             }
             record.append(recordset)
             

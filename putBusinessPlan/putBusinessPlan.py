@@ -31,12 +31,33 @@ def lambda_handler(event, context):
         plan = event['pathParameters']['plan']
         appos = event['pathParameters']['appos']
         order = event['pathParameters']['order']
+        total = int(event['pathParameters']['total'])
+        subId = event['pathParameters']['subId']
 
         dueDate = ''
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dueDate = (today + datetime.timedelta(days=31)).strftime("%Y-%m-%d")
         
+        dataPlan = dynamodb.query(
+            TableName = "TuCita247",
+            ReturnConsumedCapacity = 'TOTAL',
+            KeyConditionExpression = 'PKID = :businessId AND SKID = :key',
+            ExpressionAttributeValues = {
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':key': {'S': 'PLAN'}
+            },
+            Limit = 1
+        )
+        expire = 0
+        available = 0
+        for data in json_dynamodb.loads(dataPlan['Items']):
+            expire = int(data['EXPIRE']) if 'EXPIRE' in data else 1
+            if expire == 0:
+                available = int(data['AVAILABLE'])+int(appos)
+            else:
+                available = int(appos)
+
         items = []
         rows = {}
         rows = {
@@ -46,14 +67,17 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'PLAN' }
                 },
-                "UpdateExpression":"SET #n = :name, APPOINTMENTS = AVAILABLE + :appos, AVAILABLE = AVAILABLE + :appos, #o = :order, #s = :status, GSI1PK = :duedate, DUE_DATE = :duedate",
+                "UpdateExpression":"SET #n = :name, APPOINTMENTS = :appos, AVAILABLE = :available, #o = :order, #s = :status, GSI1PK = :duedate, DUE_DATE = :duedate, EXPIRE = :expire, SUBID = :subId",
                 "ExpressionAttributeNames":{'#n': 'NAME','#o': 'ORDER','#s': 'STATUS'},
                 "ExpressionAttributeValues": { 
                     ":name": {"S": plan},
                     ":appos": {"N": str(appos)},
                     ":order": {"S": order},
                     ":status": {"N": str(1)},
-                    ":duedate": {"S": dueDate}
+                    ":duedate": {"S": dueDate},
+                    ":available": {"N": str(available)},
+                    ":expire": {"N": str(1) if total == 0 else str(0)},
+                    ":subId": {"N": str(subId)}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },

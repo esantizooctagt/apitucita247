@@ -138,30 +138,13 @@ def lambda_handler(event, context):
         if resp.get("AuthenticationResult"):
             userNameCognitoEncode = jwt.decode(resp["AuthenticationResult"]["IdToken"], verify=False)
             userNameCognito = userNameCognitoEncode["cognito:username"]
-            # try:
-            #     response = client.global_sign_out(
-            #                     AccessToken=resp["AuthenticationResult"]["AccessToken"]
-            #                 )
-            # except Exception as e:
-            #     logger.info(error = e.__str__())
-
-            # return {'message': "success", 
-            #         "error": False, 
-            #         "success": True, 
-            #         "data": {
-            #         "id_token": resp["AuthenticationResult"]["IdToken"],
-            #         "refresh_token": resp["AuthenticationResult"]["RefreshToken"],
-            #         "access_token": resp["AuthenticationResult"]["AccessToken"],
-            #         "expires_in": resp["AuthenticationResult"]["ExpiresIn"]
-            #         "token_type": resp["AuthenticationResult"]["TokenType"]
-            #         }}
             user, error = getUser(email)
             if error != '':
                 statusCode = 404
                 body = json.dumps({'Message':'Auth failed','Code':400})
             if user != None:
                 business, error = getBusiness(user['PKID'].replace('BUS#',''))
-                if business != None:
+                if business != None and business['STATUS'] == 1:
                     superAdm = int(user['SUPER_ADMIN']) if 'SUPER_ADMIN' in user else 0
                     isAdmin = ''
                     isAdminVal = ''
