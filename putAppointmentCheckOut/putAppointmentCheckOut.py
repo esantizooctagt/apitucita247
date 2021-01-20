@@ -20,6 +20,7 @@ REGION = 'us-east-1'
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+ENVID = os.environ['envId']
 sms = boto3.client('sns')
 email = boto3.client('ses',region_name=REGION)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
@@ -330,7 +331,7 @@ def lambda_handler(event, context):
 
             if pollId != '':
                 #PENDIENTE ENVIAR EL LINK
-                link = 'https://console.tucita247.com/poll-response/' + pollId + '/' + customerId
+                link = 'https://'+ENVID+'.tucita247.com/poll-response/' + pollId + '/' + customerId
                 logger.info(link)
                 response = dynamodb.query(
                     TableName="TuCita247",

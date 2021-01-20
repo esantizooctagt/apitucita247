@@ -19,6 +19,8 @@ dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
+    language = event['pathParameters']['language']
+
     try:
         response = dynamodb.query(
             TableName="TuCita247",
@@ -33,7 +35,7 @@ def lambda_handler(event, context):
         for item in json_dynamodb.loads(response['Items']):
             recordset = {
                 'AdsId': item['SKID'].replace('ADS#',''),
-                'ImgPath': item['IMAGE_PATH']
+                'ImgPath': item['IMAGE_PATH_ESP'] if language == 'es' else item['IMAGE_PATH_ENG']
             }
             items.append(recordset)
 

@@ -122,8 +122,8 @@ def lambda_handler(event, context):
                 },
                 # CATEGORYID = :categoryId, 
                 # , GSI1PK = :key1, GSI1SK = :skey1
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, REASONS = :reasons, GSI4PK = :search, GSI4SK = :search" + (", GSI8PK = :key2, GSI8SK = :skey2" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
-                "ExpressionAttributeNames": { '#n': 'NAME' },
+                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, #l = :language, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, REASONS = :reasons, GSI4PK = :search, GSI4SK = :search" + (", GSI8PK = :key2, GSI8SK = :skey2" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
+                "ExpressionAttributeNames": { '#n': 'NAME', '#l': 'LANGUAGE' },
                 "ExpressionAttributeValues": { 
                     ":longDescrip": {"S": data['LongDescription']},
                     ":shortDescrip": {"S": data['ShortDescription']},
@@ -140,6 +140,7 @@ def lambda_handler(event, context):
                     ":website": {"S": data['Website']},
                     ":parentBus": {"N": str(data['ParentBusiness'])},
                     ":tags": {"S": data['Tags']},
+                    ":language": {"S": data['Language']},
                     ":reasons": {"S": data['Reasons']},
                     ":tucitalink": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
                     # ":categoryId": {"S": data['CategoryId']},

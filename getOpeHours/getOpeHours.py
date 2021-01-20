@@ -414,13 +414,16 @@ def lambda_handler(event, context):
                                     result = findHours(time24hr, hoursBooks)
                                     # logger.info(result)
                                     if result != '':
-                                        if result['ServiceId'] == item['ServiceId'] or result['ServiceId'] == '':
-                                            if result['ServiceId'] != '':
-                                                if count == -1 or count < result['People']:
-                                                    count = result['People']
-                                        if result['ServiceId'] != item['ServiceId'] and result['ServiceId'] != '':
+                                        if result['Cancel'] != 1:
+                                            if result['ServiceId'] == item['ServiceId'] or result['ServiceId'] == '':
+                                                if result['ServiceId'] != '':
+                                                    if count == -1 or count < result['People']:
+                                                        count = result['People']
+                                            if result['ServiceId'] != item['ServiceId'] and result['ServiceId'] != '':
+                                                count = custPerTime
+                                                break
+                                        else:
                                             count = custPerTime
-                                            break
                                     else:
                                         noExiste = 0
                                         for timeAv in dayHours:

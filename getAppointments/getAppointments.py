@@ -192,7 +192,8 @@ def lambda_handler(event, context):
                 'Purpose': row['PURPOSE'] if 'PURPOSE' in row else '',
                 'QrCode': row['QRCODE'] if 'QRCODE' in row else '',
                 'DateTrans': row['DATE_TRANS'] if 'DATE_TRANS' in row else today.strftime("%Y-%m-%d-%H-%M"),
-                'Status': row['STATUS']
+                'Status': row['STATUS'],
+                'Pause': row['ON_HOLD'] if 'ON_HOLD' in row else 0
             }
             record.append(recordset)
 
@@ -254,7 +255,8 @@ def lambda_handler(event, context):
                     'Purpose': row['PURPOSE'] if 'PURPOSE' in row else '',
                     'QrCode': row['QRCODE'] if 'QRCODE' in row else '',
                     'DateTrans': row['DATE_TRANS'] if 'DATE_TRANS' in row else today.strftime("%Y-%m-%d-%H-%M"),
-                    'Status': row['STATUS']
+                    'Status': row['STATUS'],
+                    'Pause': row['ON_HOLD'] if 'ON_HOLD' in row else 0
                 }
                 record.append(recordset)
         

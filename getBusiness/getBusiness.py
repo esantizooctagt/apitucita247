@@ -98,6 +98,7 @@ def lambda_handler(event, context):
                 'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else '',
                 'Categories': records,
                 'Tags': row['TAGS'] if 'TAGS' in row else '',
+                'Language': row['LANGUAGE'] if 'LANGUAGE' in row else 'es',
                 'Reasons': row['REASONS'] if 'REASONS' in row else '',
                 'ApposPurpose': row['APPOINTMENTS_PURPOSE'] if 'APPOINTMENTS_PURPOSE' in row else '',
                 'ParentBusiness': row['PARENTBUSINESS'] if 'PARENTBUSINESS' in row else '',

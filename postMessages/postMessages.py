@@ -22,7 +22,19 @@ logger.info("SUCCESS: Connection to DynamoDB succeeded")
 def lambda_handler(event, context):
     try:
         businessId = ''
-        businessId = event['BusinessId'] if 'BusinessId' in event else ''
+        data = ''
+        customerId = ''
+        process = 0
+        if 'BusinessId' in event or 'CustomerId' in event: 
+            process = 1
+        if process == 1:
+            businessId = event['BusinessId'] if 'BusinessId' in event else ''
+            customerId = event['CustomerId'] if 'CustomerId' in event else ''
+        else:
+            data=json.loads(event['body'])
+            businessId = data['BusinessId'] if 'BusinessId' in data else  ''
+            customerId = data['CustomerId'] if 'CustomerId' in data else  ''
+            
         if businessId != '':
             toConnections = dynamodb.query(
                 TableName="Messages",
@@ -34,8 +46,11 @@ def lambda_handler(event, context):
                     ':connection': {'S': '1'}
                 }
             )
-            data=json.dumps(event)
-            result = json.loads(data.replace('\'','"'))
+            if process == 1:
+                data=json.dumps(event)
+                result = json.loads(data.replace('\'','"'))
+            else:
+                result=data
     
             for item in json_dynamodb.loads(toConnections['Items']):
                 connectionId = item['PKID']
@@ -46,8 +61,6 @@ def lambda_handler(event, context):
                     statusCode = 500
                     body = json.dumps({'Message': str(e), 'Code': 404})
                 
-        customerId = ''
-        customerId = event['CustomerId'] if 'CustomerId' in event else ''
         if customerId != '':
             toCustomers = dynamodb.query(
                 TableName="Messages",
@@ -59,8 +72,11 @@ def lambda_handler(event, context):
                     ':connection': {'S': '1'}
                 }
             )
-            data=json.dumps(event)
-            result = json.loads(data.replace('\'','"'))
+            if process == 1:
+                data=json.dumps(event)
+                result = json.loads(data.replace('\'','"'))
+            else:
+                result=data
             
             for item in json_dynamodb.loads(toCustomers['Items']):
                 connectionId = item['PKID']

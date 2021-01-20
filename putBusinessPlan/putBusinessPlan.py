@@ -31,7 +31,7 @@ def lambda_handler(event, context):
         plan = event['pathParameters']['plan']
         appos = event['pathParameters']['appos']
         order = event['pathParameters']['order']
-        total = int(event['pathParameters']['total'])
+        total = float(event['pathParameters']['total'])
         subId = event['pathParameters']['subId']
 
         dueDate = ''

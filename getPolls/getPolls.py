@@ -17,6 +17,12 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def findLocation(locId, locs):
+    for loc in locs:
+        if loc['LocationId'] == locId:
+            return loc['Name']
+    return ''
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -71,12 +77,30 @@ def lambda_handler(event, context):
                     Limit=items
                 )
 
+            locs = dynamodb.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :businessId AND begins_with ( SKID, :locs )',
+                ExpressionAttributeValues={
+                    ':businessId': {'S': 'BUS#' + businessId}, 
+                    ':locs': {'S': 'LOC#'}
+                }
+            )
+            locations = []
+            for item in json_dynamodb.loads(locs['Items']):
+                data = {
+                    'LocationId': item['SKID'].replace('LOC#',''),
+                    'Name': item['NAME']
+                }
+                locations.append(data)
+
             recordset ={}
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'PollId': row['SKID'].replace('POLL#',''),
                     'Name': row['NAME'],
                     'LocationId': row['LOCATIONID'],
+                    'Location': findLocation(row['LOCATIONID'], locations),
                     'DatePoll': row['DATE_POLL'],
                     'DateFinPoll': row['DATE_FIN_POLL'],
                     'Status': row['STATUS']
