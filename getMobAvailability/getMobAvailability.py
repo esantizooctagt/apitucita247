@@ -47,6 +47,12 @@ def findHours(time, hours):
     item = ''
     return item, 0, 0, ''
 
+def findTime(time, hours):
+    for item in hours:
+        if item['Hour'] == time:
+            return item
+    item = ''
+    return item
 def findService(serviceId, servs):
     for item in servs:
         if item['ServiceId'] == serviceId:
@@ -93,13 +99,6 @@ def findAvailability(time, hours, serviceId, interval, services):
                 count = -1
                 break
     return count
-
-def searchHours(time, hours):
-    for item in hours:
-        if item['Hour'] == time:
-            return item
-    item = ''
-    return item
 
 def searchTime(time, hours, serviceId):
     for item in hours:
@@ -383,7 +382,6 @@ def lambda_handler(event, context):
                                 hoursBooks.remove(resAppo)
                                 citasProgress['People'] = int(hrCita['PEOPLE_QTY'])+int(resAppo['People']) 
                                 hoursBooks.append(citasProgress)
-
                     #OBTIENE LAS CITAS EN RESERVA DE UN DIA
                     getReservas = dynamodb.query(
                         TableName="TuCita247",
@@ -432,7 +430,7 @@ def lambda_handler(event, context):
                                 'TimeService': 0,
                                 'Cancel': 1
                             }
-                            timeExists = searchHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
+                            timeExists = findTime(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
                             if timeExists == '':
                                 hoursBooks.append(recordset)
                             else:
@@ -446,13 +444,53 @@ def lambda_handler(event, context):
                                 'TimeService': 0,
                                 'Cancel': 0
                             }
-                            timeExists = searchHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
+                            timeExists = findTime(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
                             if timeExists == '':
                                 hoursBooks.append(recordset)
-                                
+                    logger.info('display hoursbook')
+                    logger.info(hoursBooks)
+                    mergeBooks = []
+                    logger.info('Init For HoursBooks')
+                    for data in hoursBooks:
+                        if data['Cancel'] == 0 and (int(data['TimeService']) > 1):
+                            times = range(0, data['TimeService'])
+                            timeInterval = []
+                            count = 0
+                            for hr in times:
+
+                                newTime = str(int(data['Hour'])+hr)
+                                time24hr = int(newTime) 
+                                newTime = newTime.rjust(2,'0')+':00'
+                                result = findTime(time24hr, mergeBooks)
+                                if result != '':
+                                    recordset = {
+                                        'Hour': time24hr,
+                                        'ServiceId': data['ServiceId'],
+                                        'People': int(data['People'])+int(result['People']),
+                                        'TimeService': data['TimeService'],
+                                        'Cancel': 0
+                                    }
+                                    mergeBooks.remove(result)
+                                    mergeBooks.append(recordset)
+                                else:
+                                    recordset = {
+                                        'Hour': time24hr,
+                                        'ServiceId': data['ServiceId'],
+                                        'People': int(data['People']),
+                                        'TimeService': data['TimeService'],
+                                        'Cancel': 0
+                                    }
+                                    mergeBooks.append(recordset)
+                        else:
+                            mergeBooks.append(data)
+                    hoursBooks = []
+                    hoursBooks = mergeBooks  
+                    logger.info('display mergeBooks')
+                    logger.info(mergeBooks)        
                     for item in hoursBooks:
+                        logger.info(item)
                         if item['Cancel'] == 1:
-                            timeExists = searchHours(str(item['Hour']).rjust(2,'0')+':00', hoursData)
+                            timeExists = findTime(str(item['Hour']).rjust(2,'0')+':00', hoursData)
                             if timeExists != '':
                                 hoursData.remove(timeExists)
 
@@ -475,35 +513,47 @@ def lambda_handler(event, context):
                                 times = range(0, item['TimeService'])
                                 timeInterval = []
                                 #CONSOLIDA HORAS DE BOOKINGS
+                                count = -1
                                 for hr in times:
-                                    count = 0
                                     newTime = str(int(item['Hour'])+hr)
                                     time24hr = int(newTime) 
                                     newTime = newTime.rjust(2,'0')+':00'
-
-                                    count = findUsedHours(time24hr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)        
-                                    res = range(1, int(item['TimeService']))
-                                    for citas in res:
-                                        nextHr = time24hr+citas
-                                        newHr = str(nextHr).rjust(2,'0')+'-00'
-                                        getApp = searchHours(nextHr, hoursBooks)
-                                        if getApp != '':
-                                            if getApp['ServiceId'] != item['ServiceId']:
+                                    result = findTime(time24hr, hoursBooks)
+                                    if result != '':
+                                        if result['Cancel'] != 1:
+                                            if result['ServiceId'] == item['ServiceId'] or result['ServiceId'] == '':
+                                                if result['ServiceId'] != '':
+                                                    if count == -1 or count < result['People']:
+                                                        count = result['People']
+                                            if result['ServiceId'] != item['ServiceId'] and result['ServiceId'] != '':
                                                 count = custPerTime
                                                 break
-                                        tempCount = findUsedHours(nextHr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)
-                                        if tempCount > count:
-                                            count = tempCount
-
-                                    recordset = {
-                                        'Hour': newTime,
-                                        'Time24': time24hr,
-                                        'ServiceId': item['ServiceId'],
-                                        'TimeService': item['TimeService'],
-                                        'Available': custPerTime-count,
-                                        'Cancel': 0
-                                    }
-                                    hoursData.append(recordset)
+                                        else:
+                                            count = custPerTime
+                                    else:
+                                        noExiste = 0
+                                        for timeAv in dateAppo:
+                                            ini = int(timeAv['I'])
+                                            fin = int(timeAv['F'])-1
+                                            # logger.info('ini ' + str(ini) + ' -- ' + str(fin) + ' hr ' + str(newTime[0:2]))
+                                            if int(newTime[0:2]) >= ini and int(newTime[0:2]) <= fin:
+                                                # logger.info('ingreso -- ' + str(count))
+                                                noExiste = 1
+                                                break
+                                        if noExiste == 0:
+                                            count = -1
+                                            break
+                                if count == -1:
+                                    count = custPerTime          
+                                recordset = {
+                                    'Hour': newTime,
+                                    'Time24': time24hr,
+                                    'ServiceId': item['ServiceId'],
+                                    'TimeService': item['TimeService'],
+                                    'Available': custPerTime-count,
+                                    'Cancel': 0
+                                }
+                                hoursData.append(recordset)
                             else:
                                 recordset = {
                                     'Hour': str(item['Hour']).rjust(2,'0')+':00',
@@ -514,6 +564,7 @@ def lambda_handler(event, context):
                                     'Cancel': 0
                                 }
                                 hoursData.append(recordset)
+                    
                     logger.info(hoursData)
                     prevFin = 0
                     ini = 0
