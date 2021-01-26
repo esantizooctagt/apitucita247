@@ -250,6 +250,19 @@ def lambda_handler(event, context):
                 statusCode = 404
                 body = json.dumps({'Message': 'No appointments available', 'Data': result, 'Code': 400})
             else:
+                #OBTIENE EL LENGUAJE DEL NEGOCIO
+                lanData = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :pkid AND SKID = :skid',
+                    ExpressionAttributeValues={
+                        ':pkid': {'S': 'BUS#' + businessId},
+                        ':skid': {'S': 'METADATA'}
+                    }
+                )
+                for lang in json_dynamodb.loads(lanData['Items']):
+                    language = lang['LANGUAGE'] if 'LANGUAGE' in lang else 'es'
+
                 #ENTRA SI HAY CITAS DISPONIBLES YA SEA DE PLAN O PAQUETE VIGENTE
                 #OBTIENE LOS SERVICIOS DEL NEGOCIO
                 getServices = dynamodb.query(
@@ -690,7 +703,8 @@ def lambda_handler(event, context):
                             preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                             email = row['EMAIL'] if 'EMAIL' in row else ''
                             playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                            language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else language
+                            if playerId != '':
+                                language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else language
                         
                         locs = dynamodb.query(
                             TableName="TuCita247",

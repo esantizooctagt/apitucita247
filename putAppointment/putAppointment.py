@@ -211,12 +211,27 @@ def lambda_handler(event, context):
             preference = 0
             playerId = ''
             language = ''
+
+            #OBTIENE EL LENGUAJE DEL NEGOCIO
+            lanData = dynamodbQuery.query(
+                TableName="TuCita247",
+                ReturnConsumedCapacity='TOTAL',
+                KeyConditionExpression='PKID = :pkid AND SKID = :skid',
+                ExpressionAttributeValues={
+                    ':pkid': {'S': 'BUS#' + busId},
+                    ':skid': {'S': 'METADATA'}
+                }
+            )
+            for lang in json_dynamodb.loads(lanData['Items']):
+                language = lang['LANGUAGE'] if 'LANGUAGE' in lang else 'es'
+
             for row in json_dynamodb.loads(response['Items']):
                 preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                 mobile = row['PKID'].replace('MOB#','')
                 email = row['EMAIL'] if 'EMAIL' in row else ''
                 playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
+                if playerId != '':
+                    language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else language
 
             if status == 2:
                 if language == "en":

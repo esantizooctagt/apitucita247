@@ -43,6 +43,18 @@ def lambda_handler(event, context):
         businessId = event['pathParameters']['businessId']
         locationId = event['pathParameters']['locationId']
 
+        lanData = dynamodbQry.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :pkid AND SKID = :skid',
+            ExpressionAttributeValues={
+                ':pkid': {'S': 'BUS#' + businessId},
+                ':skid': {'S': 'METADATA'}
+            }
+        )
+        for lang in json_dynamodb.loads(lanData['Items']):
+            busLanguage = lang['LANGUAGE'] if 'LANGUAGE' in lang else 'es'
+
         busName = dynamodbQry.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -169,12 +181,13 @@ def lambda_handler(event, context):
             preference = 0
             playerId = ''
             msg = ''
+            language = busLanguage
             for row in json_dynamodb.loads(customer['Items']):
                 preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                 mobile = row['PKID'].replace('MOB#','')
                 email = row['EMAIL'] if 'EMAIL' in row else ''
                 playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
+                # language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
             
             hrAppo = datetime.datetime.strptime(appo['DATE_APPO'], '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
             dayAppo = datetime.datetime.strptime(appo['DATE_APPO'][0:10], '%Y-%m-%d').strftime('%b %d %Y')

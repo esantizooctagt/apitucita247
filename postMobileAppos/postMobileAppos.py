@@ -440,6 +440,20 @@ def lambda_handler(event, context):
                 msg = ''
                 lat = ''
                 lng = ''
+
+                #OBTIENE EL LENGUAJE DEL NEGOCIO
+                lanData = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :pkid AND SKID = :skid',
+                    ExpressionAttributeValues={
+                        ':pkid': {'S': 'BUS#' + businessId},
+                        ':skid': {'S': 'METADATA'}
+                    }
+                )
+                for lang in json_dynamodb.loads(lanData['Items']):
+                    language = lang['LANGUAGE'] if 'LANGUAGE' in lang else 'es'
+
                 response = dynamodb.query(
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
@@ -453,7 +467,8 @@ def lambda_handler(event, context):
                     preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                     email = row['EMAIL'] if 'EMAIL' in row else ''
                     playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                    language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else 'en'
+                    if playerId != '':
+                        language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else language
                 
                 buss = dynamodb.query(
                     TableName="TuCita247",
