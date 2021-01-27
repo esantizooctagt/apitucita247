@@ -187,7 +187,8 @@ def lambda_handler(event, context):
                 mobile = row['PKID'].replace('MOB#','')
                 email = row['EMAIL'] if 'EMAIL' in row else ''
                 playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                # language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
+                if playerId != '':
+                    language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else busLanguage
             
             hrAppo = datetime.datetime.strptime(appo['DATE_APPO'], '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
             dayAppo = datetime.datetime.strptime(appo['DATE_APPO'][0:10], '%Y-%m-%d').strftime('%b %d %Y')
