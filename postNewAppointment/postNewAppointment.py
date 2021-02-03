@@ -817,148 +817,147 @@ def lambda_handler(event, context):
                             Payload=json.dumps(data)
                         )
 
-                    if phone != '00000000000':
-                        preference = 0
-                        playerId = ''
-                        msgPush = ''
-                        msg = ''
-                        lat = ''
-                        lng = ''
+                    preference = 0
+                    playerId = ''
+                    msgPush = ''
+                    msg = ''
+                    lat = ''
+                    lng = ''
 
-                        locs = dynamodb.query(
-                            TableName="TuCita247",
-                            ReturnConsumedCapacity='TOTAL',
-                            KeyConditionExpression='PKID = :key AND SKID = :loc',
-                            ExpressionAttributeValues={
-                                ':key': {'S': 'BUS#' + businessId},
-                                ':loc': {'S': 'LOC#' + locationId}
-                            }
-                        )
-                        for locNum in json_dynamodb.loads(locs['Items']):
-                            coordenates = json.loads(locNum['GEOLOCATION'])
-                            lat = str(coordenates['LAT'])
-                            lng = str(coordenates['LNG'])
+                    locs = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :key AND SKID = :loc',
+                        ExpressionAttributeValues={
+                            ':key': {'S': 'BUS#' + businessId},
+                            ':loc': {'S': 'LOC#' + locationId}
+                        }
+                    )
+                    for locNum in json_dynamodb.loads(locs['Items']):
+                        coordenates = json.loads(locNum['GEOLOCATION'])
+                        lat = str(coordenates['LAT'])
+                        lng = str(coordenates['LNG'])
 
-                        # GET USER PREFERENCE NOTIFICATION
-                        response = dynamodb.query(
-                            TableName="TuCita247",
-                            IndexName="TuCita247_Index",
-                            ReturnConsumedCapacity='TOTAL',
-                            KeyConditionExpression='GSI1PK = :key AND GSI1SK = :key',
-                            ExpressionAttributeValues={
-                                ':key': {'S': 'CUS#' + customerId}
-                            }
-                        )
-                        preference = 0
-                        playerId = ''
-                        language = ''
-                        #OBTIENE EL LENGUAJE DEL NEGOCIO
-                        lanData = dynamodb.query(
-                            TableName="TuCita247",
-                            ReturnConsumedCapacity='TOTAL',
-                            KeyConditionExpression='PKID = :pkid AND SKID = :skid',
-                            ExpressionAttributeValues={
-                                ':pkid': {'S': 'BUS#' + businessId},
-                                ':skid': {'S': 'METADATA'}
-                            }
-                        )
-                        for lang in json_dynamodb.loads(lanData['Items']):
-                            language = lang['LANGUAGE'] if 'LANGUAGE' in lang else 'es'
+                    # GET USER PREFERENCE NOTIFICATION
+                    response = dynamodb.query(
+                        TableName="TuCita247",
+                        IndexName="TuCita247_Index",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='GSI1PK = :key AND GSI1SK = :key',
+                        ExpressionAttributeValues={
+                            ':key': {'S': 'CUS#' + customerId}
+                        }
+                    )
+                    preference = 0
+                    playerId = ''
+                    language = ''
+                    #OBTIENE EL LENGUAJE DEL NEGOCIO
+                    lanData = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :pkid AND SKID = :skid',
+                        ExpressionAttributeValues={
+                            ':pkid': {'S': 'BUS#' + businessId},
+                            ':skid': {'S': 'METADATA'}
+                        }
+                    )
+                    for lang in json_dynamodb.loads(lanData['Items']):
+                        language = lang['LANGUAGE'] if 'LANGUAGE' in lang else 'es'
 
-                        for row in json_dynamodb.loads(response['Items']):
-                            preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
-                            email = row['EMAIL'] if 'EMAIL' in row else ''
-                            playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
-                            if playerId != '':
-                                language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else language
-
-                        logger.info('Preference user ' + customerId + ' -- ' + str(preference))
-
-                        hrAppo = datetime.datetime.strptime(dateAppointment, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
-                        dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
-                        strQrCode = ''
-                        if language == 'en':
-                            if qrCode != 'VALID':
-                                strQrCode = 'Code: '+qrCode+'. Tu Cita 24/7.'
-                            if playerId != '':
-                                msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
-                            else:
-                                msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Download Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247.' + strQrCode
-                            msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. '+strQrCode
-                        else:
-                            if qrCode != 'VALID':
-                                strQrCode = 'Código: '+qrCode+'. Tu Cita 24/7.'
-                            if playerId != '':
-                                msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
-                            else:
-                                msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Descarga Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247.'+ strQrCode
-                            msgPush = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + '. '+strQrCode
-
-                        #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
+                    for row in json_dynamodb.loads(response['Items']):
+                        preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
+                        email = row['EMAIL'] if 'EMAIL' in row else ''
+                        playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                         if playerId != '':
-                            header = {"Content-Type": "application/json; charset=utf-8"}
-                            payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
-                                    "include_player_ids": [playerId],
-                                    "contents": {"en": msgPush}}
-                            req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+                            language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else language
 
-                        if int(preference) == 1:
-                            #SMS
-                            to_number = phone
-                            bodyStr = msg
-                            sms.publish(
-                                PhoneNumber="+"+to_number,
-                                Message=bodyStr,
-                                MessageAttributes={
-                                        'AWS.SNS.SMS.SMSType': {
-                                        'DataType': 'String',
-                                        'StringValue': 'Transactional'
-                                    }
+                    logger.info('Preference user ' + customerId + ' -- ' + str(preference))
+
+                    hrAppo = datetime.datetime.strptime(dateAppointment, '%Y-%m-%d-%H-%M').strftime('%I:%M %p')
+                    dayAppo = datetime.datetime.strptime(dateAppointment[0:10], '%Y-%m-%d').strftime('%b %d %Y')
+                    strQrCode = ''
+                    if language == 'en':
+                        if qrCode != 'VALID':
+                            strQrCode = 'Code: '+qrCode+'. Tu Cita 24/7.'
+                        if playerId != '':
+                            msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
+                        else:
+                            msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Download Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247.' + strQrCode
+                        msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. '+strQrCode
+                    else:
+                        if qrCode != 'VALID':
+                            strQrCode = 'Código: '+qrCode+'. Tu Cita 24/7.'
+                        if playerId != '':
+                            msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
+                        else:
+                            msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Descarga Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247.'+ strQrCode
+                        msgPush = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + '. '+strQrCode
+
+                    #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
+                    if playerId != '':
+                        header = {"Content-Type": "application/json; charset=utf-8"}
+                        payload = {"app_id": "476a02bb-38ed-43e2-bc7b-1ded4d42597f",
+                                "include_player_ids": [playerId],
+                                "contents": {"en": msgPush}}
+                        req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+
+                    if int(preference) == 1:
+                        #SMS
+                        to_number = phone
+                        bodyStr = msg
+                        sms.publish(
+                            PhoneNumber="+"+to_number,
+                            Message=bodyStr,
+                            MessageAttributes={
+                                    'AWS.SNS.SMS.SMSType': {
+                                    'DataType': 'String',
+                                    'StringValue': 'Transactional'
                                 }
-                            )
-                            
-                        if int(preference) == 2 and email != '':
-                            #EMAIL
-                            SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
-                            RECIPIENT = email
-                            SUBJECT = "Tu Cita 24/7 Check-In"
-                            BODY_TEXT = (msg)
-                                        
-                            # The HTML body of the email.
-                            BODY_HTML = """<html>
-                            <head></head>
-                            <body>
-                            <h1>Tu Cita 24/7</h1>
-                            <p>""" + msg + """</p>
-                            </body>
-                            </html>"""
+                            }
+                        )
+                        
+                    if int(preference) == 2 and email != '':
+                        #EMAIL
+                        SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+                        RECIPIENT = email
+                        SUBJECT = "Tu Cita 24/7 Check-In"
+                        BODY_TEXT = (msg)
+                                    
+                        # The HTML body of the email.
+                        BODY_HTML = """<html>
+                        <head></head>
+                        <body>
+                        <h1>Tu Cita 24/7</h1>
+                        <p>""" + msg + """</p>
+                        </body>
+                        </html>"""
 
-                            CHARSET = "UTF-8"
+                        CHARSET = "UTF-8"
 
-                            response = ses.send_email(
-                                Destination={
-                                    'ToAddresses': [
-                                        RECIPIENT,
-                                    ],
-                                },
-                                Message={
-                                    'Body': {
-                                        'Html': {
-                                            'Charset': CHARSET,
-                                            'Data': BODY_HTML,
-                                        },
-                                        'Text': {
-                                            'Charset': CHARSET,
-                                            'Data': BODY_TEXT,
-                                        },
-                                    },
-                                    'Subject': {
+                        response = ses.send_email(
+                            Destination={
+                                'ToAddresses': [
+                                    RECIPIENT,
+                                ],
+                            },
+                            Message={
+                                'Body': {
+                                    'Html': {
                                         'Charset': CHARSET,
-                                        'Data': SUBJECT,
+                                        'Data': BODY_HTML,
+                                    },
+                                    'Text': {
+                                        'Charset': CHARSET,
+                                        'Data': BODY_TEXT,
                                     },
                                 },
-                                Source=SENDER
-                            )
+                                'Subject': {
+                                    'Charset': CHARSET,
+                                    'Data': SUBJECT,
+                                },
+                            },
+                            Source=SENDER
+                        )
 
                     statusCode = 200
                     body = json.dumps({'Message': 'Appointment added successfully', 'Code': 200, 'Appointment': appoInfo})
