@@ -157,6 +157,7 @@ def lambda_handler(event, context):
         serviceId = data['ServiceId']
         busLanguage = data['Language']
         businessName = data['BusinessName']
+        updEmail = data['UpdEmail'] #1 !=, 0 ==
         door = data['Door'] if 'Door' in data else ''
         phone = data['Phone']
         name = data['Name']
@@ -581,6 +582,7 @@ def lambda_handler(event, context):
                                     "STATUS": {"N": "1"}, 
                                     "NAME": {"S": name}, 
                                     "EMAIL": {"S":  email if email != '' else None },
+                                    "EMAIL_COMM": {"S":  email if email != '' else None },
                                     "DOB": {"S": dob if dob != '' else None },
                                     "DISABILITY": {"N": disability if disability != '' else None},
                                     "GENDER": {"S": gender if gender != '' else None},
@@ -609,7 +611,26 @@ def lambda_handler(event, context):
                                 }
                             }
                             items.append(cleanNullTerms(recordset))
-                    
+
+                    if existePhone == 1 and updEmail == 1:
+                        recordset = {
+                            "Update":{
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'MOB#' + phone}, 
+                                    "SKID": {"S": 'CUS#' + customerId}, 
+                                },
+                                "UpdateExpression": "SET EMAIL_COMM = :email, PREFERENCES = :preference",
+                                "ExpressionAttributeValues": { 
+                                    ":email": {"S": email},
+                                    ":preference": {"N": preference}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                                }
+                            }
+                        items.append(cleanNullTerms(recordset))
+
                     appoId = str(uuid.uuid4()).replace("-","")
                     recordset = {}
                     recordset = {
@@ -866,7 +887,7 @@ def lambda_handler(event, context):
 
                     for row in json_dynamodb.loads(response['Items']):
                         preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
-                        email = row['EMAIL'] if 'EMAIL' in row else ''
+                        email = row['EMAIL_COMM'] if 'EMAIL_COMM' in row else row['EMAIL'] if 'EMAIL' in row else ''
                         playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                         if playerId != '':
                             language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else language

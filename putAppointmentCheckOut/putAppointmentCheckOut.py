@@ -22,7 +22,7 @@ logger.setLevel(logging.INFO)
 
 ENVID = os.environ['envId']
 sms = boto3.client('sns')
-email = boto3.client('ses',region_name=REGION)
+ses = boto3.client('ses',region_name=REGION)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
@@ -364,7 +364,8 @@ def lambda_handler(event, context):
                 for row in json_dynamodb.loads(response['Items']):
                     preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
                     mobile = row['PKID'].replace('MOB#','')
-                    email = row['EMAIL'] if 'EMAIL' in row else ''
+                    # email = row['EMAIL'] if 'EMAIL' in row else ''
+                    email = row['EMAIL_COMM'] if 'EMAIL_COMM' in row else row['EMAIL'] if 'EMAIL' in row else ''
                     playerId = row['PLAYERID'] if 'PLAYERID' in row else ''
                     if playerId != '':
                         language = str(row['LANGUAGE']).lower() if 'LANGUAGE' in row else language
@@ -416,7 +417,7 @@ def lambda_handler(event, context):
 
                     CHARSET = "UTF-8"
 
-                    response = email.send_email(
+                    response = ses.send_email(
                         Destination={
                             'ToAddresses': [
                                 RECIPIENT,
