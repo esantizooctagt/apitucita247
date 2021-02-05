@@ -569,6 +569,7 @@ def lambda_handler(event, context):
                             gender = (phoneNumber['GENDER'] if 'GENDER' in phoneNumber and gender == '' else gender)
                             preference = (phoneNumber['PREFERENCES'] if 'PREFERENCES' in phoneNumber and preference == '' else preference)
                             disability = (phoneNumber['DISABILITY'] if 'DISABILITY' in phoneNumber and disability == '' else disability)
+                            playerPhone = phoneNumber['PLAYERID'] if 'PLAYERID' in phoneNumber else ''
 
                     recordset = {}
                     items = []
@@ -612,7 +613,7 @@ def lambda_handler(event, context):
                             }
                             items.append(cleanNullTerms(recordset))
 
-                    if existePhone == 1 and updEmail == 1:
+                    if existePhone == 1 and updEmail == 1 and playerPhone == '':
                         recordset = {
                             "Update":{
                                 "TableName": "TuCita247",
@@ -624,6 +625,24 @@ def lambda_handler(event, context):
                                 "ExpressionAttributeValues": { 
                                     ":email": {"S": email},
                                     ":preference": {"N": preference}
+                                },
+                                "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
+                                "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                                }
+                            }
+                        items.append(cleanNullTerms(recordset))
+                    
+                    if existePhone == 1 and updEmail == 1 and playerPhone != '':
+                        recordset = {
+                            "Update":{
+                                "TableName": "TuCita247",
+                                "Key": {
+                                    "PKID": {"S": 'MOB#' + phone}, 
+                                    "SKID": {"S": 'CUS#' + customerId}, 
+                                },
+                                "UpdateExpression": "SET EMAIL_COMM = :email",
+                                "ExpressionAttributeValues": { 
+                                    ":email": {"S": email}
                                 },
                                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
