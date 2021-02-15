@@ -378,7 +378,7 @@ def lambda_handler(event, context):
                             #EMAIL
                             SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
                             RECIPIENT = email
-                            SUBJECT = "Tu Cita 24/7 Check-In"
+                            SUBJECT = "Tu Cita 24/7"
                             BODY_TEXT = (msg)
                                         
                             # The HTML body of the email.
