@@ -55,13 +55,79 @@ def lambda_handler(event, context):
                     }
                 )
                 for det in json_dynamodb.loads(locations['Items']):
+                    e = {'#s': 'STATUS'}
+                    f = '#s = :stat'
+                    resprovs = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :businessId and begins_with (SKID, :locs) ',
+                        ExpressionAttributeNames=e,
+                        FilterExpression=f,
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + det['SKID'].replace('LOC#','')},
+                            ':locs': {'S': 'PRO#'},
+                            ':stat' : {'N': '1'}
+                        }
+                    )
+                    provs = []
+                    for resP in json_dynamodb.loads(resprovs['Items']):
+                        servicesAv = []
+                        resServ = dynamodb.query(
+                            TableName="TuCita247",
+                            IndexName="TuCita247_Index",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='GSI1PK = :businessId and begins_with (GSI1SK, :locs) ',
+                            ExpressionAttributeNames=e,
+                            FilterExpression=f,
+                            ExpressionAttributeValues={
+                                ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + det['SKID'].replace('LOC#','')},
+                                ':locs': {'S': 'SER#'},
+                                ':stat' : {'N': '1'}
+                            }
+                        )
+                        for item in json_dynamodb.loads(resServ['Items']):
+                            serRec = {
+                                'ServiceId': item['GSI1SK'].replace('SER#','')
+                            }
+                            servicesAv.append(serRec)
+                        rec = {
+                            'ProviderId': resP['SKID'].replace('PRO#',''),
+                            'Name': resP['NAME'],
+                            'Services': servicesAv
+                        }
+                        provs.append(rec)
+
                     record = {
                         'LocationId': det['SKID'].replace('LOC#',''),
                         'Name': det['NAME'],
-                        'Address': det['ADDRESS']
+                        'Address': det['ADDRESS'],
+                        'TimeZone': det['TIME_ZONE'] if 'TIME_ZONE' in det else 'America/Puerto_Rico',
+                        'Provs': provs
                     }
                     locs.append(record)
-            
+
+            servs = []
+            e = {'#s': 'STATUS'}
+            f = '#s = :stat'
+            services = dynamodb.query(
+                    TableName="TuCita247",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='PKID = :businessId and begins_with (SKID, :servs) ',
+                    ExpressionAttributeNames=e,
+                    FilterExpression=f,
+                    ExpressionAttributeValues={
+                        ':businessId': {'S': 'BUS#' + businessId},
+                        ':servs': {'S': 'SER#'},
+                        ':stat' : {'N': '1'}
+                    }
+                )
+            for results in json_dynamodb.loads(services['Items']):
+                record = {
+                    'ServiceId': results['SKID'].replace('SER#',''),
+                    'Name': results['NAME']
+                }
+                servs.append(results)
+
             recordset = {
                 'BusinessId': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME'],
@@ -73,7 +139,8 @@ def lambda_handler(event, context):
                 'Instagram': row['INSTAGRAM'] if 'INSTAGRAM' in row else '',
                 'Twitter': row['TWITTER'] if 'TWITTER' in row else '',
                 'Facebook': row['FACEBOOK'] if 'FACEBOOK' in row else '',
-                'Locs': locs
+                'Locs': locs,
+                'Services': servs
             }
             
             statusCode = 200

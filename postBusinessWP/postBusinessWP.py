@@ -252,6 +252,7 @@ def lambda_handler(event, context):
                         "PARENTHOURS": {"N": str(1)},
                         "MAX_CUSTOMER": {"N": str(item['MaxCustomer'])},
                         "PEOPLE_CHECK_IN": {"N": str(0)},
+                        "TIME_ZONE": {"S": 'America/Puerto_Rico'},
                         "STATUS": {"N": str(1)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
