@@ -138,7 +138,7 @@ def findTimeZone(businessId, locationId):
 def lambda_handler(event, context):
     try:
         statusCode = ''
-        letters = string.ascii_uppercase + string.digits
+        letters = string.digits #string.ascii_uppercase + string.digits
 
         data = json.loads(event['body'])
         customerId = data['CustomerId']

@@ -146,7 +146,7 @@ def lambda_handler(event, context):
     try:
         statusCode = ''
         language = ''
-        letters = string.ascii_uppercase + string.digits
+        letters = string.digits #string.ascii_uppercase + string.digits
 
         data = json.loads(event['body'])
         businessId = data['BusinessId']

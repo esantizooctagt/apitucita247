@@ -149,7 +149,7 @@ def lambda_handler(event, context):
         cors = os.environ['devCors']
         
     try:
-        letters = string.ascii_uppercase + string.digits
+        letters = string.digits  #string.ascii_uppercase + string.digits
         data = json.loads(event['body'])
         businessId = data['BusinessId']
         locationId = data['LocationId']
