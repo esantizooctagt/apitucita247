@@ -77,12 +77,9 @@ def lambda_handler(event, context):
                             IndexName="TuCita247_Index",
                             ReturnConsumedCapacity='TOTAL',
                             KeyConditionExpression='GSI1PK = :businessId and begins_with (GSI1SK, :locs) ',
-                            ExpressionAttributeNames=e,
-                            FilterExpression=f,
                             ExpressionAttributeValues={
-                                ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + det['SKID'].replace('LOC#','')},
-                                ':locs': {'S': 'SER#'},
-                                ':stat' : {'N': '1'}
+                                ':businessId': {'S': 'BUS#' + businessId + '#PRO#' + resP['SKID'].replace('PRO#','')},
+                                ':locs': {'S': 'SER#'}
                             }
                         )
                         for item in json_dynamodb.loads(resServ['Items']):
@@ -126,7 +123,7 @@ def lambda_handler(event, context):
                     'ServiceId': results['SKID'].replace('SER#',''),
                     'Name': results['NAME']
                 }
-                servs.append(results)
+                servs.append(record)
 
             recordset = {
                 'BusinessId': row['PKID'].replace('BUS#',''),
