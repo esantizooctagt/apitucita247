@@ -95,6 +95,7 @@ def lambda_handler(event, context):
                 locations.append(data)
 
             recordset ={}
+            lastItem = ''
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'PollId': row['SKID'].replace('POLL#',''),

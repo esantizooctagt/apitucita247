@@ -52,7 +52,21 @@ def lambda_handler(event, context):
             if lastItem == '':
                 salir = 1
             else:
-                lastItem = {'GSI1PK': {'S': 'BUS#' + businessId },'GSI1SK': {'S': 'PRO#' + lastItem }}
+                dataLoc = dynamodb.query(
+                    TableName="TuCita247",
+                    IndexName="TuCita247_Index",
+                    ReturnConsumedCapacity='TOTAL',
+                    KeyConditionExpression='GSI1PK = :businessId AND GSI1SK = :prov',
+                    ExpressionAttributeValues= {
+                        ':businessId': {'S': 'BUS#' + businessId },
+                        ':prov': {'S': 'PRO#' + lastItem }
+                    }
+                )
+                locationId = ''
+                for val in json_dynamodb.loads(dataLoc['Items']):
+                    locationId = val['PKID']
+            
+                lastItem = {'PKID': {'S': locationId }, 'SKID': {'S': 'PRO#' + lastItem }, 'GSI1PK': {'S': 'BUS#' + businessId },'GSI1SK': {'S': 'PRO#' + lastItem }}
 
         locs=[]
         locsName = dynamodb.query(
@@ -70,7 +84,7 @@ def lambda_handler(event, context):
                 'Name': item['NAME']
             }
             locs.append(data)
-
+        
         if salir == 0:
             if lastItem == '':
                 response = dynamodb.query(
@@ -84,6 +98,7 @@ def lambda_handler(event, context):
                     Limit=items
                 )
             else:
+                logger.info("ingreso bien")
                 response = dynamodb.query(
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
@@ -95,8 +110,9 @@ def lambda_handler(event, context):
                     FilterExpression=f,
                     Limit=items
                 )
-
+            
             recordset ={}
+            lastItem = ''
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'ProviderId': row['SKID'].replace('PRO#',''),

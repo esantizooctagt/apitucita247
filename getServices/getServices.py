@@ -72,6 +72,7 @@ def lambda_handler(event, context):
                 )
 
             recordset ={}
+            lastItem = ''
             for row in json_dynamodb.loads(response['Items']):
                 recordset = {
                     'ServiceId': row['SKID'].replace('SER#',''),

@@ -31,6 +31,7 @@ def lambda_handler(event, context):
         
         code = 0
         code = str(random.randint(100000, 999999))
+        # code = str(123456)
         verCode = hashlib.md5(code.encode("utf")).hexdigest()
         #EMAIL
         SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"

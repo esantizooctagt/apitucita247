@@ -23,6 +23,7 @@ def lambda_handler(event, context):
     response = ''
     verifCode = 0
     verifCode = random.randint(100000, 999999)
+    # verifCode = 123456
     
     data = json.loads(event['body'])
     to_number = event['pathParameters']['number']
