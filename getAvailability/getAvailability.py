@@ -702,19 +702,20 @@ def lambda_handler(event, context):
                                             }
                                             hours.append(recordset)
                                 else:
-                                    if int(found['Cancel']) == 0 and int(found['Available']) > 0:
+                                    if int(found['Cancel']) == 0 and (int(found['Available']) > 0 or int(found['Available']) == -99):
                                         if isCurrDay == 1 and time24hr >= currHour:
                                             recordset = {
                                                 'Hour': h,
                                                 'Time24': time24hr,
-                                                'Available': found['Available']
+                                                'Available': 1 if found['Available'] == -99 else found['Available']
                                             }
                                             hours.append(recordset)
+                                            
                                         if isCurrDay == 0:
                                             recordset = {
                                                 'Hour': h,
                                                 'Time24': time24hr,
-                                                'Available': found['Available']
+                                                'Available': 1 if found['Available'] == -99 else found['Available']
                                             }
                                             hours.append(recordset)
                         hours.sort(key=getKey)
