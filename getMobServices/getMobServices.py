@@ -17,6 +17,9 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def getKey(obj):
+    return obj['Name']
+
 def lambda_handler(event, context):
     try:
         statusCode = ''
@@ -57,7 +60,7 @@ def lambda_handler(event, context):
                     'CustomerPerBooking': item['CUSTOMER_PER_BOOKING']
                 }
                 services.append(recordset)
-        
+        services.sort(key=getKey)
         statusCode = 200
         body = json.dumps({'Code': 200, 'Services': services})
     

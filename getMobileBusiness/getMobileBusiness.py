@@ -17,6 +17,9 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def getKey(obj):
+    return obj['Name']
+    
 def lambda_handler(event, context):
     try:
         businessId = event['pathParameters']['businessId']
@@ -63,7 +66,7 @@ def lambda_handler(event, context):
                 'City_ESP': cityESP
             }
             records.append(recordset)
-        
+        records.sort(key=getKey)
         business = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
