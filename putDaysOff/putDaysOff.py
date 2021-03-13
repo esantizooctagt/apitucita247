@@ -36,6 +36,7 @@ def lambda_handler(event, context):
         dateSpec = event['pathParameters']['dateOpe']
         tipo = event['pathParameters']['tipo']
 
+        e = {'#s': 'STATUS'}
         table = dynamodbData.Table('TuCita247')
         if businessId != '_' and locationId == '_' and tipo == 'add':
             response = table.update_item(
@@ -53,11 +54,13 @@ def lambda_handler(event, context):
                 TableName='TuCita247',
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :locs)',
-                FilterExpression='PARENTDAYSOFF = :parentDays',
+                FilterExpression='PARENTDAYSOFF = :parentDays AND #s = :stat',
+                ExpressionAttributeNames=e,
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
                     ':locs': {'S': 'LOC#'},
-                    ':parentDays': {'N': str(1)}
+                    ':parentDays': {'N': str(1)},
+                    ':stat' : {'N': '1'}
                 },
             )
             for loc in json_dynamodb.loads(locs['Items']):
@@ -66,11 +69,13 @@ def lambda_handler(event, context):
                     TableName='TuCita247',
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
-                    FilterExpression='PARENTDAYSOFF = :parentDays',
+                    FilterExpression='PARENTDAYSOFF = :parentDays AND #s = :stat',
+                    ExpressionAttributeNames=e,
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locId},
                         ':providerId': {'S': 'PRO#'},
-                        ':parentDays': {'N': str(1)}
+                        ':parentDays': {'N': str(1)},
+                        ':stat' : {'N': '1'}
                     },
                 )
                 for serv in json_dynamodb.loads(servs['Items']):
@@ -107,11 +112,13 @@ def lambda_handler(event, context):
                 TableName='TuCita247',
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
-                FilterExpression='PARENTDAYSOFF = :parentDays',
+                FilterExpression='PARENTDAYSOFF = :parentDays AND #s = :stat',
+                ExpressionAttributeNames=e,
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':providerId': {'S': 'PRO#'},
-                    ':parentDays': {'N': str(1)}
+                    ':parentDays': {'N': str(1)},
+                    ':stat' : {'N': '1'}
                 },
             )
             for serv in json_dynamodb.loads(servs['Items']):
@@ -165,11 +172,13 @@ def lambda_handler(event, context):
                 TableName='TuCita247',
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :locs)',
-                FilterExpression='PARENTDAYSOFF = :parentDays',
+                FilterExpression='PARENTDAYSOFF = :parentDays AND #s = :stat',
+                ExpressionAttributeNames=e,
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId},
                     ':locs': {'S': 'LOC#'},
-                    ':parentDays': {'N': str(1)}
+                    ':parentDays': {'N': str(1)},
+                    ':stat' : {'N': '1'}
                 },
             )
             getIndexLoc = ''
@@ -191,11 +200,13 @@ def lambda_handler(event, context):
                     TableName='TuCita247',
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
-                    FilterExpression='PARENTDAYSOFF = :parentDays',
+                    FilterExpression='PARENTDAYSOFF = :parentDays AND #s = :stat',
+                    ExpressionAttributeNames=e,
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId + '#' + loc['SKID']},
                         ':providerId': {'S': 'PRO#'},
-                        ':parentDays': {'N': str(1)}
+                        ':parentDays': {'N': str(1)},
+                        ':stat' : {'N': '1'}
                     },
                 )
                 getIndexServ =''
@@ -242,11 +253,13 @@ def lambda_handler(event, context):
                 TableName='TuCita247',
                 ReturnConsumedCapacity='TOTAL',
                 KeyConditionExpression='PKID = :businessId AND begins_with(SKID , :providerId)',
-                FilterExpression='PARENTDAYSOFF = :parentDays',
+                FilterExpression='PARENTDAYSOFF = :parentDays AND #s = :stat',
+                ExpressionAttributeNames=e,
                 ExpressionAttributeValues={
                     ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
                     ':providerId': {'S': 'PRO#'},
-                    ':parentDays': {'N': str(1)}
+                    ':parentDays': {'N': str(1)},
+                    ':stat' : {'N': '1'}
                 },
             )
             getIndexServ =''

@@ -38,25 +38,73 @@ def lambda_handler(event, context):
         table = dynamodb.Table('TuCita247')
         if tipo == 1:
             if providerId == '_':
-                response = table.update_item(
-                    Key={
-                        'PKID': 'BUS#' + businessId,
-                        'SKID': 'LOC#' + locationId
-                    },
-                    UpdateExpression="SET PARENTDAYSOFF = :value",
-                    ExpressionAttributeValues={':value': value},
-                    ReturnValues="UPDATED_NEW"
-                )
+                if value == 0:
+                    response = table.update_item(
+                        Key={
+                            'PKID': 'BUS#' + businessId,
+                            'SKID': 'LOC#' + locationId
+                        },
+                        UpdateExpression="SET PARENTDAYSOFF = :value",
+                        ExpressionAttributeValues={':value': value},
+                        ReturnValues="UPDATED_NEW"
+                    )
+                else:
+                    business = dynamodbQuery.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': 'BUS#' + businessId},
+                            ':metadata': {"S": 'METADATA'}
+                        }
+                    )
+                    daysOff = []
+                    for bus in json_dynamodb.loads(business['Items']):
+                        daysOff = bus['DAYS_OFF'] if 'DAYS_OFF' in bus else []
+                    
+                    response = table.update_item(
+                        Key={
+                            'PKID': 'BUS#' + businessId,
+                            'SKID': 'LOC#' + locationId
+                        },
+                        UpdateExpression="SET PARENTDAYSOFF = :value, DAYS_OFF = :daysOff",
+                        ExpressionAttributeValues={':value': value, ':daysOff': daysOff},
+                        ReturnValues="UPDATED_NEW"
+                    )
             else:
-                response = table.update_item(
-                    Key={
-                        'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
-                        'SKID': 'PRO#' + providerId
-                    },
-                    UpdateExpression="SET PARENTDAYSOFF = :value",
-                    ExpressionAttributeValues={':value': value},
-                    ReturnValues="UPDATED_NEW"
-                )
+                if value == 0:
+                    response = table.update_item(
+                        Key={
+                            'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
+                            'SKID': 'PRO#' + providerId
+                        },
+                        UpdateExpression="SET PARENTDAYSOFF = :value",
+                        ExpressionAttributeValues={':value': value},
+                        ReturnValues="UPDATED_NEW"
+                    )
+                else:
+                    locs = dynamodbQuery.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': 'BUS#' + businessId},
+                            ':metadata': {"S": 'LOC#' + locationId}
+                        }
+                    )
+                    daysOff = []
+                    for loc in json_dynamodb.loads(locs['Items']):
+                        daysOff = loc['DAYS_OFF'] if 'DAYS_OFF' in loc else []
+
+                    response = table.update_item(
+                        Key={
+                            'PKID': 'BUS#' + businessId + '#LOC#' + locationId,
+                            'SKID': 'PRO#' + providerId
+                        },
+                        UpdateExpression="SET PARENTDAYSOFF = :value, DAYS_OFF = :daysOff",
+                        ExpressionAttributeValues={':value': value, ':daysOff': daysOff},
+                        ReturnValues="UPDATED_NEW"
+                    )
         else:
             if providerId == '_':
                 if value == 0:
