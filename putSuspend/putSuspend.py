@@ -45,7 +45,7 @@ def lambda_handler(event, context):
         )
         subId = ''
         for item in json_dynamodb.loads(response['Items']):
-            subId = str(item['SUBID'])
+            subId = str(item['SUBID']) if 'SUBID' in item else ''
 
         items = []
         rows = {}
@@ -59,7 +59,7 @@ def lambda_handler(event, context):
                 "UpdateExpression":"SET #s = :status",
                 "ExpressionAttributeNames":{'#s': 'STATUS'},
                 "ExpressionAttributeValues": {
-                    ":status": {"N": '0' if value == 1 else '2'}
+                    ":status": {"N": '0' if value == 1 else '2' if value == 2 else '1'}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },
@@ -76,7 +76,7 @@ def lambda_handler(event, context):
                 "UpdateExpression":"set #s = :status",
                 "ExpressionAttributeNames":{'#s': 'STATUS'},
                 "ExpressionAttributeValues": { 
-                    ":status": {"N": '0' if value == 1 else '2'}
+                    ":status": {"N": '0' if value == 1 else '2' if value == 2 else '1'}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },
@@ -88,7 +88,7 @@ def lambda_handler(event, context):
             TransactItems = items
         )
 
-        if value != 1:
+        if value == 2:
             record = [{
                 "type" : "delete",
                 "id" : 'BUS#' + businessId

@@ -167,6 +167,7 @@ def lambda_handler(event, context):
                     # "CATEGORYID": {"S": data['CategoryId']},
                     "EMAIL": {"S": data['Email']},
                     "SHORTDESCRIPTION": {"S": str(data['Description'])},
+                    "LONGDESCRIPTION": {"S": str(data['Description'])},
                     # "FACEBOOK": {"S": data['Facebook']},
                     "GEOLOCATION": {"S": data['Geolocation']},
                     # "INSTAGRAM": {"S": data['Instagram']},

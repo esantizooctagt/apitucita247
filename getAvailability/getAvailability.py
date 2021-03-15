@@ -710,7 +710,6 @@ def lambda_handler(event, context):
                                                 'Available': 1 if found['Available'] == -99 else found['Available']
                                             }
                                             hours.append(recordset)
-                                            
                                         if isCurrDay == 0:
                                             recordset = {
                                                 'Hour': h,
