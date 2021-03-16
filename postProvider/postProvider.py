@@ -90,7 +90,7 @@ def lambda_handler(event, context):
                         "GSI1SK": {"S": 'PRO#' + providerId},
                         "NAME": {"S": data['Name']},
                         "OPERATIONHOURS": {"S": opeHours},
-                        "DAYS_OFF": {"L": resDays if resDays != [] else None},
+                        "DAYS_OFF": {"L": resDays},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
                         "STATUS": {"N": str(data['Status'])}
@@ -166,9 +166,10 @@ def lambda_handler(event, context):
                 loc = str(prov['PKID']).split('#')[3]
                 name = prov['NAME']
                 opeH = prov['OPERATIONHOURS']
-                for x in prov['DAYS_OFF']:
-                    daysO = {'S': x}
-                    daysOff.append(daysO)
+                if 'DAYS_OFF' in prov:
+                    for x in prov['DAYS_OFF']:
+                        daysO = {'S': x}
+                        daysOff.append(daysO)
                 parD = prov['PARENTDAYSOFF']
                 parH = prov['PARENTHOURS']
                 stat = prov['STATUS']
@@ -181,10 +182,11 @@ def lambda_handler(event, context):
                             "PKID": {"S": 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
                             "SKID": {"S": 'PRO#' + providerId}
                         },
-                        "UpdateExpression": "SET #n = :name,  #s = :status",
+                        "UpdateExpression": "SET #n = :name,  #s = :status, DAYS_OFF = :daysOff",
                         "ExpressionAttributeValues": {
                             ':name': {'S': data['Name']},
-                            ':status': {'N': str(data['Status'])}
+                            ':status': {'N': str(data['Status'])},
+                            ':daysOff': {'L': daysOff}
                         },
                         "ExpressionAttributeNames": {'#s': 'STATUS','#n': 'NAME'},
                         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",

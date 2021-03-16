@@ -83,7 +83,7 @@ def lambda_handler(event, context):
                         "MANUAL_CHECK_OUT": {"N": str(data['ManualCheckOut'])},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
-                        "DAYS_OFF": {"L": resDays if resDays != [] else None},
+                        "DAYS_OFF": {"L": resDays},
                         "OPERATIONHOURS": {"S": operationHours},
                         "OPEN": {"N": str(0)},
                         "DOORS": {"S": str(data['Doors'])},
