@@ -50,6 +50,21 @@ def findTimeZone(businessId, locationId):
         timeZone = timeLoc['TIME_ZONE'] if 'TIME_ZONE' in timeLoc else 'America/Puerto_Rico'
     return timeZone
 
+def workHours():
+    return ['0000','0015','0030','0045','0100','0115','0130','0145','0200','0215','0230','0245','0300','0315','0330','0345','0400','0415','0430','0445','0500','0515','0530','0545','0600','0615','0630','0645','0700','0715','0730','0745','0800','0815','0830','0845','0900','0915','0930','0945','1000','1015','1030','1045','1100','1115','1130','1145','1200','1215','1230','1245','1300','1315','1330','1345','1400','1415','1430','1445','1500','1515','1530','1545','1600','1615','1630','1645','1700','1715','1730','1745','1800','1815','1830','1845','1900','1915','1930','1945','2000','2015','2030','2045','2100','2115','2130','2145','2200','2215','2230','2245','2300','2315','2330','2345']
+
+def timeSerHours():
+    return [0,15,30,45,100,115,130,145,200,215,230,245,300,315,330,345,400,415,430,445,500,515,530,545,600]
+
+def timeSerHours15():
+    return [0,15,30,85,100,115,130,185,200,215,230,285,300,315,330,385,400,415,430,485,500,515,530,585,600]
+
+def timeSerHours30():
+    return [0,15,70,85,100,115,170,185,200,215,270,285,300,315,370,385,400,415,470,485,500,515,570,585,600]
+
+def timeSerHours45():
+    return [0,55,70,85,100,155,170,185,200,255,270,285,300,355,370,385,400,455,470,485,500,555,570,585,600]
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -119,17 +134,28 @@ def lambda_handler(event, context):
         businessIdData = 'BUS#'+businessId+'#5'
         locationIdData = 'BUS#'+businessId+'#LOC#'+locationId+'#5'
         providerIdData = 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId+'#5'
-        cancel = dateAppo[-5:]
-        cancel = int(cancel[0:2])
+        cancel = int(dateAppo[-5:].replace('-',''))  #15-30, original dateAppo[-5:]
+        # cancel = int(cancel[0:2])  #15
         items = []
         customerId=''
         for row in json_dynamodb.loads(response['Items']):
             timeService = findService(row['SERVICEID'], serv)
             customerId = row['GSI2PK'].replace('CUS#','')
             if timeService != 0:
-                citainiTemp = str(row['GSI1SK'])[-5:]
-                citaini = int(citainiTemp[0:2])
-                citafin = int(citaini)+int(timeService)-1
+                newTime = 0
+                min = int(str(row['GSI1SK'])[-2:])
+                if min == 0:
+                    times = timeSerHours()
+                if min == 15:
+                    times = timeSerHours15()
+                if min == 30:
+                    times = timeSerHours30()
+                if min == 45:
+                    times = timeSerHours45()
+                newTime = times[timeSerHours().index(timeService)]
+                citainiTemp = str(row['GSI1SK'])[-5:].replace('-','')  #15-30, reemplazar - x '', original str(row['GSI1SK'])[-5:]
+                citaini = int(citainiTemp)  # 15, original int(citainiTemp[0:2])
+                citafin = int(citaini)+int(newTime) #15 + tiempo servicio, deberia ser 15-30(reemplazar - x '') + tiempo servicio ej 1600
                 if cancel >= citaini and cancel <= citafin:
                     appoData = str(row['DATE_APPO'])[0:10]+'#'+row['PKID']
                     appoDateMess = row['DATE_APPO']
@@ -141,7 +167,7 @@ def lambda_handler(event, context):
                                 "PKID": {"S": row['PKID']}, 
                                 "SKID": {"S": row['PKID']}, 
                             },
-                            "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key01, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, GSI9SK = :key01, TIMECANCEL = :dateope, STATUS_CANCEL = :statCancel REMOVE GSI8PK, GSI8SK",
+                            "UpdateExpression": "SET #s = :status, MODIFIED_DATE = :mod_date, GSI1SK = :key01, GSI2SK = :key01, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, GSI9SK = :key01, TIMECANCEL = :dateope, STATUS_CANCEL = :statCancel REMOVE GSI8PK, GSI8SK",
                             "ExpressionAttributeValues": { 
                                 ":status": {"N": str(5)}, 
                                 ":key01": {"S": str(5) + '#DT#' + row['DATE_APPO']}, 
@@ -153,13 +179,28 @@ def lambda_handler(event, context):
                                 ":pkey07": {"S": providerIdData}, 
                                 ":skey07": {"S": appoData},
                                 ":dateope": {"S": dateOpe},
-                                ":statCancel": {"N": str(4)}
+                                ":statCancel": {"N": str(4)},
+                                ":mod_date": {"S": str(dateOpe)}
                             },
                             "ExpressionAttributeNames": {'#s': 'STATUS'},
                             "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
                         }
                     }
+                    items.append(recordset)
+
+                    recordset = {
+                        "Put": {
+                            "TableName": "TuCita247",
+                            "Item": {
+                                "PKID": {"S": 'LOG#' + str(dateOpe)},
+                                "SKID": {"S": row['PKID']},
+                                "STATUS": {"N": str(5)}
+                            },
+                            "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                            "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                            }
+                        }
                     items.append(recordset)
 
                     #REMOVE FROM QEUE

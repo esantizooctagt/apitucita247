@@ -98,34 +98,6 @@ def findHoursAppo(time, hours, service):
     item = ''
     return item
 
-def availableHour(hour, time, dayArr, loc, prov, serv, dtAppo):
-    value = False
-    getAvailability = dynamodb.query(
-        TableName="TuCita247",
-        ReturnConsumedCapacity='TOTAL',
-        KeyConditionExpression='PKID = :usedData AND SKID = :time',
-        ExpressionAttributeValues={
-            ':usedData': {'S': 'LOC#'+loc+'#PRO#'+prov+'#DT#'+dtAppo.strftime("%Y-%m-%d")},
-            ':time': {'S': 'HR#'+time}
-        },
-        ScanIndexForward=True
-    )
-    for res in json_dynamodb.loads(getAvailability['Items']):
-        if int(res['CANCEL']) == 1:
-            return False
-        if int(res['AVAILABLE']) == 1:  #  and (res['SERVICEID'] == '' or res['SERVICEID'] == serv):
-            return True
-        # if int(res['AVAILABLE']) == 1 and res['SERVICEID'] != '' and res['SERVICEID'] != serv:
-        #     return False
-            
-    if len(dayArr) >= 1:
-        if hour >= int(dayArr[0]['I']) and hour <= int(dayArr[0]['F'])-1:
-            return True
-    if len(dayArr) == 2:
-        if hour >= int(dayArr[1]['I']) and hour <= int(dayArr[1]['F'])-1:
-            return True
-    return value
-
 def findTimeZone(businessId, locationId):
     timeZone='America/Puerto_Rico'
     locZone = dynamodb.query(
@@ -140,6 +112,21 @@ def findTimeZone(businessId, locationId):
     for timeLoc in json_dynamodb.loads(locZone['Items']):
         timeZone = timeLoc['TIME_ZONE'] if 'TIME_ZONE' in timeLoc else 'America/Puerto_Rico'
     return timeZone
+
+def workHours():
+    return ['0000','0015','0030','0045','0100','0115','0130','0145','0200','0215','0230','0245','0300','0315','0330','0345','0400','0415','0430','0445','0500','0515','0530','0545','0600','0615','0630','0645','0700','0715','0730','0745','0800','0815','0830','0845','0900','0915','0930','0945','1000','1015','1030','1045','1100','1115','1130','1145','1200','1215','1230','1245','1300','1315','1330','1345','1400','1415','1430','1445','1500','1515','1530','1545','1600','1615','1630','1645','1700','1715','1730','1745','1800','1815','1830','1845','1900','1915','1930','1945','2000','2015','2030','2045','2100','2115','2130','2145','2200','2215','2230','2245','2300','2315','2330','2345']
+
+def timeSerHours():
+    return [0,15,30,45,100,115,130,145,200,215,230,245,300,315,330,345,400,415,430,445,500,515,530,545,600]
+
+def timeSerHours15():
+    return [0,15,30,85,100,115,130,185,200,215,230,285,300,315,330,385,400,415,430,485,500,515,530,585,600]
+
+def timeSerHours30():
+    return [0,15,70,85,100,115,170,185,200,215,270,285,300,315,370,385,400,415,470,485,500,515,570,585,600]
+
+def timeSerHours45():
+    return [0,55,70,85,100,155,170,185,200,255,270,285,300,355,370,385,400,455,470,485,500,555,570,585,600]
 
 def lambda_handler(event, context):
     stage = event['headers']
@@ -160,6 +147,8 @@ def lambda_handler(event, context):
         updEmail = data['UpdEmail'] #1 !=, 0 ==
         door = data['Door'] if 'Door' in data else ''
         phone = data['Phone']
+        countryCode = data['CountryCode']
+        country = data['Country']
         name = data['Name']
         email = data['Email'] if 'Email' in data else ''
         dob = data['DOB'] if 'DOB' in data else ''
@@ -199,19 +188,21 @@ def lambda_handler(event, context):
         statusCode = ''
 
         if appoDate.strftime("%Y-%m-%d") == today.strftime("%Y-%m-%d"):
-            currHour = today.strftime("%H:00")
-            if int(currHour.replace(':','')[0:2]) > int(hourDate.replace(':','')[0:2]):
-                statusCode = 404
-                body = json.dumps({'Message': 'Hour not available', 'Data': result, 'Code': 400})
-                response = {
-                    'statusCode' : statusCode,
-                    'headers' : {
-                        "content-type" : "application/json",
-                        "access-control-allow-origin" : "*"
-                    },
-                    'body' : body
-                }
-                return response
+            if typeCita != 2:
+                currHour = today.strftime("%H:%M")
+                # if int(currHour.replace(':','')[0:2]) > int(hourDate.replace(':','')[0:2]):
+                if int(currHour.replace(':','')) > int(hourDate.replace(':','').replace('-','')):
+                    statusCode = 404
+                    body = json.dumps({'Message': 'Hour not available', 'Data': result, 'Code': 400})
+                    response = {
+                        'statusCode' : statusCode,
+                        'headers' : {
+                            "content-type" : "application/json",
+                            "access-control-allow-origin" : "*"
+                        },
+                        'body' : body
+                    }
+                    return response
 
         #STATUS DEL PAQUETE ADQUIRIDO 1 ACTIVO Y TRAE TOTAL DE NUMERO DE CITAS
         statPlan = dynamodb.query(
@@ -274,6 +265,7 @@ def lambda_handler(event, context):
                     }
                 )
                 recordset = {}
+                bufferTime = 0
                 for serv in json_dynamodb.loads(getServices['Items']):
                     recordset = {
                         'ServiceId': serv['SKID'].replace('SER#',''),
@@ -281,22 +273,10 @@ def lambda_handler(event, context):
                         'TimeService': int(serv['TIME_SERVICE'])
                     }
                     services.append(recordset)
-
-                #GET CURRENT SERVICE
-                service = dynamodb.query(
-                    TableName="TuCita247",
-                    ReturnConsumedCapacity='TOTAL',
-                    KeyConditionExpression='PKID = :businessId AND SKID = :serviceId',
-                    ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#'+businessId},
-                        ':serviceId': {'S': 'SER#'+serviceId}
-                    }
-                )
-                bufferTime = 0
-                for serv in json_dynamodb.loads(service['Items']):
-                    bucket = serv['TIME_SERVICE']
-                    numCustomer = serv['CUSTOMER_PER_TIME']
-                    bufferTime = serv['BUFFER_TIME']
+                    if serv['SKID'].replace('SER#','') == serviceId:
+                        bucket = serv['TIME_SERVICE']
+                        numCustomer = serv['CUSTOMER_PER_TIME']
+                        bufferTime = serv['BUFFER_TIME']
 
                 if bucket == 0:
                     statusCode = 500
@@ -345,7 +325,7 @@ def lambda_handler(event, context):
                             }
                         )
                         for hours in json_dynamodb.loads(getAppos['Items']):
-                            timeBooking = int(hours['GSI1SK'].replace('1#DT#'+appoDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                            timeBooking = int(hours['GSI1SK'].replace('1#DT#'+appoDate.strftime("%Y-%m-%d")+'-','').replace('-',''))
                             cxTime = findServiceTime(hours['SERVICEID'], services)
                             recordset = {
                                 'Hour': timeBooking,
@@ -374,7 +354,7 @@ def lambda_handler(event, context):
                                 }
                             )
                             for hoursCita in json_dynamodb.loads(getAppos02['Items']):
-                                timeBooking = int(hoursCita['GSI1SK'].replace('2#DT#'+appoDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                                timeBooking = int(hoursCita['GSI1SK'].replace('2#DT#'+appoDate.strftime("%Y-%m-%d")+'-','').replace('-',''))
                                 cxTime = findServiceTime(hoursCita['SERVICEID'], services)
                                 recordset = {
                                     'Hour': timeBooking,
@@ -403,7 +383,7 @@ def lambda_handler(event, context):
                             }
                         )
                         for res in json_dynamodb.loads(getReservas['Items']):
-                            timeBooking = int(str(res['DATE_APPO'][-5:])[0:2])
+                            timeBooking = int(str(res['DATE_APPO'][-5:].replace('-','')))
                             cxTime = findServiceTime(res['SERVICEID'], services)
                             recordset = {
                                 'Hour': timeBooking,
@@ -433,13 +413,13 @@ def lambda_handler(event, context):
                         for cancel in json_dynamodb.loads(getCurrHours['Items']):
                             if int(cancel['CANCEL']) == 1:
                                 recordset = {
-                                    'Hour': int(cancel['SKID'].replace('HR#','')[0:2]),
+                                    'Hour': int(cancel['SKID'].replace('HR#','').replace('-','')),
                                     'ServiceId': '',
                                     'People': 0,
                                     'TimeService': 0,
                                     'Cancel': 1
                                 }
-                                timeExists = searchHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
+                                timeExists = searchHours(int(cancel['SKID'].replace('HR#','').replace('-','')), hoursBooks)
                                 if timeExists == '':
                                     hoursBooks.append(recordset)
                                 else:
@@ -447,23 +427,23 @@ def lambda_handler(event, context):
                                     hoursBooks.append(recordset)
                             if int(cancel['AVAILABLE']) == 1:
                                 recordset = {
-                                    'Hour': int(cancel['SKID'].replace('HR#','')[0:2]),
+                                    'Hour': int(cancel['SKID'].replace('HR#','').replace('-','')),
                                     'ServiceId': '',
                                     'People': 0,
                                     'TimeService': 0,
                                     'Cancel': 0
                                 }
-                                timeExists = searchHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
+                                timeExists = searchHours(int(cancel['SKID'].replace('HR#','').replace('-','')), hoursBooks)
                                 if timeExists == '':
                                     hoursBooks.append(recordset)
 
                         for item in hoursBooks:
                             if item['Cancel'] == 1:
-                                timeExists = searchHours(str(item['Hour']).rjust(2,'0')+':00', hoursData)
+                                timeExists = searchHours(str(item['Hour']).rjust(4,'0')[0:2]+':'+str(item['Hour']).rjust(4,'0')[-2:], hoursData)
                                 if timeExists != '':
                                     hoursData.remove(timeExists)
                                 recordset = {
-                                    'Hour': str(item['Hour']).rjust(2,'0')+':00',
+                                    'Hour': str(item['Hour']).rjust(4,'0')[0:2]+':'+str(item['Hour']).rjust(4,'0')[-2:],
                                     'TimeService': 1,
                                     'Available': 0,
                                     'ServiceId': '',
@@ -477,7 +457,7 @@ def lambda_handler(event, context):
                                     custPerTime = findService(item['ServiceId'], services)
 
                                 recordset = {
-                                    'Hour': str(item['Hour']).rjust(2,'0')+':00',
+                                    'Hour': str(item['Hour']).rjust(4,'0')[0:2]+':'+str(item['Hour']).rjust(4,'0')[-2:],
                                     'TimeService': item['TimeService'],
                                     'Available': custPerTime-item['People'],
                                     'ServiceId': item['ServiceId'],
@@ -487,9 +467,25 @@ def lambda_handler(event, context):
                                 hoursData.append(recordset)
 
                         validAppo = 0
-                        y = range(0, bucket)
-                        for z in y:
-                            locTime = str(int(hourDate[0:2])+z).zfill(2)+':'+str(hourDate[3:5])
+                        hrInterval = int(hourDate[-2:])
+                        if hrInterval == 0:
+                            times = timeSerHours()
+                        if hrInterval == 15:
+                            times = timeSerHours15()
+                        if hrInterval == 30:
+                            times = timeSerHours30()
+                        if hrInterval == 45:
+                            times = timeSerHours45()
+                        # y = range(0, bucket)
+                        countTime = 0
+                        for z in times:
+                            if timeSerHours()[countTime] == bucket:
+                                break
+                            countTime = countTime + 1
+                            # if z > bucket:
+                            #     break
+                            tempTime = str(int(hourDate[0:2]+hourDate[-2:])+z).zfill(4)
+                            locTime = tempTime[0:2]+':'+tempTime[-2:]
                             hrArr, start, available, ser = findHours(locTime, hoursData)
                             if hrArr != '':
                                 if (ser == serviceId and int(available)-int(guests) >= 0 and hrArr['Cancel'] == 0) or (ser == '' and hrArr['Cancel'] == 0):
@@ -499,9 +495,9 @@ def lambda_handler(event, context):
                                     break
                             else:
                                 for item in dateAppo:
-                                    ini = Decimal(item['I'])
-                                    fin = Decimal(item['F'])
-                                    if int(locTime[0:2]) >= ini and int(locTime[0:2]) < fin:
+                                    ini = Decimal(item['I'])*100
+                                    fin = Decimal(item['F'])*100
+                                    if int(locTime[0:2]+locTime[-2:]) >= ini and int(locTime[0:2]+locTime[-2:]) < fin:
                                         if numCustomer > 0:
                                             validAppo = 1
                                             break
@@ -512,6 +508,32 @@ def lambda_handler(event, context):
                     validAppo = 1
                 #PROCEDE A GUARDAR LA CITA
                 if validAppo == 1:
+                    busN = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': 'BUS#'+businessId},
+                            ':metadata': {'S': 'METADATA'}
+                        }
+                    )
+                    busName = ''
+                    for bRes in json_dynamodb.loads(busN['Items']):
+                        busName = bRes['NAME']
+
+                    locN = dynamodb.query(
+                        TableName="TuCita247",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='PKID = :businessId AND SKID = :locId',
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': 'BUS#'+businessId},
+                            ':locId': {'S': 'LOC#'+locationId}
+                        }
+                    )
+                    locName = ''
+                    for lRes in json_dynamodb.loads(locN['Items']):
+                        locName = lRes['NAME']
+
                     servs = dynamodb.query(
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
@@ -570,6 +592,7 @@ def lambda_handler(event, context):
                             preference = (phoneNumber['PREFERENCES'] if 'PREFERENCES' in phoneNumber and preference == '' else preference)
                             disability = (phoneNumber['DISABILITY'] if 'DISABILITY' in phoneNumber and disability == '' else disability)
                             playerPhone = phoneNumber['PLAYERID'] if 'PLAYERID' in phoneNumber else ''
+                            country = phoneNumber['COUNTRY'] if 'COUNTRY' in phoneNumber else ''
 
                     recordset = {}
                     items = []
@@ -580,6 +603,7 @@ def lambda_handler(event, context):
                                 "Item": {
                                     "PKID": {"S": 'MOB#' + phone}, 
                                     "SKID": {"S": 'CUS#' + customerId}, 
+                                    "COUNTRY": {"S": country},
                                     "STATUS": {"N": "1"}, 
                                     "NAME": {"S": name}, 
                                     "EMAIL": {"S":  email if email != '' else None },
@@ -590,7 +614,10 @@ def lambda_handler(event, context):
                                     "PREFERENCES": {"N": str(preference) if str(preference) != '' else None},
                                     "LANGUAGE": {"S": str("en")},
                                     "GSI1PK": {"S": "CUS#" + customerId}, 
-                                    "GSI1SK": {"S": "CUS#" + customerId}
+                                    "GSI1SK": {"S": "CUS#" + customerId},
+                                    "CREATED_DATE": {"S": str(dateOpe)},
+                                    "GSI11PK": {"S": "DT#" + str(dateOpe)},
+                                    "GSI11SK": {"S": "MOB#" + phone}
                                 },
                                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
@@ -621,10 +648,11 @@ def lambda_handler(event, context):
                                     "PKID": {"S": 'MOB#' + phone}, 
                                     "SKID": {"S": 'CUS#' + customerId}, 
                                 },
-                                "UpdateExpression": "SET EMAIL_COMM = :email, PREFERENCES = :preference",
+                                "UpdateExpression": "SET EMAIL_COMM = :email, PREFERENCES = :preference, MODIFIED_DATE = :mod_date",
                                 "ExpressionAttributeValues": { 
                                     ":email": {"S": email},
-                                    ":preference": {"N": preference}
+                                    ":preference": {"N": preference},
+                                    ":mod_date": {"S": str(dateOpe)}
                                 },
                                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
@@ -640,9 +668,10 @@ def lambda_handler(event, context):
                                     "PKID": {"S": 'MOB#' + phone}, 
                                     "SKID": {"S": 'CUS#' + customerId}, 
                                 },
-                                "UpdateExpression": "SET EMAIL_COMM = :email",
+                                "UpdateExpression": "SET EMAIL_COMM = :email, MODIFIED_DATE = :mod_date",
                                 "ExpressionAttributeValues": { 
-                                    ":email": {"S": email}
+                                    ":email": {"S": email},
+                                    ":mod_date": {"S": str(dateOpe)}
                                 },
                                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
@@ -670,7 +699,12 @@ def lambda_handler(event, context):
                                 "TYPE": {"N": str(typeCita)},
                                 "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
                                 "DATE_TRANS": {"S": str(dateOpe)},
+                                "CREATED_DATE": {"S": str(dateOpe)},
                                 "SERVICEID": {"S": serviceId},
+                                "SERVICE_NAME": {"S": servName},
+                                "PROVIDER_NAME": {"S": provName},
+                                "LOCATION_NAME": {"S": locName},
+                                "BUSINESS_NAME": {"S": busName},
                                 "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId}, 
                                 "GSI1SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment}, 
                                 "GSI2PK": {"S": 'CUS#' + customerId},
@@ -688,7 +722,9 @@ def lambda_handler(event, context):
                                 "GSI9PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId}, 
                                 "GSI9SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment},
                                 "GSI10PK": {"S": 'CUS#' + customerId},
-                                "GSI10SK": {"S": dateAppointment}
+                                "GSI10SK": {"S": dateAppointment},
+                                "GSI11PK": {"S": "DT#" + str(dateOpe)},
+                                "GSI11SK": {"S": "APPO#" + appoId},
                             },
                             "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                             "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -772,15 +808,15 @@ def lambda_handler(event, context):
                         TransactItems = items
                     )
                     sTime = ''
-                    hTime = int(str(dateAppointment[-5:])[0:2])
-                    if hTime >= 12:
-                        if hTime == 12:
-                            sTime = str(hTime) + ':00 PM'
+                    hTime = int(str(dateAppointment[-5:].replace('-','')))
+                    if hTime >= 1200:
+                        if hTime == 1200:
+                            sTime = dateAppointment[-5:].replace('-',':') + ' PM'
                         else:
-                            hTime = hTime-12
-                            sTime = str(hTime).rjust(2,'0') + ':00 PM'
+                            hTime = hTime-1200
+                            sTime = str(hTime).rjust(4,'0')[0:2] + ':' + str(hTime).rjust(4,'0')[-2:] + ' PM'
                     else:
-                        sTime = str(hTime).rjust(2,'0') + ':00 AM'
+                        sTime = str(hTime).rjust(4,'0')[0:2] + ':' + str(hTime).rjust(4,'0')[-2:] + ' AM'
 
                     getAddr = dynamodb.query(
                         TableName = "TuCita247",

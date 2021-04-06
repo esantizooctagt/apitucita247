@@ -48,6 +48,7 @@ def lambda_handler(event, context):
                 'Last_Name': record['LAST_NAME'],
                 'Avatar': record['AVATAR'] if "AVATAR" in record else '',
                 'Phone': record['PHONE'],
+                'CountryCode': record['COUNTRY'] if 'COUNTRY' in record else '',
                 'Business_Id': record['PKID'].replace('BUS#',''),
                 'Status': record['STATUS'],
                 'Role_Id': record['ROLE_ADMIN'] if 'ROLE_ADMIN' in record else '',

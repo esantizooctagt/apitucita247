@@ -94,8 +94,8 @@ def lambda_handler(event, context):
             for business in json_dynamodb.loads(business['Items']):
                 recordset = {
                     'Name': business['NAME'],
-                    'Imagen': business['IMGBUSINESS'],
-                    'LongDescription': business['LONGDESCRIPTION'],
+                    'Imagen': business['IMGBUSINESS'] if 'IMGBUSINESS' in business else '',
+                    'LongDescription': business['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in business else '',
                     'ShortDescription': business['SHORTDESCRIPTION'],
                     'Location': locAddress,
                     'LocationId': locationId,

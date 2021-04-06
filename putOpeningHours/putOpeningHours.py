@@ -118,7 +118,7 @@ def lambda_handler(event, context):
                 UpdateExpression="SET OPERATIONHOURS = :opeHours, PARENTHOURS = :parentData",
                 ExpressionAttributeValues={
                     ':opeHours': opeHours,
-                    ':parentData': parentData
+                    ':parentData': int(parentData)
                 },
                 ReturnValues="UPDATED_NEW"
             )
@@ -166,7 +166,7 @@ def lambda_handler(event, context):
                 UpdateExpression="SET OPERATIONHOURS = :opeHours, PARENTHOURS = :parentData",
                 ExpressionAttributeValues={
                     ':opeHours': opeHours,
-                    ':parentData': parentData
+                    ':parentData': int(parentData)
                 },
                 ReturnValues="UPDATED_NEW"
             )

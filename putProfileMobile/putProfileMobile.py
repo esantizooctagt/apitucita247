@@ -2,6 +2,10 @@ import sys
 import logging
 import json
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
@@ -34,6 +38,9 @@ def lambda_handler(event, context):
         mobile = event['pathParameters']['mobile']
         data = json.loads(event['body'])
 
+        today = datetime.datetime.now()
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
         e = {'#n': 'NAME'}
         table = dynamodb.Table('TuCita247')
         expUpdate = {
@@ -42,7 +49,8 @@ def lambda_handler(event, context):
                 ':dob': data['DOB'] if data['DOB'] != '' else None,
                 ':gender': data['Gender'] if data['Gender'] != '' else None,
                 ':preferences': data['Preferences'] if data['Preferences'] != '' else None,
-                ':disability': data['Disability'] if data['Disability'] != '' else None
+                ':disability': data['Disability'] if data['Disability'] != '' else None,
+                ':mod_date': str(dateOpe)
         }
         rem = (" REMOVE EMAIL" if data['Email'] == '' else '') 
         rem = rem + ((", DOB" if rem != '' else " REMOVE DOB") if data['DOB'] == '' else '')
@@ -54,7 +62,7 @@ def lambda_handler(event, context):
                 'PKID': 'MOB#' + mobile,
                 'SKID': 'CUS#' + customerId
             },
-            UpdateExpression="SET #n = :name" + (", EMAIL = :email" if data['Email'] != '' else '') + (", DOB = :dob" if data['DOB'] != '' else '') + (", GENDER = :gender" if data['Gender'] != '' else '') + (", PREFERENCES = :preferences" if data['Preferences'] != '' else '') + (", DISABILITY = :disability" if data['Disability'] != '' else '') + rem,
+            UpdateExpression="SET #n = :name, MODIFIED_DATE = :mod_date" + (", EMAIL = :email" if data['Email'] != '' else '') + (", DOB = :dob" if data['DOB'] != '' else '') + (", GENDER = :gender" if data['Gender'] != '' else '') + (", PREFERENCES = :preferences" if data['Preferences'] != '' else '') + (", DISABILITY = :disability" if data['Disability'] != '' else '') + rem,
             ExpressionAttributeNames=e,
             ExpressionAttributeValues=cleanNullTerms(expUpdate),
             ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)"

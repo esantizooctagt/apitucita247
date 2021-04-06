@@ -24,7 +24,7 @@ cloudSearch = os.environ['cloudSearch']
 
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 dynamodbData = boto3.resource('dynamodb', region_name=REGION)
-search = boto3.client('cloudsearchdomain', endpoint_url="https://search-tucita247-djl3mvkaapbmo5zjxat7pcnepu.us-east-1.cloudsearch.amazonaws.com")
+search = boto3.client('cloudsearchdomain', endpoint_url=cloudSearch)
 
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 

@@ -81,34 +81,6 @@ def findHoursAppo(time, hours, service):
     item = ''
     return item
 
-def availableHour(hour, time, dayArr, loc, prov, serv, dtAppo):
-    value = False
-    getAvailability = dynamodb.query(
-        TableName="TuCita247",
-        ReturnConsumedCapacity='TOTAL',
-        KeyConditionExpression='PKID = :usedData AND SKID = :time',
-        ExpressionAttributeValues={
-            ':usedData': {'S': 'LOC#'+loc+'#PRO#'+prov+'#DT#'+dtAppo.strftime("%Y-%m-%d")},
-            ':time': {'S': 'HR#'+time}
-        },
-        ScanIndexForward=True
-    )
-    for res in json_dynamodb.loads(getAvailability['Items']):
-        if int(res['CANCEL']) == 1:
-            return False
-        if int(res['AVAILABLE']) == 1 and (res['SERVICEID'] == '' or res['SERVICEID'] == serv):
-            return True
-        if int(res['AVAILABLE']) == 1 and res['SERVICEID'] != '' and res['SERVICEID'] != serv:
-            return False
-            
-    if len(dayArr) >= 1:
-        if hour >= int(dayArr[0]['I']) and hour <= int(dayArr[0]['F'])-1:
-            return True
-    if len(dayArr) == 2:
-        if hour >= int(dayArr[1]['I']) and hour <= int(dayArr[1]['F'])-1:
-            return True
-    return value
-
 def findTimeZone(businessId, locationId):
     timeZone='America/Puerto_Rico'
     locZone = dynamodb.query(
@@ -123,7 +95,22 @@ def findTimeZone(businessId, locationId):
     for timeLoc in json_dynamodb.loads(locZone['Items']):
         timeZone = timeLoc['TIME_ZONE'] if 'TIME_ZONE' in timeLoc else 'America/Puerto_Rico'
     return timeZone
-    
+
+def workHours():
+    return ['0000','0015','0030','0045','0100','0115','0130','0145','0200','0215','0230','0245','0300','0315','0330','0345','0400','0415','0430','0445','0500','0515','0530','0545','0600','0615','0630','0645','0700','0715','0730','0745','0800','0815','0830','0845','0900','0915','0930','0945','1000','1015','1030','1045','1100','1115','1130','1145','1200','1215','1230','1245','1300','1315','1330','1345','1400','1415','1430','1445','1500','1515','1530','1545','1600','1615','1630','1645','1700','1715','1730','1745','1800','1815','1830','1845','1900','1915','1930','1945','2000','2015','2030','2045','2100','2115','2130','2145','2200','2215','2230','2245','2300','2315','2330','2345']
+
+def timeSerHours():
+    return [0,15,30,45,100,115,130,145,200,215,230,245,300,315,330,345,400,415,430,445,500,515,530,545,600]
+
+def timeSerHours15():
+    return [0,15,30,85,100,115,130,185,200,215,230,285,300,315,330,385,400,415,430,485,500,515,530,585,600]
+
+def timeSerHours30():
+    return [0,15,70,85,100,115,170,185,200,215,270,285,300,315,370,385,400,415,470,485,500,515,570,585,600]
+
+def timeSerHours45():
+    return [0,55,70,85,100,155,170,185,200,255,270,285,300,355,370,385,400,455,470,485,500,555,570,585,600]
+
 def lambda_handler(event, context):
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
@@ -211,7 +198,7 @@ def lambda_handler(event, context):
                     }
                 )
                 recordset = {}
-                timeSer = 24
+                timeSer = 800
                 for serv in json_dynamodb.loads(getServices['Items']):
                     recordset = {
                         'ServiceId': serv['SKID'].replace('SER#',''),
@@ -282,7 +269,7 @@ def lambda_handler(event, context):
                         }
                     )
                     for hours in json_dynamodb.loads(getAppos['Items']):
-                        timeBooking = int(hours['GSI1SK'].replace('1#DT#'+appoDate.strftime("%Y-%m-%d")+'-','')[0:2])
+                        timeBooking = int(hours['GSI1SK'].replace('1#DT#'+appoDate.strftime("%Y-%m-%d")+'-','')[0:5].replace('-',''))
                         cxTime = findServiceTime(hours['SERVICEID'], services)
                         recordset = {
                             'Hour': timeBooking,
@@ -311,7 +298,7 @@ def lambda_handler(event, context):
                         }
                     )
                     for res in json_dynamodb.loads(getReservas['Items']):
-                        timeBooking = int(str(res['DATE_APPO'][-5:])[0:2])
+                        timeBooking = int(str(res['DATE_APPO'][-5:].replace('-','')))
                         cxTime = findServiceTime(res['SERVICEID'], services)
                         recordset = {
                             'Hour': timeBooking,
@@ -341,13 +328,13 @@ def lambda_handler(event, context):
                     for cancel in json_dynamodb.loads(getCurrHours['Items']):
                         if int(cancel['CANCEL']) == 1:
                             recordset = {
-                                'Hour': int(cancel['SKID'].replace('HR#','')[0:2]),
+                                'Hour': int(cancel['SKID'].replace('HR#','').replace('-','')),
                                 'ServiceId': '',
                                 'People': 0,
                                 'TimeService': 0,
                                 'Cancel': 1
                             }
-                            timeExists = searchHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
+                            timeExists = searchHours(int(cancel['SKID'].replace('HR#','').replace('-','')), hoursBooks)
                             if timeExists == '':
                                 hoursBooks.append(recordset)
                             else:
@@ -355,22 +342,22 @@ def lambda_handler(event, context):
                                 hoursBooks.append(recordset)
                         if int(cancel['AVAILABLE']) == 1:
                             recordset = {
-                                'Hour': int(cancel['SKID'].replace('HR#','')[0:2]),
+                                'Hour': int(cancel['SKID'].replace('HR#','').replace('-','')),
                                 'ServiceId': '',
                                 'People': 0,
                                 'TimeService': 0,
                                 'Cancel': 0
                             }
-                            timeExists = searchHours(int(cancel['SKID'].replace('HR#','')[0:2]), hoursBooks)
+                            timeExists = searchHours(int(cancel['SKID'].replace('HR#','').replace('-','')), hoursBooks)
                             if timeExists == '':
                                 hoursBooks.append(recordset)
                     for item in hoursBooks:
                         if item['Cancel'] == 1:
-                            timeExists = searchHours(str(item['Hour']).rjust(2,'0')+':00', hoursData)
+                            timeExists = searchHours(str(item['Hour']).rjust(4,'0')[0:2]+':'+str(item['Hour']).rjust(4,'0')[-2:], hoursData)
                             if timeExists != '':
                                 hoursData.remove(timeExists)
                             recordset = {
-                                'Hour': str(item['Hour']).rjust(2,'0')+':00',
+                                'Hour': str(item['Hour']).rjust(4,'0')[0:2]+':'+str(item['Hour']).rjust(4,'0')[-2:],
                                 'TimeService': 1,
                                 'ServiceId': '',
                                 'Available': 0,
@@ -383,34 +370,62 @@ def lambda_handler(event, context):
                             if 'ServiceId' in item:
                                 custPerTime = findService(item['ServiceId'], services)
 
-                            if (int(item['TimeService']) > 1):
-                                times = range(0, item['TimeService'])
-                                changes = range(0, item['TimeService'])
+                            if (int(item['TimeService']) > 15):
+                                # times = range(0, item['TimeService'])
+                                # changes = range(0, item['TimeService'])
                                 timeInterval = []
+                                hrInterval = int(str(item['Hour']).rjust(4,'0')[-2:])
+                                if hrInterval == 0:
+                                    times = timeSerHours()
+                                if hrInterval == 15:
+                                    times = timeSerHours15()
+                                if hrInterval == 30:
+                                    times = timeSerHours30()
+                                if hrInterval == 45:
+                                    times = timeSerHours45()
+                                countTime = 0
                                 #CONSOLIDA HORAS DE BOOKINGS
                                 for hr in times:
+                                    if timeSerHours()[countTime] == int(item['TimeService']):
+                                        break
+                                    # if hr > int(item['TimeService']):
+                                    #     break
+                                    countTime = countTime + 1
                                     count = 0
                                     newTime = str(int(item['Hour'])+hr)
                                     time24hr = int(newTime) 
-                                    newTime = newTime.rjust(2,'0')+':00'
+                                    newTime = str(newTime).rjust(4,'0')[0:2]+':'+str(newTime).rjust(4,'0')[-2:]
 
-                                    count = findUsedHours(time24hr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)        
-                                    res = range(1, int(item['TimeService']))
-                                    for citas in res:
-                                        nextHr = time24hr+citas
-                                        newHr = str(nextHr).rjust(2,'0')+'-00'
-                                        getApp = searchHours(nextHr, hoursBooks)
-                                        if getApp != '':
-                                            if getApp['ServiceId'] != item['ServiceId']:
-                                                count = custPerTime
-                                                break
-                                        # else:
-                                        #     if availableHour(nextHr, newHr, dateAppo, locationId, providerId, item['ServiceId'], appoDate) == False:
-                                        #         count = custPerTime
-                                        #         break
-                                        tempCount = findUsedHours(nextHr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)
-                                        if tempCount > count:
-                                            count = tempCount
+                                    # count = findUsedHours(time24hr, hoursBooks, item['ServiceId'], int(item['TimeService'])-1)
+                                    count = findUsedHours(time24hr, hoursBooks, item['ServiceId'], int(item['TimeService']))        
+                                    # res = range(1, int(item['TimeService']))
+                                    hrInterval = int(str(item['Hour']).rjust(4,'0')[-2:])
+                                    if hrInterval == 0:
+                                        times = timeSerHours()
+                                    if hrInterval == 15:
+                                        times = timeSerHours15()
+                                    if hrInterval == 30:
+                                        times = timeSerHours30()
+                                    if hrInterval == 45:
+                                        times = timeSerHours45()
+                                    countTime2 = 0
+                                    for citas in times:
+                                        if timeSerHours()[countTime2] == int(item['TimeService']):
+                                            break
+                                        # if citas > int(item['TimeService']):
+                                        #     break
+                                        countTime2 = countTime2 + 1
+                                        if citas > 0:
+                                            nextHr = time24hr+citas
+                                            newHr = str(nextHr).rjust(4,'0')[0:2]+'-'+str(nextHr).rjust(4,'0')[-2:]
+                                            getApp = searchHours(nextHr, hoursBooks)
+                                            if getApp != '':
+                                                if getApp['ServiceId'] != item['ServiceId']:
+                                                    count = custPerTime
+                                                    break
+                                            tempCount = findUsedHours(nextHr, hoursBooks, item['ServiceId'], int(item['TimeService']))
+                                            if tempCount > count:
+                                                count = tempCount
 
                                     recordset = {
                                         'Hour': newTime,
@@ -423,7 +438,7 @@ def lambda_handler(event, context):
                                     hoursData.append(recordset)
                             else:
                                 recordset = {
-                                    'Hour': str(item['Hour']).rjust(2,'0')+':00',
+                                    'Hour': str(item['Hour']).rjust(4,'0')[0:2]+':'+str(item['Hour']).rjust(4,'0')[-2:],
                                     'TimeService': item['TimeService'],
                                     'Available': custPerTime-item['People'],
                                     'ServiceId': item['ServiceId'],
@@ -434,35 +449,34 @@ def lambda_handler(event, context):
 
                     validAppo = 0
                     notAvailable = 0
-                    y = range(0, 1) #bucket
-                    for z in y:
-                        locTime = str(int(hourDate[0:2])+z).zfill(2)+':'+str(hourDate[3:5])
-                        hrArr, start, available, ser = findHours(locTime, hoursData)
-                        if hrArr != '':
-                            if (ser == serviceId and int(available)-int(1) >= 0) or ser == '':
-                                validAppo = 1
-                                notAvailable = 0 if available > 0 else 1
-                                if notAvailable == 1:
-                                    break
-                            else:
-                                validAppo = 0
-                                notAvailable = 1
+                    locTime = str(int(hourDate[0:2])).zfill(2)+':'+str(hourDate[-2:])
+                    hrArr, start, available, ser = findHours(locTime, hoursData)
+                    if hrArr != '':
+                        if (ser == serviceId and int(available)-int(1) >= 0) or ser == '':
+                            validAppo = 1
+                            notAvailable = 0 if available > 0 else 1
+                            if notAvailable == 1:
                                 break
                         else:
                             validAppo = 0
-                            for item in dateAppo:
-                                ini = Decimal(item['I'])
-                                fin = Decimal(item['F'])
-                                if int(locTime[0:2]) >= ini and int(locTime[0:2]) < fin:
-                                    if numCustomer > 0:
-                                        validAppo = 1
-                                        break
-                                    else:
-                                        notAvailable = 1
-                                        validAppo = 0
-                                        break
-                            if validAppo == 0:
-                                break
+                            notAvailable = 1
+                            break
+                    else:
+                        validAppo = 0
+                        for item in dateAppo:
+                            ini = Decimal(item['I'])*100
+                            fin = Decimal(item['F'])*100
+                            if int(locTime[0:2]+locTime[-2:]) >= ini and int(locTime[0:2]+locTime[-2:]) < fin:
+                                if numCustomer > 0:
+                                    validAppo = 1
+                                    break
+                                else:
+                                    notAvailable = 1
+                                    validAppo = 0
+                                    break
+                        if validAppo == 0:
+                            break
+
                 if validAppo == 1:
                     statusCode = 200
                     body = json.dumps({'Message': 'Appos available', 'Code': 200})

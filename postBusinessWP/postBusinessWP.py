@@ -68,11 +68,6 @@ def get_random_string():
 def lambda_handler(event, context):
     stage = event['headers']
     cors = stage['origin']
-    # stage = event['headers']
-    # if stage['origin'] != "http://localhost:4200":
-    #     cors = os.environ['prodCors']
-    # else:
-    #     cors = os.environ['devCors']
         
     try:
         statusCode = ''
@@ -85,6 +80,7 @@ def lambda_handler(event, context):
         country_date = dateutil.tz.gettz('America/Puerto_Rico')
         today = datetime.datetime.now(tz=country_date)
         dueDate = (today + datetime.timedelta(days=31)).strftime("%Y-%m-%d")
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
         cities = dynamodb.query(
             TableName="TuCita247",
@@ -114,9 +110,9 @@ def lambda_handler(event, context):
                     "FIRST_NAME": {"S": data['First_Name']},
                     "LAST_NAME": {"S": data['Last_Name']},
                     "PHONE": {"S": data['User_Phone'] if data['User_Phone'] != '' else None},
+                    "COUNTRY": {"S": data['CountryCode'] if data['CountryCode'] != '' else None},
                     "IS_ADMIN": {"N": str(1)},
                     "USERID": {"S": userId },
-                    # "LOCATIONID": {"S": locationId },
                     "DOOR": {"S": 'MAIN DOOR'},
                     "SUPER_ADMIN": {"N": str(0)},
                     "STATUS": {"N": "1"}
@@ -164,17 +160,13 @@ def lambda_handler(event, context):
                     "ADDRESS": {"S": data['Address']},
                     "CITY": {"S": cityName},
                     "COUNTRY": {"S": data['Country']},
-                    # "CATEGORYID": {"S": data['CategoryId']},
                     "EMAIL": {"S": data['Email']},
                     "SHORTDESCRIPTION": {"S": str(data['Description'])},
                     "LONGDESCRIPTION": {"S": str(data['Description'])},
-                    # "FACEBOOK": {"S": data['Facebook']},
                     "GEOLOCATION": {"S": data['Geolocation']},
-                    # "INSTAGRAM": {"S": data['Instagram']},
                     "NAME": {"S": data['Name']},
                     "PHONE": {"S": data['Phone']},
-                    # "TWITTER": {"S": data['Twitter']},
-                    # "WEBSITE": {"S": data['Website']},
+                    "COUNTRYCODE": {"S": data['CountryCode']},
                     # "TAGS": {"S": data['Tags'] if data['Tags'] != '' else None},
                     "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
                     "DAYS_OFF": {"L": []},
@@ -184,6 +176,7 @@ def lambda_handler(event, context):
                     "STATUS": {"N": str(1)},
                     "LANGUAGE": {"S": data['Language']},
                     "PARENTBUSINESS": {"N": str(0)},
+                    "CREATED_DATE": {"S": str(dateOpe)},
                     "GSI2PK": {"S": 'PLAN#' + data['Plan']},
                     "GSI2SK": {"S": 'BUS#' + businessId},
                     "GSI3PK": {"S": 'LINK#' + data['TuCitaLink']},
@@ -191,7 +184,9 @@ def lambda_handler(event, context):
                     "GSI4PK": {"S": 'SEARCH'},
                     "GSI4SK": {"S": 'SEARCH'},
                     "GSI5PK": {"S": 'METADATA'},
-                    "GSI5SK": {"S": 'BUS#'+businessId}
+                    "GSI5SK": {"S": 'BUS#'+businessId},
+                    "GSI11PK": {"S": "DT#" + str(dateOpe)},
+                    "GSI11SK": {"S": "BUS#" + businessId}
                 },
                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -272,8 +267,6 @@ def lambda_handler(event, context):
                         "NAME": {"S": str(data['Provider'])},
                         "OPERATIONHOURS": {"S": '{\"MON\":[{\"I\":\"8\",\"F\":\"17\"}],\"TUE\":[{\"I\":\"8\",\"F\":\"17\"}],\"WED\":[{\"I\":\"8\",\"F\":\"17\"}],\"THU\":[{\"I\":\"8\",\"F\":\"17\"}],\"FRI\":[{\"I\":\"8\",\"F\":\"17\"}]}'},
                         "DAYS_OFF": {"L": []},
-                        # "OPEN": {"N": str(0)},
-                        # "PEOPLE_CHECK_IN": {"N": str(0)},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
                         "STATUS": {"N": str(1)},
@@ -294,7 +287,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'BUS#'+businessId},
                         "SKID": {"S": 'SER#'+serviceId},
                         "NAME": {"S": data['CategoryName']},
-                        "TIME_SERVICE": {"N": str(1)},
+                        "TIME_SERVICE": {"N": str(100)},
                         "BUFFER_TIME": {"N": str(10)},
                         "CUSTOMER_PER_TIME": {"N": str(1)},
                         "CUSTOMER_PER_BOOKING": {"N": str(1)},

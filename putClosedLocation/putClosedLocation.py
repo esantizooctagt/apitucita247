@@ -168,6 +168,15 @@ def lambda_handler(event, context):
                     )
                     logger.info(updAppo)
 
+                    putLog = table.put_item(
+                        Item={
+                            'PKID': 'LOG#'+str(dateOpe),
+                            'SKID': appo['PKID'],
+                            'STATUS': int(6)
+                        },
+                        ReturnValues='NONE'
+                    )
+
                     data = {
                         'BusinessId': businessId,
                         'CustomerId': appo['GSI2PK'].replace('CUS#',''),
@@ -267,6 +276,15 @@ def lambda_handler(event, context):
                             # ReturnValues="UPDATED_NEW"
                         )
                         logger.info(updAppo)
+
+                        putLog = table.put_item(
+                            Item={
+                                'PKID': 'LOG#'+str(dateOpe),
+                                'SKID': appo['PKID'],
+                                'STATUS': int(5)
+                            },
+                            ReturnValues='NONE'
+                        )
                         
                         data = {
                             'BusinessId': businessId,

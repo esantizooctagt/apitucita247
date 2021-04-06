@@ -194,19 +194,34 @@ def lambda_handler(event, context):
                         "PKID": {"S": appointmentId}, 
                         "SKID": {"S": appointmentId}
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, GSI9SK = :key, TIMECHECKOUT = :dateOpe", 
+                    "UpdateExpression": "SET #s = :status, GSI1SK = :key, GSI2SK = :key2, GSI9SK = :key, MODIFIED_DATE = :mod_date, TIMECHECKOUT = :dateOpe", 
                     "ExpressionAttributeValues": {
                         ":status": {"N": str(status)}, 
                         ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
                         ":key2": {"S": '#5' if str(status) == '5' else str(status) + '#DT#' + str(dateAppo)},
                         ":dateOpe": {"S": str(dateOpe)},
-                        ":qrCode": {"S": qrCode}
+                        ":qrCode": {"S": qrCode},
+                        ":mod_date": {"S": str(dateOpe)}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND QRCODE = :qrCode",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
                 }
             }
+            items.append(recordset)
+
+            recordset = {
+                "Put": {
+                    "TableName": "TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'LOG#' + str(dateOpe)},
+                        "SKID": {"S": appointmentId},
+                        "STATUS": {"N": str(status)}
+                    },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                    }
+                }
             items.append(recordset)
 
             recordset = {

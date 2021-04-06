@@ -2,6 +2,10 @@ import sys
 import logging
 import json
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
@@ -35,6 +39,9 @@ def lambda_handler(event, context):
         statusCode = ''
         customerId = str(uuid.uuid4()).replace("-","")
         data = json.loads(event['body'])
+
+        today = datetime.datetime.now()
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
         items = []
         recordset = {}
@@ -86,7 +93,11 @@ def lambda_handler(event, context):
                     "DISABILITY": {"N": str(data['Disability']) if str(data['Disability']) != '' else None},
                     "PLAYERID": {"S": data['PlayerId'] if data['PlayerId'] != '' else None},
                     "LANGUAGE": {"S": data['Language']},
-                    "STATUS": {"N": "1"}
+                    "COUNTRY": {"S": data['Country']},
+                    "STATUS": {"N": "1"},
+                    "CREATED_DATE": {"S": str(dateOpe)},
+                    "GSI11PK": {"S": "DT#" + str(dateOpe)},
+                    "GSI11SK": {"S": "MOB#" + data['Phone']}
                 },
                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"

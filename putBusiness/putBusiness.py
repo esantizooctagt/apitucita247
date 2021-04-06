@@ -2,6 +2,10 @@ import sys
 import logging
 import json
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
@@ -40,6 +44,11 @@ def lambda_handler(event, context):
         data = json.loads(event['body'])
         businessId = event['pathParameters']['id']
         parentBusiness = data['ParentBusiness']
+
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
         # BUSINESS CATEGORIES
         response = dynamodb.query(
             TableName = "TuCita247",
@@ -88,9 +97,6 @@ def lambda_handler(event, context):
                             "SKID": {"S": row['CategoryId']},
                             "GSI1PK": {"S": 'BUS#CAT'},
                             "GSI1SK": {"S": row['CategoryId']+'#'+businessId},
-                            # "GSI1PK": {"S": 'CAT#'+row['CategoryId'].split('#')[0]},
-                            # "GSI1SK": {"S": 'SUB#'+row['CategoryId'].split('#')[1]},
-                            # "NAME": {"S": str(row['Name'])}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -120,9 +126,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA' }
                 },
-                # CATEGORYID = :categoryId, 
-                # , GSI1PK = :key1, GSI1SK = :skey1
-                "UpdateExpression":"set ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, #l = :language, PHONE = :phone, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, REASONS = :reasons, GSI4PK = :search, GSI4SK = :search" + (", GSI8PK = :key2, GSI8SK = :skey2" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
+                "UpdateExpression":"set MODIFIED_DATE = :mod_date, ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, #l = :language, PHONE = :phone, COUNTRYCODE = :countryCode, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, REASONS = :reasons, GSI4PK = :search, GSI4SK = :search" + (", GSI8PK = :key2, GSI8SK = :skey2" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
                 "ExpressionAttributeNames": { '#n': 'NAME', '#l': 'LANGUAGE' },
                 "ExpressionAttributeValues": { 
                     ":longDescrip": {"S": data['LongDescription']},
@@ -136,6 +140,7 @@ def lambda_handler(event, context):
                     ":instagram": {"S": data['Instagram']},
                     ":name": {"S": data['Name']},
                     ":phone": {"S": data['Phone']},
+                    ":countryCode": {"S": data['CountryCode']},
                     ":twitter": {"S": data['Twitter']},
                     ":website": {"S": data['Website']},
                     ":parentBus": {"N": str(data['ParentBusiness'])},
@@ -143,13 +148,11 @@ def lambda_handler(event, context):
                     ":language": {"S": data['Language']},
                     ":reasons": {"S": data['Reasons']},
                     ":tucitalink": {"S": data['TuCitaLink'] if data['TuCitaLink'] != '' else None},
-                    # ":categoryId": {"S": data['CategoryId']},
-                    # ":key1": {"S": "BUS#CAT"},
-                    # ":skey1": {"S": data['CategoryId'] + "#" + businessId},
                     ":key2": {"S": "PARENT#BUS" if parentBusiness == 1 else None},
                     ":skey2": {"S": "BUS#" + businessId if parentBusiness == 1 else None},
                     ":zipcode": {"S": data['ZipCode']},
-                    ":search": {"S": "SEARCH"}
+                    ":search": {"S": "SEARCH"},
+                    ":mod_date": {"S": str(dateOpe)}
                 },
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
             },

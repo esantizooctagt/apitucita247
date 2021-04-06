@@ -37,12 +37,13 @@ def lambda_handler(event, context):
                 'PKID': 'BUS#' + businessId,
                 'SKID': 'USER#' + userId
             },
-            UpdateExpression="set FIRST_NAME = :firstName, LAST_NAME = :lastName, PHONE = :phone, ROLEID = :role, LOCATIONID = :locationId, #s = :status",
+            UpdateExpression="set FIRST_NAME = :firstName, LAST_NAME = :lastName, PHONE = :phone, COUNTRY = :countryCode, ROLEID = :role, LOCATIONID = :locationId, #s = :status",
             ExpressionAttributeNames=e,
             ExpressionAttributeValues={
                 ':firstName': data['First_Name'],
                 ':lastName': data['Last_Name'],
-                ':phone': data['Phone'].replace('(','').replace(')','').replace('-','').replace(' ',''),
+                ':phone': data['Phone'],
+                ':countryCode': data['CountryCode'],
                 ':role': data['RoleId'],
                 ':locationId': data['LocationId'],
                 ':status': data['Status']

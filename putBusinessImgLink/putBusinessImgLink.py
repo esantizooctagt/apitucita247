@@ -19,6 +19,7 @@ logger.setLevel(logging.INFO)
 
 s3 = boto3.client('s3')
 
+bucket = os.environ['bucket']
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
@@ -82,7 +83,7 @@ def lambda_handler(event, context):
         else: 
             if File != '':
                 logger.info('SUCCESS: Add image into the bucket')
-                if put_object('tucita247', businessId+'/img/link/'+businessId+'.'+ext, base64.b64decode(File), 'image/'+tipo):
+                if put_object(bucket, businessId+'/img/link/'+businessId+'.'+ext, base64.b64decode(File), 'image/'+tipo):
                     logger.info('Image Added')
                 else:
                     statusCode = 500

@@ -67,7 +67,7 @@ def lambda_handler(event, context):
                     'LocationId': row['SKID'].replace('LOC#',''),
                     'Name': row['NAME'],
                     'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else '',
-                    'ParentHours': row['PARENTHOURS'] if 'PARENTHOURS' in row else 0
+                    'ParentHours': int(row['PARENTHOURS']) if 'PARENTHOURS' in row else 0
                 }
                 record.append(recordset)
 
@@ -105,7 +105,7 @@ def lambda_handler(event, context):
                         'ProviderId': row['SKID'].replace('PRO#',''),
                         'Name': row['NAME'],
                         'OperationHours': row['OPERATIONHOURS'] if 'OPERATIONHOURS' in row else '',
-                        'ParentHours': row['PARENTHOURS'] if 'PARENTHOURS' in row else 0
+                        'ParentHours': int(row['PARENTHOURS']) if 'PARENTHOURS' in row else 0
                     }
                     serv.append(recordset)
                 locs = {

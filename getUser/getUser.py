@@ -27,7 +27,6 @@ def lambda_handler(event, context):
     try:
         userId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
-        logger.info("prev query")
         response = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
@@ -46,6 +45,7 @@ def lambda_handler(event, context):
                 'Last_Name': record['LAST_NAME'],
                 'Avatar': record['AVATAR'] if "AVATAR" in record else '',
                 'Phone': record['PHONE'],
+                'CountryCode': record['COUNTRY'] if 'COUNTRY' in record else '',
                 'Is_Admin': record['IS_ADMIN'],
                 'Business_Id': record['PKID'].replace('BUS#',''),
                 'Status': record['STATUS'],

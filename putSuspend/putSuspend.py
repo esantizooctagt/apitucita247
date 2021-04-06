@@ -13,13 +13,14 @@ import os
 REGION = 'us-east-1'
 KEY = os.environ['wpKey']
 SECRET = os.environ['wpSecret']
+CLOUDSEARCH = os.environ['cloudSearch']
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 ses = boto3.client('ses', region_name=REGION)
-search = boto3.client('cloudsearchdomain', endpoint_url="https://search-tucita247-djl3mvkaapbmo5zjxat7pcnepu.us-east-1.cloudsearch.amazonaws.com")
+search = boto3.client('cloudsearchdomain', endpoint_url=CLOUDSEARCH)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -66,22 +67,41 @@ def lambda_handler(event, context):
         }
         items.append(rows)
 
-        rows = {
-            "Update": {
-                "TableName": "TuCita247",
-                "Key": {
-                    "PKID": {"S": 'BUS#' + businessId },
-                    "SKID": {"S": 'METADATA' }
+        if value == 3:
+            rows = {
+                "Update": {
+                    "TableName": "TuCita247",
+                    "Key": {
+                        "PKID": {"S": 'BUS#' + businessId },
+                        "SKID": {"S": 'METADATA' }
+                    },
+                    "UpdateExpression":"set #s = :status, GSI4PK = :search, GSI4SK = :search",
+                    "ExpressionAttributeNames":{'#s': 'STATUS'},
+                    "ExpressionAttributeValues": { 
+                        ":status": {"N": '1'},
+                        ":search": {"S": 'SEARCH'}
+                    },
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                 },
-                "UpdateExpression":"set #s = :status",
-                "ExpressionAttributeNames":{'#s': 'STATUS'},
-                "ExpressionAttributeValues": { 
-                    ":status": {"N": '0' if value == 1 else '2' if value == 2 else '1'}
+            }
+            items.append(rows)
+        else:
+            rows = {
+                "Update": {
+                    "TableName": "TuCita247",
+                    "Key": {
+                        "PKID": {"S": 'BUS#' + businessId },
+                        "SKID": {"S": 'METADATA' }
+                    },
+                    "UpdateExpression":"set #s = :status",
+                    "ExpressionAttributeNames":{'#s': 'STATUS'},
+                    "ExpressionAttributeValues": { 
+                        ":status": {"N": '0' if value == 1 else '2' if value == 2 else '1'}
+                    },
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                 },
-                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
-            },
-        }
-        items.append(rows)
+            }
+            items.append(rows)
 
         logger.info(items)
         response = dynamodb.transact_write_items(

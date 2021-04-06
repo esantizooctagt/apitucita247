@@ -81,6 +81,7 @@ def lambda_handler(event, context):
                 'Business_Id': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME'],
                 'Country': row['COUNTRY'],
+                'CountryCode': row['COUNTRYCODE'] if 'COUNTRYCODE' in row else '',
                 'Address': row['ADDRESS'],
                 'LongDescription': row['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in row else '',
                 'ShortDescription': row['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in row else '',

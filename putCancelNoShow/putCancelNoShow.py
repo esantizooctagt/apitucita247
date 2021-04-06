@@ -83,7 +83,7 @@ def lambda_handler(event, context):
 
             country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
             today = datetime.datetime.now(tz=country_date)
-            dateOpe = today.strftime("%Y-%m-%d-%H-00")
+            dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
 
             getBusiness = dynamodb.query(
                 TableName="TuCita247",
@@ -147,16 +147,31 @@ def lambda_handler(event, context):
                         "PKID": {"S": appId}, 
                         "SKID": {"S": appId}, 
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key01, GSI9SK = :key01 REMOVE GSI8PK, GSI8SK, TIMECHEK",
+                    "UpdateExpression": "SET #s = :status, MODIFIED_DATE = :mod_date, GSI1SK = :key01, GSI2SK = :key01, GSI9SK = :key01 REMOVE GSI8PK, GSI8SK, TIMECHEK",
                     "ExpressionAttributeValues": { 
                         ":status": {"N": str(1)}, 
-                        ":key01": {"S": '1#DT#' + str(dateAppo)}
+                        ":key01": {"S": '1#DT#' + str(dateAppo)},
+                        ":mod_date": {"S": str(dateOpe)}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
                 }
             }
+            items.append(recordset)
+
+            recordset = {
+                "Put": {
+                    "TableName": "TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'LOG#' + str(dateOpe)},
+                        "SKID": {"S": appId},
+                        "STATUS": {"N": str(1)}
+                    },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                    }
+                }
             items.append(recordset)
 
             logger.info(items)
@@ -169,12 +184,12 @@ def lambda_handler(event, context):
             hTime = int(str(dateAppointment[-5:])[0:2])
             if hTime >= 12:
                 if hTime == 12:
-                    sTime = str(hTime) + ':00 PM'
+                    sTime = str(hTime) + ':'+dateAppointment[-2:]+' PM'
                 else:
                     hTime = hTime-12
-                    sTime = str(hTime).rjust(2,'0') + ':00 PM'
+                    sTime = str(hTime).rjust(2,'0') + ':'+dateAppointment[-2:]+' PM'
             else:
-                sTime = str(hTime).rjust(2,'0') + ':00 AM'
+                sTime = str(hTime).rjust(2,'0') + ':'+dateAppointment[-2:]+' AM'
             data = {
                 'BusinessId': businessId,
                 'LocationId': locationId,

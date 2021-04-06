@@ -85,11 +85,10 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'APPO#' + appointmentId}, 
                     "SKID": {"S": 'APPO#' + appointmentId}, 
                 },
-                "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI9SK = :key01, GSI2SK = :key01, TIMECANCEL = :dateope, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, STATUS_CANCEL = :statCancel REMOVE GSI8PK, GSI8SK",
+                "UpdateExpression": "SET #s = :status, MODIFIED_DATE = :mod_date, GSI1SK = :key01, GSI9SK = :key01, GSI2SK = :key01, TIMECANCEL = :dateope, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, STATUS_CANCEL = :statCancel REMOVE GSI8PK, GSI8SK",
                 "ExpressionAttributeValues": { 
                     ":status": {"N": str(status)}, 
                     ":key01": {"S": str(status) + '#DT#' + str(dateAppo)}, 
-                    # ":key02": {"S": '#5'}, 
                     ":pkey05": {"S": businessId}, 
                     ":skey05": {"S": appoData}, 
                     ":pkey06": {"S": locationId}, 
@@ -97,13 +96,28 @@ def lambda_handler(event, context):
                     ":pkey07": {"S": providerId}, 
                     ":skey07": {"S": appoData},
                     ":dateope": {"S": dateOpe},
-                    ":statCancel": {"N": str(2)}
+                    ":statCancel": {"N": str(2)},
+                    ":mod_date": {"S": str(dateOpe)}
                 },
                 "ExpressionAttributeNames": {'#s': 'STATUS'},
                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
             }
         }
+        items.append(recordset)
+
+        recordset = {
+            "Put": {
+                "TableName": "TuCita247",
+                "Item": {
+                    "PKID": {"S": 'LOG#' + str(dateOpe)},
+                    "SKID": {"S": 'APPO#' + appointmentId},
+                    "STATUS": {"N": str(status)}
+                },
+                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                }
+            }
         items.append(recordset)
 
         logger.info(items)

@@ -17,6 +17,9 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
+def getKey(obj):
+  return obj['Name']
+
 def lambda_handler(event, context):
     records =[]
     try:
@@ -45,7 +48,8 @@ def lambda_handler(event, context):
                 'Imagen': row['IMG_CAT']
             }
             records.append(recordset)
-        
+
+        records.sort(key=getKey)
         statusCode = 200
         body = json.dumps(records)
     except Exception as e:

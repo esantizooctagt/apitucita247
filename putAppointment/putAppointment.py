@@ -110,6 +110,15 @@ def lambda_handler(event, context):
                     ReturnValues="UPDATED_NEW"
                 )
                 appo = json_dynamodb.loads(response['Attributes'])
+
+                putLog = table.put_item(
+                    Item={
+                        'PKID': 'LOG#'+str(dateOpe),
+                        'SKID': 'APPO#'+appointmentId,
+                        'STATUS': int(status)
+                    },
+                    ReturnValues='NONE'
+                )
             else:
                 logger.info("status 2 ok")
                 v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe, ':precheckin': 'PRECHECKIN'}
@@ -124,6 +133,15 @@ def lambda_handler(event, context):
                     ReturnValues="UPDATED_NEW"
                 )
                 appo = json_dynamodb.loads(response['Attributes'])
+
+                putLog = table.put_item(
+                    Item={
+                        'PKID': 'LOG#'+str(dateOpe),
+                        'SKID': 'APPO#'+appointmentId,
+                        'STATUS': int(status)
+                    },
+                    ReturnValues='NONE'
+                )
 
             if dateOpe[0:10] == dateAppo[0:10]:
                 data = {
@@ -149,11 +167,10 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'APPO#' + appointmentId}, 
                         "SKID": {"S": 'APPO#' + appointmentId}, 
                     },
-                    "UpdateExpression": "SET #s = :status, GSI1SK = :key01, GSI2SK = :key01, REASONID = :reason, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, GSI9SK = :key01, TIMECANCEL = :dateope, STATUS_CANCEL = :statCancel REMOVE GSI8PK, GSI8SK",
+                    "UpdateExpression": "SET #s = :status, MODIFIED_DATE = :mod_date, GSI1SK = :key01, GSI2SK = :key01, REASONID = :reason, GSI5PK = :pkey05, GSI5SK = :skey05, GSI6PK = :pkey06, GSI6SK = :skey06, GSI7PK = :pkey07, GSI7SK = :skey07, GSI9SK = :key01, TIMECANCEL = :dateope, STATUS_CANCEL = :statCancel REMOVE GSI8PK, GSI8SK",
                     "ExpressionAttributeValues": { 
                         ":status": {"N": str(status)}, 
                         ":key01": {"S": str(status) + '#DT#' + str(dateAppo)}, 
-                        # ":key02": {"S": '#5'}, 
                         ":reason": {"S": reasonId},  
                         ":pkey05": {"S": businessId}, 
                         ":skey05": {"S": appoData}, 
@@ -162,11 +179,26 @@ def lambda_handler(event, context):
                         ":pkey07": {"S": providerId}, 
                         ":skey07": {"S": appoData},
                         ":dateope": {"S": dateOpe},
-                        ":statCancel": {"N": str(3)}
+                        ":statCancel": {"N": str(3)},
+                        ":mod_date": {"S": str(dateOpe)}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
+                }
+            }
+            items.append(recordset)
+
+            recordset = {
+                "Put": {
+                    "TableName": "TuCita247",
+                    "Item": {
+                        "PKID": {"S": 'LOG#' + str(dateOpe)},
+                        "SKID": {"S": 'APPO#' + appointmentId},
+                        "STATUS": {"N": str(status)}
+                    },
+                    "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
                 }
             }
             items.append(recordset)

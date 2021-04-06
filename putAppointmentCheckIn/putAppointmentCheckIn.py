@@ -176,7 +176,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'APPO#' + appointmentId}, 
                     "SKID": {"S": 'APPO#' + appointmentId}
                 },
-                "UpdateExpression": "REMOVE GSI8PK, GSI8SK SET DATE_APPO = :dateAppo, #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty, GSI5PK = :key05, GSI5SK = :skey05, GSI6PK = :key06, GSI6SK = :skey06, GSI7PK = :key07, GSI7SK = :skey07, GSI9SK = :key, GSI10SK = :dateAppo" + ("" if typeAppo != 2 else ", GSI4PK = :key4, GSI4SK = :skey4"), 
+                "UpdateExpression": "REMOVE GSI8PK, GSI8SK SET DATE_APPO = :dateAppo, MODIFIED_DATE = :mod_date, #s = :status, GSI1SK = :key, GSI2SK = :key2, TIMECHECKIN = :dateOpe, PEOPLE_QTY = :qty, GSI5PK = :key05, GSI5SK = :skey05, GSI6PK = :key06, GSI6SK = :skey06, GSI7PK = :key07, GSI7SK = :skey07, GSI9SK = :key, GSI10SK = :dateAppo" + ("" if typeAppo != 2 else ", GSI4PK = :key4, GSI4SK = :skey4"), 
                 "ExpressionAttributeValues": {
                     ":status": {"N": "3"}, 
                     ":key": {"S": str(status) + '#DT#' + str(dateAppo)}, 
@@ -192,13 +192,28 @@ def lambda_handler(event, context):
                     ":skey06": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId},
                     ":key07": {"S" : 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId},
                     ":skey07": {"S" : str(dateAppo)[0:10]+'#APPO#' + appointmentId},
-                    ":dateAppo": {"S": dateAppo}
+                    ":dateAppo": {"S": dateAppo},
+                    ":mod_date": {"S": str(dateOpe)}
                 },
                 "ExpressionAttributeNames": {'#s': 'STATUS'},
                 "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID) AND QRCODE = :qrCode",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
             }
         }
+        items.append(cleanNullTerms(recordset))
+
+        recordset = {
+            "Put": {
+                "TableName": "TuCita247",
+                "Item": {
+                    "PKID": {"S": 'LOG#' + str(dateOpe)},
+                    "SKID": {"S": 'APPO#' + appointmentId},
+                    "STATUS": {"N": str(status)}
+                },
+                "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
+                "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
+                }
+            }
         items.append(cleanNullTerms(recordset))
 
         recordset = {

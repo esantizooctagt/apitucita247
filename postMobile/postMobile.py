@@ -62,6 +62,7 @@ def lambda_handler(event, context):
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else '',
                 'DOB': item['DOB'] if 'DOB' in item else '',
                 'Mobile': to_number,
+                'Country': item['COUNTRY'] if 'COUNTRY' in item else '',
                 'Language': item['LANGUAGE'] if 'LANGUAGE' in item else 'en'
             }
             if item['SKID'] != '' and playerId != '':

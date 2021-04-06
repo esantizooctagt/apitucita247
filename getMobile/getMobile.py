@@ -27,13 +27,16 @@ def lambda_handler(event, context):
 
     try:
         mobile = event['pathParameters']['mobile']
+        country = event['pathParameters']['country']
         details = dynamodb.query(
             TableName="TuCita247",
             ReturnConsumedCapacity='TOTAL',
             KeyConditionExpression='PKID = :mobile AND begins_with(SKID, :customer)',
+            FilterExpression='COUNTRY = :country',
             ExpressionAttributeValues={
                 ':customer': {'S': 'CUS#'},
-                ':mobile': {'S': 'MOB#'+mobile}
+                ':mobile': {'S': 'MOB#'+mobile},
+                ':country': {'S': country}
             }
         )
         recordset = {}

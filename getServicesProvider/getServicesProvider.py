@@ -55,7 +55,7 @@ def lambda_handler(event, context):
             recordset = {
                 'ServiceId': row['SKID'].replace('SER#',''),
                 'Name': row['NAME'],
-                'TimeService': row['TIME_SERVICE'],
+                'TimeService': str(row['TIME_SERVICE']).zfill(4)[0:2] + ':' + str(row['TIME_SERVICE']).zfill(4)[-2:],
                 'BufferTime': row['BUFFER_TIME'] if 'BUFFER_TIME' in row else 1,
                 'CustomerPerBooking': row['CUSTOMER_PER_BOOKING'],
                 'Selected': selected
