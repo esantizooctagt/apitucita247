@@ -44,12 +44,12 @@ def put_object(bucket_name, object_name, file):
     return True
 
 def lambda_handler(event, context):
-    try:
-        today = datetime.datetime.now()
-        year = today.strftime("%Y")
-        month = today.strftime("%m").zfill(2)
-        day = today.strftime("%d").zfill(2)
+    today = datetime.datetime.now()
+    year = today.strftime("%Y")
+    month = today.strftime("%m").zfill(2)
+    day = today.strftime("%d").zfill(2)
 
+    try:
         categories = dynamodb.query(
             TableName="TuCita247",
             IndexName="TuCita247_Index",
@@ -253,7 +253,7 @@ def lambda_handler(event, context):
                     'Type': cita['TYPE'],
                     'Phone': cita['PHONE'],
                     'People': int(cita['PEOPLE_QTY']),
-                    'Created_Date': float(cita['CREATED_DATE'].replace('-','')) if 'CREATED_DATE' in cusData else 0
+                    'Created_Date': float(cita['CREATED_DATE'].replace('-','')) if 'CREATED_DATE' in cita else 0
                 }
                 appoArr.append(citaRecord)
 
