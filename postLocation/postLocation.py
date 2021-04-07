@@ -7,6 +7,10 @@ import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import base64
 
 import uuid
@@ -40,6 +44,11 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
+
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
         locationId = str(uuid.uuid4()).replace("-","")
         data = json.loads(event['body'])
 
@@ -88,7 +97,8 @@ def lambda_handler(event, context):
                         "OPEN": {"N": str(0)},
                         "DOORS": {"S": str(data['Doors'])},
                         "TIME_ZONE":{"S": data['TimeZone']},
-                        "STATUS": {"N": str(data['Status'])}
+                        "STATUS": {"N": str(data['Status'])},
+                        "CREATED_DATE": {"S": str(dateOpe)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "NONE"
@@ -103,7 +113,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'BUS#' + data['BusinessId']},
                         "SKID": {"S": 'LOC#' + locationId}
                     },
-                    "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, ZIPCODE = :zipcode, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, DOORS = :doors, #s = :status, TIME_ZONE = :timezone, MANUAL_CHECK_OUT = :manualCheckOut",
+                    "UpdateExpression": "SET #n = :name, CITY = :city, SECTOR = :sector, ADDRESS = :address, ZIPCODE = :zipcode, GEOLOCATION = :geolocation, PARENT_LOCATION = :parentLocation, MAX_CUSTOMER = :maxCustomer, DOORS = :doors, #s = :status, TIME_ZONE = :timezone, MANUAL_CHECK_OUT = :manualCheckOut, MODIFIED_DATE = :mod_date",
                     "ExpressionAttributeNames": {"#n":"NAME", "#s":"STATUS"},
                     "ExpressionAttributeValues": {
                         ":name": {"S": str(data['Name'])},
@@ -117,7 +127,8 @@ def lambda_handler(event, context):
                         ":manualCheckOut": {"N": str(data['ManualCheckOut'])},
                         ":doors": {"S": str(data['Doors'])},
                         ":timezone": {"S": data['TimeZone']},
-                        ":status": {"N": str(data['Status'])}
+                        ":status": {"N": str(data['Status'])},
+                        ":mod_date": {"S": str(dateOpe)}
                     },
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "NONE"

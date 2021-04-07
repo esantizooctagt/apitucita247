@@ -6,6 +6,10 @@ import boto3
 import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import base64
 
 import uuid
@@ -29,6 +33,11 @@ def lambda_handler(event, context):
     try:
         statusCode = ''
         pollId = str(uuid.uuid4()).replace("-","")
+
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
         data = json.loads(event['body'])
 
         items = []
@@ -51,7 +60,8 @@ def lambda_handler(event, context):
                         "HAPPY": {"N": "0"},
                         "NEUTRAL": {"N": "0"},
                         "ANGRY": {"N": "0"},
-                        "STATUS": {"N": str(data['Status'])}
+                        "STATUS": {"N": str(data['Status'])},
+                        "CREATED_DATE": {"S": str(dateOpe)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "NONE"
@@ -66,7 +76,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'BUS#' + data['BusinessId']},
                         "SKID": {"S": 'POLL#' + pollId}
                     },
-                    "UpdateExpression": "SET #n = :name, GSI2PK = :key2, GSI2SK = :key3, LOCATIONID = :locationId, DATE_POLL = :datePoll, DATE_FIN_POLL = :dateFinPoll, #s = :status",
+                    "UpdateExpression": "SET #n = :name, GSI2PK = :key2, GSI2SK = :key3, LOCATIONID = :locationId, DATE_POLL = :datePoll, DATE_FIN_POLL = :dateFinPoll, #s = :status, MODIFIED_DATE = :mod_date",
                     "ExpressionAttributeValues": {
                         ':name': {'S': data['Name']},
                         ':key2': {'S': 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
@@ -74,7 +84,8 @@ def lambda_handler(event, context):
                         ':locationId': {'S': data['LocationId']},
                         ':datePoll': {'S': data['DatePoll']},
                         ':dateFinPoll': {'S': data['DateFinPoll']},
-                        ':status': {'N': str(data['Status'])}
+                        ':status': {'N': str(data['Status'])},
+                        ":mod_date": {"S": str(dateOpe)}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS','#n': 'NAME'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",

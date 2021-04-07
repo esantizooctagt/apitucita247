@@ -249,7 +249,8 @@ def lambda_handler(event, context):
                         "MAX_CUSTOMER": {"N": str(item['MaxCustomer'])},
                         "PEOPLE_CHECK_IN": {"N": str(0)},
                         "TIME_ZONE": {"S": 'America/Puerto_Rico'},
-                        "STATUS": {"N": str(1)}
+                        "STATUS": {"N": str(1)},
+                        "CREATED_DATE": {"S": str(dateOpe)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -271,7 +272,8 @@ def lambda_handler(event, context):
                         "PARENTHOURS": {"N": str(1)},
                         "STATUS": {"N": str(1)},
                         "GSI1PK": {"S": 'BUS#'+businessId},
-                        "GSI1SK": {"S": 'PRO#'+providerId}
+                        "GSI1SK": {"S": 'PRO#'+providerId},
+                        "CREATED_DATE": {"S": str(dateOpe)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"
@@ -292,7 +294,8 @@ def lambda_handler(event, context):
                         "CUSTOMER_PER_TIME": {"N": str(1)},
                         "CUSTOMER_PER_BOOKING": {"N": str(1)},
                         "COLOR": {"S": str('#D9E1F2')},
-                        "STATUS": {"N": str(1)}
+                        "STATUS": {"N": str(1)},
+                        "CREATED_DATE": {"S": str(dateOpe)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "ALL_OLD"

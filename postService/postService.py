@@ -7,6 +7,10 @@ import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import base64
 
 import uuid
@@ -30,6 +34,11 @@ def lambda_handler(event, context):
     try:
         statusCode = ''
         serviceId = str(uuid.uuid4()).replace("-","")
+
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
         data = json.loads(event['body'])
 
         items = []
@@ -56,7 +65,8 @@ def lambda_handler(event, context):
                         "CUSTOMER_PER_TIME": {"N": data['CustomerPerTime']},
                         "CUSTOMER_PER_BOOKING": {"N": data['CustomerPerBooking']},
                         "COLOR": {"S": data['Color']},
-                        "STATUS": {"N": str(data['Status'])}
+                        "STATUS": {"N": str(data['Status'])},
+                        "CREATED_DATE": {"S": str(dateOpe)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "NONE"
@@ -71,7 +81,7 @@ def lambda_handler(event, context):
                         "PKID": {"S": 'BUS#' + data['BusinessId']},
                         "SKID": {"S": 'SER#' + serviceId}
                     },
-                    "UpdateExpression": "SET #n = :name, TIME_SERVICE = :timeService, BUFFER_TIME = :bufferTime, CUSTOMER_PER_TIME = :customerPerTime, CUSTOMER_PER_BOOKING = :customerPerBooking, #s = :status, COLOR = :color",
+                    "UpdateExpression": "SET #n = :name, TIME_SERVICE = :timeService, BUFFER_TIME = :bufferTime, CUSTOMER_PER_TIME = :customerPerTime, CUSTOMER_PER_BOOKING = :customerPerBooking, #s = :status, COLOR = :color, MODIFIED_DATE = :mod_date",
                     "ExpressionAttributeValues": {
                         ':name': {'S': data['Name']},
                         ':timeService': {'N': str(data['TimeService'])},
@@ -79,7 +89,8 @@ def lambda_handler(event, context):
                         ':customerPerTime': {'N': str(data['CustomerPerTime'])},
                         ':customerPerBooking': {'N': str(data['CustomerPerBooking'])},
                         ':status': {'N': str(data['Status'])},
-                        ':color': {'S': data['Color']}
+                        ':color': {'S': data['Color']},
+                        ":mod_date": {"S": str(dateOpe)}
                     },
                     "ExpressionAttributeNames": {'#s': 'STATUS','#n': 'NAME'},
                     "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",

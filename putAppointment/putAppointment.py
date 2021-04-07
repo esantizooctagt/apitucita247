@@ -98,13 +98,13 @@ def lambda_handler(event, context):
         logger.info("prev todo ok")
         if str(status) != "5":
             if str(status) != "2":
-                v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe}
+                v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': str(dateOpe)}
                 response = table.update_item(
                     Key={
                         'PKID': 'APPO#' + appointmentId,
                         'SKID': 'APPO#' + appointmentId
                     },
-                    UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, GSI9SK = :key01",
+                    UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, GSI9SK = :key01, MODIFIED_DATE = :dateope",
                     ExpressionAttributeNames=e,
                     ExpressionAttributeValues=v,
                     ReturnValues="UPDATED_NEW"
@@ -122,13 +122,13 @@ def lambda_handler(event, context):
                 )
             else:
                 logger.info("status 2 ok")
-                v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': dateOpe, ':precheckin': 'PRECHECKIN'}
+                v = {':status': status, ':key01': str(status) + '#DT#' + str(dateAppo), ':key02': str(status) + '#DT#' + str(dateAppo), ':dateope': str(dateOpe), ':precheckin': 'PRECHECKIN'}
                 response = table.update_item(
                     Key={
                         'PKID': 'APPO#' + appointmentId,
                         'SKID': 'APPO#' + appointmentId
                     },
-                    UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, GSI9SK = :key01, TIMECHEK = :dateope, GSI8PK = :precheckin, GSI8SK = :dateope",
+                    UpdateExpression="SET #s = :status, GSI1SK = :key01, GSI2SK = :key02, GSI9SK = :key01, TIMECHEK = :dateope, GSI8PK = :precheckin, GSI8SK = :dateope, MODIFIED_DATE = :dateope",
                     ExpressionAttributeNames=e,
                     ExpressionAttributeValues=v,
                     ReturnValues="UPDATED_NEW"

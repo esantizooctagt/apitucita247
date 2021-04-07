@@ -7,6 +7,10 @@ import botocore.exceptions
 from boto3.dynamodb.conditions import Key, Attr
 from dynamodb_json import json_util as json_dynamodb
 
+import datetime
+import dateutil.tz
+from datetime import timezone
+
 import base64
 
 import uuid
@@ -41,6 +45,11 @@ def lambda_handler(event, context):
     try:
         statusCode = ''
         providerId = str(uuid.uuid4()).replace("-","")
+
+        country_date = dateutil.tz.gettz('America/Puerto_Rico')
+        today = datetime.datetime.now(tz=country_date)
+        dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
+
         data = json.loads(event['body'])
 
         items = []
@@ -93,7 +102,8 @@ def lambda_handler(event, context):
                         "DAYS_OFF": {"L": resDays},
                         "PARENTDAYSOFF": {"N": str(1)},
                         "PARENTHOURS": {"N": str(1)},
-                        "STATUS": {"N": str(data['Status'])}
+                        "STATUS": {"N": str(data['Status'])},
+                        "CREATED_DATE": {"S": str(dateOpe)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                     "ReturnValuesOnConditionCheckFailure": "NONE"
@@ -182,11 +192,12 @@ def lambda_handler(event, context):
                             "PKID": {"S": 'BUS#' + data['BusinessId'] + '#LOC#' + data['LocationId']},
                             "SKID": {"S": 'PRO#' + providerId}
                         },
-                        "UpdateExpression": "SET #n = :name,  #s = :status, DAYS_OFF = :daysOff",
+                        "UpdateExpression": "SET #n = :name,  #s = :status, DAYS_OFF = :daysOff, MODIFIED_DATE = :mod_date",
                         "ExpressionAttributeValues": {
                             ':name': {'S': data['Name']},
                             ':status': {'N': str(data['Status'])},
-                            ':daysOff': {'L': daysOff}
+                            ':daysOff': {'L': daysOff},
+                            ":mod_date": {"S": str(dateOpe)}
                         },
                         "ExpressionAttributeNames": {'#s': 'STATUS','#n': 'NAME'},
                         "ConditionExpression": "attribute_exists(PKID) AND attribute_exists(SKID)",
@@ -220,7 +231,8 @@ def lambda_handler(event, context):
                             "DAYS_OFF": {"L": daysOff},
                             "PARENTDAYSOFF": {"N": str(parD)},
                             "PARENTHOURS": {"N": str(parH)},
-                            "STATUS": {"N": str(stat)}
+                            "STATUS": {"N": str(stat)},
+                            "CREATED_DATE": {"S": str(dateOpe)}
                         },
                         "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                         "ReturnValuesOnConditionCheckFailure": "NONE"
