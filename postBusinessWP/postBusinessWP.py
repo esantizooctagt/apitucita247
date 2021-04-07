@@ -185,7 +185,7 @@ def lambda_handler(event, context):
                     "GSI4SK": {"S": 'SEARCH'},
                     "GSI5PK": {"S": 'METADATA'},
                     "GSI5SK": {"S": 'BUS#'+businessId},
-                    "GSI11PK": {"S": "DT#" + str(dateOpe)},
+                    "GSI11PK": {"S": "DT#" + str(dateOpe)[0:10]},
                     "GSI11SK": {"S": "BUS#" + businessId}
                 },
                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",

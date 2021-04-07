@@ -96,8 +96,8 @@ def lambda_handler(event, context):
                     "COUNTRY": {"S": data['Country']},
                     "STATUS": {"N": "1"},
                     "CREATED_DATE": {"S": str(dateOpe)},
-                    "GSI11PK": {"S": "DT#" + str(dateOpe)},
-                    "GSI11SK": {"S": "MOB#" + data['Phone']}
+                    "GSI11PK": {"S": "DT#" + str(dateOpe)[0:10]},
+                    "GSI11SK": {"S": 'CUS#' + customerId}
                 },
                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD"

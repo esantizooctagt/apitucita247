@@ -616,8 +616,8 @@ def lambda_handler(event, context):
                                     "GSI1PK": {"S": "CUS#" + customerId}, 
                                     "GSI1SK": {"S": "CUS#" + customerId},
                                     "CREATED_DATE": {"S": str(dateOpe)},
-                                    "GSI11PK": {"S": "DT#" + str(dateOpe)},
-                                    "GSI11SK": {"S": "MOB#" + phone}
+                                    "GSI11PK": {"S": "DT#" + str(dateOpe)[0:10]},
+                                    "GSI11SK": {"S": 'CUS#' + customerId}
                                 },
                                 "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
                                 "ReturnValuesOnConditionCheckFailure": "ALL_OLD" 
@@ -723,7 +723,7 @@ def lambda_handler(event, context):
                                 "GSI9SK": {"S": ('1' if status == 0 else str(status)) + '#DT#' + dateAppointment},
                                 "GSI10PK": {"S": 'CUS#' + customerId},
                                 "GSI10SK": {"S": dateAppointment},
-                                "GSI11PK": {"S": "DT#" + str(dateOpe)},
+                                "GSI11PK": {"S": "DT#" + str(dateOpe)[0:10]},
                                 "GSI11SK": {"S": "APPO#" + appoId},
                             },
                             "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
