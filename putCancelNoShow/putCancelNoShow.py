@@ -164,8 +164,9 @@ def lambda_handler(event, context):
                 "Put": {
                     "TableName": "TuCita247",
                     "Item": {
-                        "PKID": {"S": 'LOG#' + str(dateOpe)},
-                        "SKID": {"S": appId},
+                        "PKID": {"S": 'LOG#' + str(dateOpe)[0:10]},
+                        "SKID": {"S": appId + '#' + str(dateOpe)},
+                        "DATE_APPO": {"S": str(dateOpe)},
                         "STATUS": {"N": str(1)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",

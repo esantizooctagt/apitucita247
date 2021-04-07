@@ -170,8 +170,9 @@ def lambda_handler(event, context):
 
                     putLog = table.put_item(
                         Item={
-                            'PKID': 'LOG#'+str(dateOpe),
-                            'SKID': appo['PKID'],
+                            'PKID': 'LOG#'+str(dateOpe)[0:10],
+                            'SKID': appo['PKID'] + '#' + str(dateOpe),
+                            'DATE_APPO': str(dateOpe),
                             'STATUS': int(6)
                         },
                         ReturnValues='NONE'
@@ -279,8 +280,9 @@ def lambda_handler(event, context):
 
                         putLog = table.put_item(
                             Item={
-                                'PKID': 'LOG#'+str(dateOpe),
-                                'SKID': appo['PKID'],
+                                'PKID': 'LOG#'+str(dateOpe)[0:10],
+                                'SKID': appo['PKID'] + '#' + str(dateOpe),
+                                'DATE_APPO': str(dateOpe),
                                 'STATUS': int(5)
                             },
                             ReturnValues='NONE'

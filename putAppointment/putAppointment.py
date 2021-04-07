@@ -113,8 +113,9 @@ def lambda_handler(event, context):
 
                 putLog = table.put_item(
                     Item={
-                        'PKID': 'LOG#'+str(dateOpe),
-                        'SKID': 'APPO#'+appointmentId,
+                        'PKID': 'LOG#'+str(dateOpe)[0:10],
+                        'SKID': 'APPO#'+appointmentId+'#'+str(dateOpe),
+                        'DATE_APPO': str(dateOpe),
                         'STATUS': int(status)
                     },
                     ReturnValues='NONE'
@@ -136,8 +137,9 @@ def lambda_handler(event, context):
 
                 putLog = table.put_item(
                     Item={
-                        'PKID': 'LOG#'+str(dateOpe),
-                        'SKID': 'APPO#'+appointmentId,
+                        'PKID': 'LOG#'+str(dateOpe)[0:10],
+                        'SKID': 'APPO#'+appointmentId+'#'+str(dateOpe),
+                        'DATE_APPO': str(dateOpe),
                         'STATUS': int(status)
                     },
                     ReturnValues='NONE'
@@ -193,8 +195,9 @@ def lambda_handler(event, context):
                 "Put": {
                     "TableName": "TuCita247",
                     "Item": {
-                        "PKID": {"S": 'LOG#' + str(dateOpe)},
-                        "SKID": {"S": 'APPO#' + appointmentId},
+                        "PKID": {"S": 'LOG#' + str(dateOpe)[0:10]},
+                        "SKID": {"S": 'APPO#' + appointmentId + '#' + str(dateOpe)},
+                        "DATE_APPO": {"S": str(dateOpe)},
                         "STATUS": {"N": str(status)}
                     },
                     "ConditionExpression": "attribute_not_exists(PKID) AND attribute_not_exists(SKID)",
