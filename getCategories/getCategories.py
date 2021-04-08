@@ -22,6 +22,7 @@ def getKey(obj):
 
 def lambda_handler(event, context):
     records =[]
+    specific_order = ['A','Á','B','C','D','E','É','F','G','H','I','Í','J','K','L','M','N','Ñ','O','Ó','P','Q','R','S','T','U','Ú','Ü','V','W','X','Y','Z']
     stage = event['headers']
     if stage['origin'] != "http://localhost:4200":
         cors = os.environ['prodCors']
@@ -84,7 +85,7 @@ def lambda_handler(event, context):
                 recSubset.append(subSet)
             
             if recSubset != []:
-                recSubset.sort(key=getKey)
+                recSubset.sort(key=lambda v: specific_order.index(v['Name'][0:1]))
                 for subItem in recSubset:
                     dat = {
                         'CategoryId': subItem['CategoryId'],

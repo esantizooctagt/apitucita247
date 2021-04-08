@@ -388,10 +388,10 @@ def lambda_handler(event, context):
             SUBJECT = "Tu Cita 24/7 - Welcome Email" if language == 'en' else "Tu Cita 24/7 - Correo de Bienvenida"
             if language == 'en':
                 BODY_TEXT = ("Hello and welcome! Thank you for joining Tu Cita 24/7. Copy and paste this link https://console.tucita247.com/en/verification/" + userId + "/0/"+passDecrypt+" .Once you activate your account, you can add images, create keywords, services, opening hours, and much more information about your business. Your customers will love being able to book your services online 24/7, and you will love the benefits of the system. If you need any help, choose your favorite way. Our friendly support staff is here to help you Monday through Friday from 9:00 AM to 6:00 PM. " +
-                        "Click “Chat with us” at www.tucita247.com or on your administration page after you activating your account. Email us at support@tucita247.com. Call us at 939-267-0007. All the best from the Tu Cita 24/7 support team.")
+                        "Click “Chat with us” at https://www.tucita247.com . Email us at support@tucita247.com. Call us at 939-267-0007. All the best from the Tu Cita 24/7 support team.")
             else:
                 BODY_TEXT = ("¡Hola y bienvenido! Gracias por unirse a Tu Cita 24/7. Copie y pegue este enlace https://console.tucita247.com/en/verification/" + userId + "/0/"+passDecrypt+" .Una vez que active su cuenta, puede agregar imágenes, crear palabras clave, servicios, horarios de apertura y mucha más información sobre su negocio. A sus clientes les encantará poder reservar sus servicios en línea 24/7, y a usted le encantará los beneficios del sistema. Si necesita ayuda, elija su forma favorita. Nuestro amable personal de soporte está aquí para ayudarlo de lunes a viernes de 9:00 AM a 6:00 PM." +
-                        "Hable con nosotros. Haga click en “Chatea con nosotros” en https://www.tucita247.com o en su página de administración después de activar su cuenta. Envíenos un correo electrónico a support@tucita247.com. Llámanos al 939-267-0007. Mucho éxito de parte del equipo de Tu Cita 24/7.")
+                        "Hable con nosotros. Haga click en “Chatea con nosotros” en https://www.tucita247.com . Envíenos un correo electrónico a support@tucita247.com. Llámanos al 939-267-0007. Mucho éxito de parte del equipo de Tu Cita 24/7.")
 
             # The HTML body of the email.
             if language == 'en':

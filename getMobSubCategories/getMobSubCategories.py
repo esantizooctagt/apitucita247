@@ -22,6 +22,7 @@ def getKey(obj):
 
 def lambda_handler(event, context):
     records =[]
+    specific_order = ['A','Á','B','C','D','E','É','F','G','H','I','Í','J','K','L','M','N','Ñ','O','Ó','P','Q','R','S','T','U','Ú','Ü','V','W','X','Y','Z']
     try:
         language = event['pathParameters']['language']
         categoryId = event['pathParameters']['categoryId']
@@ -49,7 +50,8 @@ def lambda_handler(event, context):
             }
             records.append(recordset)
 
-        records.sort(key=getKey)
+        # records.sort(key=getKey)
+        records.sort(key=lambda v: specific_order.index(v['Name'][0:1]))
         statusCode = 200
         body = json.dumps(records)
     except Exception as e:
