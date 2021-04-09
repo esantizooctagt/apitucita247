@@ -143,6 +143,14 @@ def findTimeZone(businessId, locationId):
         timeZone = timeLoc['TIME_ZONE'] if 'TIME_ZONE' in timeLoc else 'America/Puerto_Rico'
     return timeZone
 
+def repValues(data):
+    for item in data:
+        if str(float(item['I'])-int(float(item['I'])))[1:] == ".5":
+            item['I'] = item['I'].replace('.5','.3')
+        if str(float(item['F'])-int(float(item['F'])))[1:] == ".5":
+            item['F'] = item['F'].replace('.5','.3')
+    return data
+            
 def workHours():
     return ['0000','0015','0030','0045','0100','0115','0130','0145','0200','0215','0230','0245','0300','0315','0330','0345','0400','0415','0430','0445','0500','0515','0530','0545','0600','0615','0630','0645','0700','0715','0730','0745','0800','0815','0830','0845','0900','0915','0930','0945','1000','1015','1030','1045','1100','1115','1130','1145','1200','1215','1230','1245','1300','1315','1330','1345','1400','1415','1430','1445','1500','1515','1530','1545','1600','1615','1630','1645','1700','1715','1730','1745','1800','1815','1830','1845','1900','1915','1930','1945','2000','2015','2030','2045','2100','2115','2130','2145','2200','2215','2230','2245','2300','2315','2330','2345']
 
@@ -313,11 +321,11 @@ def lambda_handler(event, context):
                     dayOffValid = True
 
                     opeHours = json.loads(currDate['OPERATIONHOURS'])
-                    dayHours = opeHours[dayName] if dayName in opeHours else ''
+                    dayHours = repValues(opeHours[dayName]) if dayName in opeHours else ''
                     # numCustomer = currDate['CUSTOMER_PER_BUCKET']
                     # bucket = currDate['BUCKET_INTERVAL']
                     daysOff = currDate['DAYS_OFF'] if 'DAYS_OFF' in currDate else []
-                    dateAppo = opeHours[dayName] if dayName in opeHours else ''
+                    dateAppo = repValues(opeHours[dayName]) if dayName in opeHours else ''
                     if daysOff != []:
                         dayOffValid = appoDate.strftime("%Y-%m-%d") not in daysOff
                         if dayOffValid == False:
@@ -621,7 +629,7 @@ def lambda_handler(event, context):
                             count = 0
                             for item in dateAppo:
                                 ini = int(item['I'])*100
-                                fin = (int(item['F'])*100)-55
+                                fin = (int(float(item['F'])*100))-55 if str(int(float(item['F'])*100))[-2:] == "00" else (int(float(item['F'])*100))-15
                                 prevCount = -1
                                 # logger.info('Data hr: ' + hStd[0:2] + ' -- ini: ' + str(ini) + ' -- fin: ' + str(fin))
                                 # if int(hStd[0:2]) >= ini and int(hStd[0:2])+bucket-1 <= fin:
@@ -662,7 +670,7 @@ def lambda_handler(event, context):
                                                     entro = 0
                                                     for item02 in dateAppo:
                                                         ini02 = int(item02['I'])*100
-                                                        fin02 = (int(item02['F'])*100)-55
+                                                        fin02 = (int(float(item02['F'])*100))-55 if str(int(float(item02['F'])*100))[-2:] == "00" else (int(float(item02['F'])*100))-15
                                                         if int(nextHr) >= ini and int(nextHr) <= fin:
                                                             entro = 1
                                                             break
@@ -726,7 +734,7 @@ def lambda_handler(event, context):
                                                 entro = 0
                                                 for item02 in dateAppo:
                                                     ini02 = int(item02['I'])*100
-                                                    fin02 = (int(item02['F'])*100)-55
+                                                    fin02 = (int(float(item02['F'])*100))-55 if str(int(float(item02['F'])*100))[-2:] == "00" else (int(float(item02['F'])*100))-15
                                                     if int(int(found['Time24'])+citas) >= ini02 and int(int(found['Time24'])+citas) <= fin02:
                                                         entro = 1
                                                         break
