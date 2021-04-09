@@ -447,7 +447,7 @@ def lambda_handler(event, context):
                                     else:
                                         noExiste = 0
                                         for timeAv in dayHours:
-                                            ini = int(timeAv['I'])*100
+                                            ini = int(float(timeAv['I'])*100)
                                             fin = (int(float(timeAv['F'])*100))-55 if str(int(float(timeAv['F'])*100))[-2:] == "00" else (int(float(timeAv['F'])*100))-15
                                             # logger.info('ini ' + str(ini) + ' -- ' + str(fin) + ' hr ' + str(newTime[0:2]))
                                             if time24hr >= ini and time24hr <= fin:
@@ -491,21 +491,11 @@ def lambda_handler(event, context):
                     finVal = 0
                     rangeIni = 0
                     scale = 10
-                    # for h in range(int(scale*0), int(scale*24), int(scale*interval)):
                     for h in workHours():
-                        # if (h/scale).is_integer():
-                        #     h = str(math.trunc(h/scale)).zfill(2) + ':00' 
-                        # else:
-                        #     h = str(math.trunc(h/scale)).zfill(2) + ':30'
                         time24 = int(h)
                         hStd = h[0:2]+':'+h[-2:]
                         if findHours(hStd, hoursData) != '':
                             record = findHours(hStd, hoursData)
-                            # if int(h[0:2]) > 12:
-                            #     h = str(int(h[0:2])-12).zfill(2) + h[2:5] + ' PM'
-                            # else:
-                            #     h = h + ' AM' if int(h[0:2]) < 1200 else h + ' PM'
-                            # h = hStd + (' AM' if int(h) < 1200 else ' PM')
                             h = (hStd if int(h) <= 1245 else (str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:])) + (' AM' if int(h) < 1200 else ' PM')
                             recordset = {
                                 'Time': h,
@@ -532,9 +522,8 @@ def lambda_handler(event, context):
                             if n == 6:
                                 Sunday.append(recordset)
                     for dt in dayHours:
-                        ini = int(dt['I'])*100
+                        ini = int(float(dt['I'])*100)
                         fin = (int(float(dt['F'])*100))-55 if str(int(float(dt['F'])*100))[-2:] == "00" else (int(float(dt['F'])*100))-15
-                        # for h in range(int(scale*ini), int(scale*fin), int(scale*interval)):
                         for h in workHours():
                             if int(h) >= ini and int(h) <= fin:
                                 time24 = int(h)

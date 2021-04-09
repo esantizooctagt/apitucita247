@@ -477,8 +477,8 @@ def lambda_handler(event, context):
                                 break
                         else:
                             for item in dateAppo:
-                                ini = Decimal(item['I'])*100
-                                fin = Decimal(item['F'])*100
+                                ini = int(float(item['I'])*100)
+                                fin = int(float(item['F'])*100)
                                 if int(locTime[0:2]+locTime[-2:]) >= ini and int(locTime[0:2]+locTime[-2:]) < fin:
                                     if numCustomer > 0:
                                         validAppo = 1

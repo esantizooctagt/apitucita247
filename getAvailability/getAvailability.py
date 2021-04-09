@@ -577,8 +577,8 @@ def lambda_handler(event, context):
                                     else:
                                         noExiste = 0
                                         for timeAv in dayHours:
-                                            ini = int(timeAv['I'])*100
-                                            fin = (int(timeAv['F'])*100)-55
+                                            ini = int(float(timeAv['I'])*100)
+                                            fin = (int(float(timeAv['F'])*100))-55 if str(int(float(timeAv['F'])*100))[-2:] == "00" else (int(float(timeAv['F'])*100))-15
                                             # logger.info('ini ' + str(ini) + ' -- ' + str(fin) + ' hr ' + str(newTime[0:2]))
                                             if time24hr >= ini and time24hr <= fin:
                                                 # logger.info('ingreso -- ' + str(count))
@@ -628,7 +628,7 @@ def lambda_handler(event, context):
                         if found == '':
                             count = 0
                             for item in dateAppo:
-                                ini = int(item['I'])*100
+                                ini = int(float(item['I'])*100)
                                 fin = (int(float(item['F'])*100))-55 if str(int(float(item['F'])*100))[-2:] == "00" else (int(float(item['F'])*100))-15
                                 prevCount = -1
                                 # logger.info('Data hr: ' + hStd[0:2] + ' -- ini: ' + str(ini) + ' -- fin: ' + str(fin))
@@ -669,7 +669,7 @@ def lambda_handler(event, context):
                                                 if getApp == '':
                                                     entro = 0
                                                     for item02 in dateAppo:
-                                                        ini02 = int(item02['I'])*100
+                                                        ini02 = int(float(item02['I'])*100)
                                                         fin02 = (int(float(item02['F'])*100))-55 if str(int(float(item02['F'])*100))[-2:] == "00" else (int(float(item02['F'])*100))-15
                                                         if int(nextHr) >= ini and int(nextHr) <= fin:
                                                             entro = 1
@@ -733,7 +733,7 @@ def lambda_handler(event, context):
                                             if available == '':
                                                 entro = 0
                                                 for item02 in dateAppo:
-                                                    ini02 = int(item02['I'])*100
+                                                    ini02 = int(float(item02['I'])*100)
                                                     fin02 = (int(float(item02['F'])*100))-55 if str(int(float(item02['F'])*100))[-2:] == "00" else (int(float(item02['F'])*100))-15
                                                     if int(int(found['Time24'])+citas) >= ini02 and int(int(found['Time24'])+citas) <= fin02:
                                                         entro = 1
