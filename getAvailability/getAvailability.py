@@ -685,14 +685,14 @@ def lambda_handler(event, context):
                             if count > 0:
                                 if isCurrDay == 1 and time24hr >= currHour:
                                     recordset = {
-                                        'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) < 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
+                                        'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                         'Time24': time24hr,
                                         'Available': count
                                     }
                                     hours.append(recordset)
                                 if isCurrDay == 0:
                                     recordset = {
-                                        'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) < 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
+                                        'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                         'Time24': time24hr,
                                         'Available': count
                                     }
@@ -749,14 +749,14 @@ def lambda_handler(event, context):
                                     if count > 0:
                                         if isCurrDay == 1 and time24hr >= currHour:
                                             recordset = {
-                                                'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) < 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
+                                                'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                                 'Time24': time24hr,
                                                 'Available': count
                                             }
                                             hours.append(recordset)
                                         if isCurrDay == 0:
                                             recordset = {
-                                                'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) < 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
+                                                'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                                 'Time24': time24hr,
                                                 'Available': count
                                             }
@@ -765,14 +765,14 @@ def lambda_handler(event, context):
                                     if int(found['Cancel']) == 0 and (int(found['Available']) > 0 or int(found['Available']) == -99):
                                         if isCurrDay == 1 and time24hr >= currHour:
                                             recordset = {
-                                                'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) < 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
+                                                'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                                 'Time24': time24hr,
                                                 'Available': 1 if found['Available'] == -99 else found['Available']
                                             }
                                             hours.append(recordset)
                                         if isCurrDay == 0:
                                             recordset = {
-                                                'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) < 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
+                                                'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                                 'Time24': time24hr,
                                                 'Available': 1 if found['Available'] == -99 else found['Available']
                                             }
