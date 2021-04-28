@@ -45,13 +45,18 @@ def lambda_handler(event, context):
             businessId = row['PKID'].replace('BUS#','')
             locs = []
             if businessId != '':
+                e = {'#s': 'STATUS'}
+                f = '#s = :stat'
                 locations = dynamodb.query(
                     TableName="TuCita247",
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='PKID = :businessId and begins_with (SKID, :locs) ',
+                    ExpressionAttributeNames=e,
+                    FilterExpression=f,
                     ExpressionAttributeValues={
                         ':businessId': {'S': 'BUS#' + businessId},
-                        ':locs': {'S': 'LOC#'}
+                        ':locs': {'S': 'LOC#'},
+                        ':stat' : {'N': '1'}
                     }
                 )
                 for det in json_dynamodb.loads(locations['Items']):
@@ -83,10 +88,28 @@ def lambda_handler(event, context):
                             }
                         )
                         for item in json_dynamodb.loads(resServ['Items']):
-                            serRec = {
-                                'ServiceId': item['GSI1SK'].replace('SER#','')
-                            }
-                            servicesAv.append(serRec)
+                            e = {'#s': 'STATUS'}
+                            f = '#s = :stat'
+                            getService = dynamodb.query(
+                                TableName="TuCita247",
+                                ReturnConsumedCapacity='TOTAL',
+                                KeyConditionExpression='PKID = :businessId AND SKID = :service',
+                                ExpressionAttributeNames=e,
+                                FilterExpression=f,
+                                ExpressionAttributeValues={
+                                    ':businessId': {'S': 'BUS#'+businessId},
+                                    ':service': {'S': item['GSI1SK']},
+                                    ':stat' : {'N': '1'}
+                                }
+                            )
+                            serRec = {}
+                            for itemSer in json_dynamodb.loads(getService['Items']):
+                                serRec = {
+                                    'ServiceId': item['GSI1SK'].replace('SER#',''),
+                                    'Name': itemSer['NAME']
+                                }
+                            if serRec != {}:
+                                servicesAv.append(serRec)
                         rec = {
                             'ProviderId': resP['SKID'].replace('PRO#',''),
                             'Name': resP['NAME'],
