@@ -746,13 +746,13 @@ def lambda_handler(event, context):
                         'UnRead': ''
                     }
 
-                    validAppo = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-%M")
-                    if dateAppointment <= validAppo: 
-                        lambdaInv.invoke(
-                            FunctionName='PostMessages',
-                            InvocationType='Event',
-                            Payload=json.dumps(appoInfo)
-                        )
+                    # validAppo = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-%M")
+                    # if dateAppointment <= validAppo: 
+                    lambdaInv.invoke(
+                        FunctionName='PostMessages',
+                        InvocationType='Event',
+                        Payload=json.dumps(appoInfo)
+                    )
 
                     if phone != '00000000000':
                         # GET USER PREFERENCE NOTIFICATION

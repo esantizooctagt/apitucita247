@@ -132,12 +132,12 @@ def lambda_handler(event, context):
             'CustomerId': '',
             'Tipo': 'CANCEL'
         }
-        if dateOpe[0:10] == dateAppo[0:10]:
-            lambdaInv.invoke(
-                FunctionName='PostMessages',
-                InvocationType='Event',
-                Payload=json.dumps(data)
-            )
+        # if dateOpe[0:10] == dateAppo[0:10]:
+        lambdaInv.invoke(
+            FunctionName='PostMessages',
+            InvocationType='Event',
+            Payload=json.dumps(data)
+        )
 
         statusCode = 200
         body = json.dumps({'Message': 'Appointment updated successfully', 'Code': 200})

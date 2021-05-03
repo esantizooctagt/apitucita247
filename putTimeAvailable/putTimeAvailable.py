@@ -21,6 +21,7 @@ logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
 dynamodbQuery = boto3.client('dynamodb', region_name=REGION)
+lambdaInv = boto3.client('lambda')
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def findTimeZone(businessId, locationId):
@@ -91,6 +92,23 @@ def lambda_handler(event, context):
                     'CANCEL': 0
                 }
             )
+        
+        #REMOVE FROM QEUE
+        data = {
+            'BusinessId': businessId,
+            'LocationId': locationId,
+            'AppId': '',
+            'CustomerId': '',
+            'DateAppo': dateAppo[0:10],
+            'Hour': dateAppo[-5:],
+            'Available': 1,
+            'Tipo': 'AVAILABLE'
+        }
+        lambdaInv.invoke(
+            FunctionName='PostMessages',
+            InvocationType='Event',
+            Payload=json.dumps(data)
+        )
 
         statusCode = 200
         body = json.dumps({'Message': 'Citas bucket open successfully', 'Code': 200})

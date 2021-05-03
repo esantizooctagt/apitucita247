@@ -375,6 +375,23 @@ def lambda_handler(event, context):
         response = dynamodbQuery.transact_write_items(
             TransactItems = items
         )
+
+        data = {
+            'BusinessId': businessId,
+            'LocationId': locationId,
+            'AppId': '',
+            'CustomerId': '',
+            'DateAppo': dateAppo[0:10],
+            'Hour': dateAppo[-5:],
+            'Available': 0,
+            'Tipo': 'AVAILABLE'
+        }
+        lambdaInv.invoke(
+            FunctionName='PostMessages',
+            InvocationType='Event',
+            Payload=json.dumps(data)
+        )
+        
         logger.info(response)
         statusCode = 200
         body = json.dumps({'Message': 'Citas deleted successfully', 'Code': 200})

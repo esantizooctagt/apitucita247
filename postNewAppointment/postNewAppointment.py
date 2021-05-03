@@ -877,14 +877,14 @@ def lambda_handler(event, context):
                         'ManualCheckOut': ManualCheckOut
                     }
 
-                    validAppo = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-%M")
-                    if dateAppointment <= validAppo: 
-                        if status != 3:
-                            lambdaInv.invoke(
-                                FunctionName='PostMessages',
-                                InvocationType='Event',
-                                Payload=json.dumps(appoInfo)
-                            )
+                    # validAppo = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-%M")
+                    # if dateAppointment <= validAppo: 
+                    if status != 3:
+                        lambdaInv.invoke(
+                            FunctionName='PostMessages',
+                            InvocationType='Event',
+                            Payload=json.dumps(appoInfo)
+                        )
                         
                     if status == 3:
                         data = {
