@@ -197,7 +197,7 @@ def lambda_handler(event, context):
             }
         )
         for loc in json_dynamodb.loads(locs['Items']):
-            locationId = loc['SKID'].replace('LOC#','')
+            locId = loc['SKID'].replace('LOC#','')
             provs = dynamodb.query(
                 TableName="TuCita247",
                 ReturnConsumedCapacity='TOTAL',
@@ -205,25 +205,25 @@ def lambda_handler(event, context):
                 ExpressionAttributeNames=e,
                 FilterExpression=f,
                 ExpressionAttributeValues={
-                    ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locationId},
+                    ':businessId': {'S': 'BUS#' + businessId + '#LOC#' + locId},
                     ':locs': {'S': 'PRO#' if providerId == '0' else 'PRO#' + providerId},
                     ':stat' : {'N': '1'}
                 }
             )
             for prov in json_dynamodb.loads(provs['Items']):
-                providerId = prov['SKID'].replace('PRO#','')
+                provId = prov['SKID'].replace('PRO#','')
                 provServ = dynamodb.query(
                     TableName="TuCita247",
                     IndexName="TuCita247_Index",
                     ReturnConsumedCapacity='TOTAL',
                     KeyConditionExpression='GSI1PK = :businessId and begins_with (GSI1SK, :locs) ',
                     ExpressionAttributeValues={
-                        ':businessId': {'S': 'BUS#' + businessId + '#PRO#' + providerId},
+                        ':businessId': {'S': 'BUS#' + businessId + '#PRO#' + provId},
                         ':locs': {'S': 'SER#' if serviceId == '0' else 'SER#' + serviceId}
                     }
                 )
                 for provS in json_dynamodb.loads(provServ['Items']):
-                    serviceId = provS['GSI1SK'].replace('SER#','')
+                    servId = provS['GSI1SK'].replace('SER#','')
                     getService = dynamodb.query(
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
@@ -232,7 +232,7 @@ def lambda_handler(event, context):
                         FilterExpression=f,
                         ExpressionAttributeValues={
                             ':businessId': {'S': 'BUS#'+businessId},
-                            ':service': {'S': 'SER#'+serviceId},
+                            ':service': {'S': 'SER#'+servId},
                             ':stat' : {'N': '1'}
                         }
                     )
@@ -240,7 +240,7 @@ def lambda_handler(event, context):
                     for itemSer in json_dynamodb.loads(getService['Items']):
                         NameServ = itemSer['NAME']
 
-                        country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
+                        country_date = dateutil.tz.gettz(findTimeZone(businessId, locId))
                         today = datetime.datetime.now(tz=country_date)
                         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
                     
@@ -354,7 +354,7 @@ def lambda_handler(event, context):
                                         'TimeService': int(serv['TIME_SERVICE'])
                                     }
                                     services.append(recordset)
-                                    if serv['SKID'].replace('SER#','') == serviceId:
+                                    if serv['SKID'].replace('SER#','') == servId:
                                         bucket = serv['TIME_SERVICE']
                                         numCustomer = serv['CUSTOMER_PER_TIME']
 
@@ -369,8 +369,8 @@ def lambda_handler(event, context):
                                     ReturnConsumedCapacity = 'TOTAL',
                                     KeyConditionExpression = 'PKID = :businessId AND SKID = :providerId',
                                     ExpressionAttributeValues = {
-                                        ':businessId': {'S': 'BUS#'+businessId+'#LOC#'+locationId},
-                                        ':providerId': {'S': 'PRO#'+providerId}
+                                        ':businessId': {'S': 'BUS#'+businessId+'#LOC#'+locId},
+                                        ':providerId': {'S': 'PRO#'+provId}
                                     },
                                     Limit = 1
                                 )
@@ -400,7 +400,7 @@ def lambda_handler(event, context):
                                         ReturnConsumedCapacity='TOTAL',
                                         KeyConditionExpression='GSI1PK = :key01 and begins_with(GSI1SK, :key02)',
                                         ExpressionAttributeValues={
-                                            ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
+                                            ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locId+'#PRO#'+provId},
                                             ':key02': {'S': '1#DT#'+dateStd}
                                         }
                                     )
@@ -430,7 +430,7 @@ def lambda_handler(event, context):
                                             ReturnConsumedCapacity='TOTAL',
                                             KeyConditionExpression='GSI1PK = :key01 and begins_with(GSI1SK, :key02)',
                                             ExpressionAttributeValues={
-                                                ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
+                                                ':key01': {'S': 'BUS#'+businessId+'#LOC#'+locId+'#PRO#'+provId},
                                                 ':key02': {'S': '2#DT#'+dateStd}
                                             }
                                         )
@@ -458,7 +458,7 @@ def lambda_handler(event, context):
                                         ReturnConsumedCapacity='TOTAL',
                                         KeyConditionExpression='GSI1PK = :key01 and begins_with(GSI1SK, :key02)',
                                         ExpressionAttributeValues={
-                                            ':key01': {'S': 'RES#BUS#'+businessId+'#LOC#'+locationId+'#PRO#'+providerId},
+                                            ':key01': {'S': 'RES#BUS#'+businessId+'#LOC#'+locId+'#PRO#'+provId},
                                             ':key02': {'S': '1#DT#'+dateStd}
                                         }
                                     )
@@ -486,7 +486,7 @@ def lambda_handler(event, context):
                                         ReturnConsumedCapacity='TOTAL',
                                         KeyConditionExpression='PKID = :key',
                                         ExpressionAttributeValues = {
-                                            ':key': {'S': 'LOC#'+locationId+'#PRO#'+providerId+'#DT#'+dateStd}
+                                            ':key': {'S': 'LOC#'+locId+'#PRO#'+provId+'#DT#'+dateStd}
                                         },
                                         ScanIndexForward=True
                                     )
@@ -615,11 +615,11 @@ def lambda_handler(event, context):
                                                     # logger.info('valor '+str(result))
                                                     if result != '':
                                                         if result['Cancel'] != 1:
-                                                            if result['ServiceId'] == serviceId or result['ServiceId'] == '':
+                                                            if result['ServiceId'] == servId or result['ServiceId'] == '':
                                                                 if result['ServiceId'] != '':
                                                                     if count == -1 or count < result['People']:
                                                                         count = result['People']
-                                                            if result['ServiceId'] != serviceId and result['ServiceId'] != '':
+                                                            if result['ServiceId'] != servId and result['ServiceId'] != '':
                                                                 count = custPerTime
                                                                 break
                                                         else:
@@ -672,7 +672,7 @@ def lambda_handler(event, context):
                                         # res = h if h < 13 else h-12
                                         # h = str(res).zfill(2) + ':00 ' + 'AM' if h < 12 else str(res).zfill(2) + ':00 ' + 'PM'
                                         # found = searchTime(int(hStd[0:2]), hoursData, serviceId)
-                                        found = searchTime(int(h), hoursData, serviceId)
+                                        found = searchTime(int(h), hoursData, servId)
                                         # time24hr = int(hStd[0:2])
                                         time24hr = int(h)
 
@@ -707,7 +707,7 @@ def lambda_handler(event, context):
                                                             #     break
                                                             if citas > 0:
                                                                 nextHr = time24hr+citas
-                                                                getApp = searchTime(int(nextHr), hoursData, serviceId)
+                                                                getApp = searchTime(int(nextHr), hoursData, servId)
                                                                 if getApp != '' and getApp != '0':
                                                                     if getApp['Available'] <= 0:
                                                                         count = 0
@@ -737,9 +737,9 @@ def lambda_handler(event, context):
                                             if count > 0:
                                                 if isCurrDay == 1 and time24hr > currHour:
                                                     recordset = {
-                                                        'LocationId': locationId,
-                                                        'ProviderId': providerId,
-                                                        'ServiceId': serviceId,
+                                                        'LocationId': locId,
+                                                        'ProviderId': provId,
+                                                        'ServiceId': servId,
                                                         'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                                         'Time24': time24hr,
                                                         'Available': count,
@@ -748,9 +748,9 @@ def lambda_handler(event, context):
                                                     hours.append(recordset)
                                                 if isCurrDay == 0:
                                                     recordset = {
-                                                        'LocationId': locationId,
-                                                        'ProviderId': providerId,
-                                                        'ServiceId': serviceId,
+                                                        'LocationId': locId,
+                                                        'ProviderId': provId,
+                                                        'ServiceId': servId,
                                                         'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                                         'Time24': time24hr,
                                                         'Available': count,
@@ -779,7 +779,7 @@ def lambda_handler(event, context):
                                                         # if citas > bucket:
                                                         #     break
                                                         if citas > 0:
-                                                            available = searchTime(int(found['Time24'])+citas, hoursData, serviceId)
+                                                            available = searchTime(int(found['Time24'])+citas, hoursData, servId)
                                                             if available != '' and available != '0':
                                                                 if available['Available'] <= 0:
                                                                     count = 0
@@ -809,9 +809,9 @@ def lambda_handler(event, context):
                                                     if count > 0:
                                                         if isCurrDay == 1 and time24hr > currHour:
                                                             recordset = {
-                                                                'LocationId': locationId,
-                                                                'ProviderId': providerId,
-                                                                'ServiceId': serviceId,
+                                                                'LocationId': locId,
+                                                                'ProviderId': provId,
+                                                                'ServiceId': servId,
                                                                 'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                                                 'Time24': time24hr,
                                                                 'Available': count,
@@ -820,9 +820,9 @@ def lambda_handler(event, context):
                                                             hours.append(recordset)
                                                         if isCurrDay == 0:
                                                             recordset = {
-                                                                'LocationId': locationId,
-                                                                'ProviderId': providerId,
-                                                                'ServiceId': serviceId,
+                                                                'LocationId': locId,
+                                                                'ProviderId': provId,
+                                                                'ServiceId': servId,
                                                                 'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                                                 'Time24': time24hr,
                                                                 'Available': count,
@@ -833,9 +833,9 @@ def lambda_handler(event, context):
                                                     if int(found['Cancel']) == 0 and int(found['Available']) > 0:
                                                         if isCurrDay == 1 and time24hr > currHour:
                                                             recordset = {
-                                                                'LocationId': locationId,
-                                                                'ProviderId': providerId,
-                                                                'ServiceId': serviceId,
+                                                                'LocationId': locId,
+                                                                'ProviderId': provId,
+                                                                'ServiceId': servId,
                                                                 'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                                                 'Time24': time24hr,
                                                                 'Available': found['Available'],
@@ -844,9 +844,9 @@ def lambda_handler(event, context):
                                                             hours.append(recordset)
                                                         if isCurrDay == 0:
                                                             recordset = {
-                                                                'LocationId': locationId,
-                                                                'ProviderId': providerId,
-                                                                'ServiceId': serviceId,
+                                                                'LocationId': locId,
+                                                                'ProviderId': provId,
+                                                                'ServiceId': servId,
                                                                 'Hour': hStd + ' AM' if int(h) < 1200 else (hStd + ' PM' if int(h) <= 1245 else str(int(h)-1200).rjust(4,'0')[0:2]+':'+str(int(h)-1200).rjust(4,'0')[-2:] + ' PM'),
                                                                 'Time24': time24hr,
                                                                 'Available': found['Available'],
