@@ -138,9 +138,11 @@ def lambda_handler(event, context):
         # cancel = int(cancel[0:2])  #15
         items = []
         customerId=''
+        qty = 0
         for row in json_dynamodb.loads(response['Items']):
             timeService = findService(row['SERVICEID'], serv)
             customerId = row['GSI2PK'].replace('CUS#','')
+            qty = row['PEOPLE_QTY']
             if timeService != 0:
                 newTime = 0
                 min = int(str(row['GSI1SK'])[-2:])
@@ -210,6 +212,11 @@ def lambda_handler(event, context):
                         'LocationId': locationId,
                         'AppId': appoId.replace('APPO#',''),
                         'CustomerId': customerId,
+                        'ProviderId': providerId,
+                        'ServiceId': row['SERVICEID'],
+                        'DateAppo': str(row['DATE_APPO'])[0:10],
+                        'Hour': str(row['DATE_APPO'])[-5:],
+                        'Qty': qty,
                         'Tipo': 'CANCEL'
                     }
                     lambdaInv.invoke(
@@ -379,10 +386,12 @@ def lambda_handler(event, context):
         data = {
             'BusinessId': businessId,
             'LocationId': locationId,
+            'ProviderId': providerId,
             'AppId': '',
             'CustomerId': '',
             'DateAppo': dateAppo[0:10],
             'Hour': dateAppo[-5:],
+            'Qty': 0,
             'Available': 0,
             'Tipo': 'AVAILABLE'
         }
@@ -391,7 +400,7 @@ def lambda_handler(event, context):
             InvocationType='Event',
             Payload=json.dumps(data)
         )
-        
+
         logger.info(response)
         statusCode = 200
         body = json.dumps({'Message': 'Citas deleted successfully', 'Code': 200})

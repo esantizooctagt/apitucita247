@@ -41,7 +41,9 @@ def lambda_handler(event, context):
             recordset = {
                 'ServiceId': row['SKID'].replace('SER#',''),
                 'Name': row['NAME'],
-                'Color': row['COLOR']
+                'Color': row['COLOR'],
+                'TimeService': row['TIME_SERVICE'],
+                'Bucket': row['CUSTOMER_PER_TIME']
             }
             records.append(recordset)
 
@@ -64,7 +66,9 @@ def lambda_handler(event, context):
                 recordset = {
                     'ServiceId': row['SKID'].replace('SER#',''),
                     'Name': row['NAME'],
-                    'Color': row['COLOR']
+                    'Color': row['COLOR'],
+                    'TimeService': row['TIME_SERVICE'],
+                    'Bucket': row['CUSTOMER_PER_TIME']
                 }
                 records.append(recordset)
             

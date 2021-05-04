@@ -851,6 +851,7 @@ def lambda_handler(event, context):
                         'CustomerId': customerId,
                         'ClientId': customerId,
                         'ProviderId': providerId,
+                        'ServiceId': serviceId,
                         'BufferTime': bufferTime,
                         'Name': name,
                         'Provider': provName,

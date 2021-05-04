@@ -58,6 +58,9 @@ def lambda_handler(event, context):
         providerId = ''
         busId = ''
         locId = ''
+        provId = ''
+        servId = ''
+        qty = 0
         busLanguage = ''
 
         data = json.loads(event['body'])
@@ -82,9 +85,12 @@ def lambda_handler(event, context):
             dataId = row['GSI1PK']
             customerId = row['GSI2PK'].replace('CUS#','')
             appoData = str(row['DATE_APPO'])[0:10]+'#APPO#'+appointmentId
+            servId = row['SERVICEID']
+            qty = row['PEOPLE_QTY']
             if dataId != '':
                 busId = dataId.split('#')[1]
                 locId = dataId.split('#')[3]
+                provId = dataId.split('#')[5]
                 businessId = 'BUS#'+dataId.split('#')[1]+'#5'
                 locationId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#5'
                 providerId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#5'
@@ -218,6 +224,11 @@ def lambda_handler(event, context):
                 'LocationId': locId,
                 'AppId': appointmentId,
                 'CustomerId': customerId,
+                'ProviderId': provId,
+                'ServiceId': servId,
+                'DateAppo': str(dateAppo)[0:10],
+                'Hour': dateAppo[-5:],
+                'Qty': qty,
                 'Tipo': 'CANCEL'
             }
             lambdaInv.invoke(

@@ -97,6 +97,7 @@ def lambda_handler(event, context):
         data = {
             'BusinessId': businessId,
             'LocationId': locationId,
+            'ProviderId': providerId,
             'AppId': '',
             'CustomerId': '',
             'DateAppo': dateAppo[0:10],

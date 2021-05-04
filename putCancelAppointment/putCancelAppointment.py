@@ -47,7 +47,10 @@ def lambda_handler(event, context):
         locationId = ''
         providerId = ''
         locId = ''
+        servId = ''
         busId = ''
+        provId = ''
+        qty = 0
         guests = 0
 
         appointmentId = event['pathParameters']['appointmentId']
@@ -65,9 +68,12 @@ def lambda_handler(event, context):
             dataId = row['GSI1PK']
             guests = int(row['PEOPLE_QTY'])
             appoData = str(row['DATE_APPO'])[0:10]+'#APPO#'+appointmentId
+            servId = row['SERVICEID']
+            qty = row['PEOPLE_QTY']
             if dataId != '':
                 busId = dataId.split('#')[1]
                 locId = dataId.split('#')[3]
+                provId = dataId.split('#')[5]
                 businessId = 'BUS#'+dataId.split('#')[1]+'#5'
                 locationId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#5'
                 providerId = 'BUS#'+dataId.split('#')[1]+'#LOC#'+dataId.split('#')[3]+'#PRO#'+dataId.split('#')[5]+'#5'
@@ -130,6 +136,11 @@ def lambda_handler(event, context):
             'LocationId': locId,
             'AppId': appointmentId,
             'CustomerId': '',
+            'ProviderId': provId,
+            'ServiceId': servId,
+            'DateAppo': str(dateAppo)[0:10],
+            'Hour': dateAppo[-5:],
+            'Qty': qty,
             'Tipo': 'CANCEL'
         }
         # if dateOpe[0:10] == dateAppo[0:10]:
