@@ -13,7 +13,7 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     try:
         statusCode = 200
-        body = json.dumps({'Code': 200, 'Version': 100}) # 1212
+        body = json.dumps({'Code': 200, 'Version': 1214}) # 1212
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e), 'Code': 500})
