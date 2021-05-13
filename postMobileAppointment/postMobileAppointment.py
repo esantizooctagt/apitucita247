@@ -570,10 +570,12 @@ def lambda_handler(event, context):
                     )
                     count = 0
                     servName = ''
+                    serName = ''
                     for serv in json_dynamodb.loads(servs['Items']):
                         count = count + 1
                         if serv['SKID'].replace('SER#','') == serviceId:
                             servName = serv['NAME']
+                            serName = servName
                     if count == 1:
                         servName = ''
                     
@@ -588,10 +590,12 @@ def lambda_handler(event, context):
                     )
                     countp = 0
                     provName = ''
+                    proName = ''
                     for prov in json_dynamodb.loads(provs['Items']):
                         countp = countp + 1
                         if prov['SKID'].replace('PRO#','') == providerId:
                             provName = prov['NAME']
+                            proName = provName
                     if countp == 1:
                         provName = ''
 
@@ -614,12 +618,13 @@ def lambda_handler(event, context):
                                 "PEOPLE_QTY": {"N": str(guest)},
                                 "DISABILITY": {"N": str(disability) if disability != '' else None},
                                 "SERVICEID": {"S": serviceId},
-                                "SERVICE_NAME": {"S": servName},
-                                "PROVIDER_NAME": {"S": provName},
+                                "SERVICE_NAME": {"S": serName},
+                                "PROVIDER_NAME": {"S": proName},
                                 "LOCATION_NAME": {"S": locName},
                                 "BUSINESS_NAME": {"S": busName},
                                 "QRCODE": {"S": qrCode},
                                 "TYPE": {"N": "1"},
+                                "SOURCE": {"N": "1"},
                                 "DATE_TRANS": {"S": str(dateOpe)},
                                 "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId}, 
                                 "GSI1SK": {"S": '1#DT#' + dateAppointment}, 

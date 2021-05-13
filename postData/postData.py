@@ -25,6 +25,7 @@ logger.setLevel(logging.INFO)
 s3 = boto3.client('s3')
 
 dynamodb = boto3.client('dynamodb', region_name=REGION)
+dynamodbQuery = boto3.resource('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def findCategory(categoryId, cats):
@@ -48,6 +49,7 @@ def lambda_handler(event, context):
     year = today.strftime("%Y")
     month = today.strftime("%m").zfill(2)
     day = today.strftime("%d").zfill(2)
+    dataCsv=str(datetime.datetime.now())[0:16].replace(' ','-')
 
     try:
         categories = dynamodb.query(
@@ -123,6 +125,10 @@ def lambda_handler(event, context):
                     if count == 5:
                         catEsp05, catEng05 = findCategory(cat['SKID'], categos)
                     count = count + 1
+
+                createDT = bMetadata['CREATED_DATE'] if 'CREATED_DATE' in bMetadata else ''
+                if createDT != '':
+                    createDT = createDT[0:10]+' '+createDT[-8:].replace('-',':')+'.000'
                 busRecord = {
                     'BusinessId': bMetadata['PKID'].replace('BUS#',''),
                     'Name': bMetadata['NAME'],
@@ -138,17 +144,27 @@ def lambda_handler(event, context):
                     'Category_Eng03': catEng03,
                     'Category_Eng04': catEng04,
                     'Category_Eng05': catEng05,
-                    'Created_Date': float(bMetadata['CREATED_DATE'].replace('-','')) if 'CREATED_DATE' in bMetadata else 0
+                    'Created_Date': createDT
                 }
                 busArr.append(busRecord)
-                
-        with open("/tmp/data.csv", "w") as file:
-            csv_file = csv.writer(file)
-            # csv_file.writerow(['BusinessId', 'Name', 'Address', 'Plan', 'Category_Esp01', 'Category_Esp02', 'Category_Esp03', 'Category_Esp04', 'Category_Esp05', 'Category_Eng01', 'Category_Eng02', 'Category_Eng03', 'Category_Eng04', 'Category_Eng05', 'Created_Date'])
-            for item in busArr:
-                csv_file.writerow([item.get('BusinessId'), item.get('Name'), item.get('Address'), item.get('Plan'), item.get('Category_Esp01'), item.get('Category_Esp02'), item.get('Category_Esp03'), item.get('Category_Esp04'), item.get('Category_Esp05'), item.get('Category_Eng01'), item.get('Category_Eng02'), item.get('Category_Eng03'), item.get('Category_Eng04'), item.get('Category_Eng05'), item.get('Created_Date')])
-        csv_binary = open("/tmp/data.csv", "rb").read()
-        put_object(BUCKET, 'business/year='+year+'/month='+month+'/day='+day+'/data.csv', csv_binary)
+
+            table = dynamodbQuery.Table('TuCita247')
+            response = table.update_item(
+                Key={
+                    'PKID': businessId,
+                    'SKID': 'METADATA'
+                },
+                UpdateExpression="REMOVE GSI11PK, GSI11SK",
+                ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)",
+                ReturnValues="NONE"
+            )
+        if len(busArr) > 0:      
+            with open("/tmp/"+dataCsv+".csv", "w") as file:
+                csv_file = csv.writer(file)
+                for item in busArr:
+                    csv_file.writerow([item.get('BusinessId'), item.get('Name'), item.get('Address'), item.get('Plan'), item.get('Category_Esp01'), item.get('Category_Esp02'), item.get('Category_Esp03'), item.get('Category_Esp04'), item.get('Category_Esp05'), item.get('Category_Eng01'), item.get('Category_Eng02'), item.get('Category_Eng03'), item.get('Category_Eng04'), item.get('Category_Eng05'), item.get('Created_Date')])
+            csv_binary = open("/tmp/"+dataCsv+".csv", "rb").read()
+            put_object(BUCKET, 'business/year='+year+'/month='+month+'/day='+day+'/'+dataCsv+'.csv', csv_binary)
 
         customers = dynamodb.query(
             TableName="TuCita247",
@@ -174,6 +190,9 @@ def lambda_handler(event, context):
                 }
             )
             for cusData in json_dynamodb.loads(cData['Items']):
+                custDT = cusData['CREATED_DATE'] if 'CREATED_DATE' in cusData else ''
+                if custDT != '':
+                    custDT = custDT[0:10]+' '+custDT[-8:].replace('-',':')+'.000'
                 cusRecord = {
                     'CustomerId': customerId,
                     'Phone': mobile,
@@ -183,16 +202,27 @@ def lambda_handler(event, context):
                     'Gender': cusData['GENDER'] if 'GENDER' in cusData else '',
                     'DOB': cusData['DOB'] if 'DOB' in cusData else '',
                     'Preferences': cusData['PREFERENCES'],
-                    'Created_Date': float(cusData['CREATED_DATE'].replace('-','')) if 'CREATED_DATE' in cusData else 0
+                    'Created_Date': custDT
                 }
                 cusArr.append(cusRecord)
 
-        with open("/tmp/data01.csv", "w") as file:
-            csv_file = csv.writer(file)
-            for item in cusArr:
-                csv_file.writerow([item.get('CustomerId'), item.get('Phone'), item.get('Name'), item.get('Email'), item.get('Disability'), item.get('Gender'), item.get('DOB'), item.get('Preferences'), item.get('Created_Date')])
-        csv_binary = open("/tmp/data01.csv", "rb").read()
-        put_object(BUCKET, 'customers/year='+year+'/month='+month+'/day='+day+'/data01.csv', csv_binary)
+            table = dynamodbQuery.Table('TuCita247')
+            response = table.update_item(
+                Key={
+                    'PKID': 'MOB#'+mobile,
+                    'SKID': 'CUS#'+customerId
+                },
+                UpdateExpression="REMOVE GSI11PK, GSI11SK",
+                ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)",
+                ReturnValues="NONE"
+            )
+        if len(cusArr) > 0:
+            with open("/tmp/"+dataCsv+".csv", "w") as file:
+                csv_file = csv.writer(file)
+                for item in cusArr:
+                    csv_file.writerow([item.get('CustomerId'), item.get('Phone'), item.get('Name'), item.get('Email'), item.get('Disability'), item.get('Gender'), item.get('DOB'), item.get('Preferences'), item.get('Created_Date')])
+            csv_binary = open("/tmp/"+dataCsv+".csv", "rb").read()
+            put_object(BUCKET, 'customers/year='+year+'/month='+month+'/day='+day+'/'+dataCsv+'.csv', csv_binary)
 
 
         logs = dynamodb.query(
@@ -205,19 +235,20 @@ def lambda_handler(event, context):
         )
         logArr = []
         for log in json_dynamodb.loads(logs['Items']):
+            dateOpeDT = log['DATE_APPO'][0:10]+' '+log['DATE_APPO'][-8:].replace('-',':')+'.000'
             logRecord = {
                 'CitaId': log['SKID'].split('#')[1],
-                'Date_Ope': float(log['DATE_APPO'].replace('-','')),
+                'Date_Ope': dateOpeDT,
                 'Status': log['STATUS']
             }
             logArr.append(logRecord)
-
-        with open("/tmp/data02.csv", "w") as file:
-            csv_file = csv.writer(file)
-            for item in logArr:
-                csv_file.writerow([item.get('CitaId'), item.get('Date_Ope'), item.get('Status')])
-        csv_binary = open("/tmp/data02.csv", "rb").read()
-        put_object(BUCKET, 'logs/year='+year+'/month='+month+'/day='+day+'/data02.csv', csv_binary)
+        if len(logArr) > 0:
+            with open("/tmp/data02.csv", "w") as file:
+                csv_file = csv.writer(file)
+                for item in logArr:
+                    csv_file.writerow([item.get('CitaId'), item.get('Date_Ope'), item.get('Status')])
+            csv_binary = open("/tmp/data02.csv", "rb").read()
+            put_object(BUCKET, 'logs/year='+year+'/month='+month+'/day='+day+'/data02.csv', csv_binary)
 
         appos = dynamodb.query(
             TableName="TuCita247",
@@ -241,28 +272,46 @@ def lambda_handler(event, context):
                 }
             )
             for cita in json_dynamodb.loads(appData['Items']):
+                citaDT = cita['CREATED_DATE'] if 'CREATED_DATE' in cita else ''
+                if citaDT != '':
+                    citaDT = citaDT[0:10]+' '+citaDT[-8:].replace('-',':')+'.000'
+                dateOpeDT = cita['DATE_APPO'][0:10]+' '+cita['DATE_APPO'][-5:].replace('-',':')+':00.000'
+                businessId = cita['GSI1PK'].split('#')[1]
                 citaRecord = {
                     'CitaId': appoId,
-                    'Date_Ope': float(cita['DATE_APPO'].replace('-','')),
+                    'Date_Ope': dateOpeDT,
                     'Name': cita['NAME'],
                     'Business': cita['BUSINESS_NAME'],
+                    'BusinessId': businessId,
                     'Location': cita['LOCATION_NAME'],
                     'Provider': cita['PROVIDER_NAME'],
                     'Service': cita['SERVICE_NAME'],
                     'CustomerId': cita['GSI2PK'].replace('CUS#',''),
                     'Type': cita['TYPE'],
+                    'Source': cita['SOURCE'] if 'SOURCE' in cita else 2,
                     'Phone': cita['PHONE'],
                     'People': int(cita['PEOPLE_QTY']),
-                    'Created_Date': float(cita['CREATED_DATE'].replace('-','')) if 'CREATED_DATE' in cita else 0
+                    'Created_Date': citaDT
                 }
                 appoArr.append(citaRecord)
 
-        with open("/tmp/data03.csv", "w") as file:
-            csv_file = csv.writer(file)
-            for item in appoArr:
-                csv_file.writerow([item.get('CitaId'), item.get('Date_Ope'), item.get('Name'), item.get('Business'), item.get('Location'), item.get('Provider'), item.get('Service'), item.get('CustomerId'), item.get('Type'), item.get('Phone'), item.get('People'), item.get('Created_Date')])
-        csv_binary = open("/tmp/data03.csv", "rb").read()
-        put_object(BUCKET, 'citas/year='+year+'/month='+month+'/day='+day+'/data03.csv', csv_binary)
+            table = dynamodbQuery.Table('TuCita247')
+            response = table.update_item(
+                Key={
+                    'PKID': 'APPO#'+appoId,
+                    'SKID': 'APPO#'+appoId
+                },
+                UpdateExpression="REMOVE GSI11PK, GSI11SK",
+                ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)",
+                ReturnValues="NONE"
+            )
+        if len(appoArr) > 0:
+            with open("/tmp/"+dataCsv+".csv", "w") as file:
+                csv_file = csv.writer(file)
+                for item in appoArr:
+                    csv_file.writerow([item.get('CitaId'), item.get('Date_Ope'), item.get('Name'), item.get('Business'), item.get('BusinessId'), item.get('Location'), item.get('Provider'), item.get('Service'), item.get('CustomerId'), item.get('Type'), item.get('Source'), item.get('Phone'), item.get('People'), item.get('Created_Date')])
+            csv_binary = open("/tmp/"+dataCsv+".csv", "rb").read()
+            put_object(BUCKET, 'citas/year='+year+'/month='+month+'/day='+day+'/'+dataCsv+'.csv', csv_binary)
 
         statusCode = 200
         body = json.dumps({'Message': 'Data successfully', 'Code': 200})
