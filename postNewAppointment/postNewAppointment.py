@@ -513,8 +513,12 @@ def lambda_handler(event, context):
                                         else:
                                             validAppo = -1
                                             break
+                                    if int(locTime[0:2]+locTime[-2:]) < ini or int(locTime[0:2]+locTime[-2:]) > fin:
+                                        validAppo = -1
+
                 else:
                     validAppo = 1
+                    
                 #PROCEDE A GUARDAR LA CITA
                 if validAppo == 1:
                     busN = dynamodb.query(
