@@ -1,10 +1,16 @@
 import json
-import boto3
-import time
 import logging
+
+import time
+import boto3
+
+import botocore.exceptions
+from boto3.dynamodb.conditions import Key, Attr
+from dynamodb_json import json_util as json_dynamodb
+
 import os
 
-# QUERY = "SELECT * FROM tucita247.citas WHERE name like '%Mark%'"
+REGION = 'us-east-1'
 DATABASE = 'tucita247'
 OUTPUT = os.environ['bucket']
 
@@ -12,6 +18,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 client = boto3.client('athena')
+dynamodb = boto3.client('dynamodb', region_name=REGION)
+logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def get_result(query_str):
     results = []
@@ -56,25 +64,31 @@ def get_result(query_str):
     return results
 
 def lambda_handler(event, context):
+    fullName = event['pathParameters']['fullName']
+    dateVal = event['pathParameters']['date']
     businessId = event['pathParameters']['businessId']
-    dateIni = event['pathParameters']['dateIni']
-    dateFin = event['pathParameters']['dateFin']
 
-    query_01 = "SELECT service, location, count(*) as citas FROM citas WHERE businessid = '"+businessId+"' and date_ope BETWEEN TIMESTAMP '"+dateIni+"' and TIMESTAMP '" + dateFin + "' GROUP BY service, location"
-    query_02 = "SELECT ct.name, c.location, count(c.citaid) as citas FROM citas c inner join citastype ct on c.type = ct.pk_id  WHERE businessid = '"+businessId+"' and date_ope BETWEEN TIMESTAMP '"+dateIni+"' and TIMESTAMP '" + dateFin + "' GROUP BY ct.name, c.location"
-    query_03 = "SELECT SUBSTRING(CAST(date_ope AS VARCHAR(25)),1,10) as dateOpe, location, count(citaid) as citas FROM citas WHERE businessid = '"+businessId+"' and date_ope BETWEEN TIMESTAMP '"+dateIni+"' and TIMESTAMP '" + dateFin + "' GROUP BY SUBSTRING(CAST(date_ope AS VARCHAR(25)),1,10), location"
-    query_04 = "SELECT SUBSTRING(CAST(date_ope AS VARCHAR(25)),1,10) as dateOpe, location, provider, count(citaid) as citas FROM citas WHERE businessid = '"+businessId+"' and date_ope BETWEEN TIMESTAMP '"+dateIni+"' and TIMESTAMP '" + dateFin + "' GROUP BY SUBSTRING(CAST(date_ope AS VARCHAR(25)),1,10), location, provider"
-
+    query_01 = "SELECT citaid, name, phone, people, date_ope, service, location, customerid, type FROM citas WHERE name LIKE '%" + fullName + "%' AND date_ope >= TIMESTAMP '"+dateVal+":00.000' AND businessid = '" + businessId + "'" #2021-05-26 12:00
     
     result01 = []
-    result02 = []
-    result03 = []
-    result04 = []
     result01 = get_result(query_01)
-    result02 = get_result(query_02)
-    result03 = get_result(query_03)
-    result04 = get_result(query_04)
-    body = json.dumps({'Query01': result01, 'Query02': result02, 'Query03': result03, 'Query04': result04, 'Code': 200})
+    appos = []
+    record = {}
+    for app in result01:
+        record = {
+            'AppId': app['citaid'],
+            'CustId': app['customerid'],
+            'Name': app['name'],
+            'Phone': app['phone'],
+            'Guests': app['people'],
+            'DateOpe': app['date_ope'],
+            'Type': app['type'],
+            'Service': app['service'],
+            'Location': app['location']
+        }
+        appos.append(record)
+
+    body = json.dumps({'Appos': appos, 'Code': 200})
     statusCode = 200
     
     response = {

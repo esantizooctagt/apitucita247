@@ -63,7 +63,7 @@ def lambda_handler(event, context):
         dateAppoIni = (today + datetime.timedelta(hours=-4)).strftime("%Y-%m-%d-%H-00")
         dateAppoFin = (today + datetime.timedelta(hours=-1)).strftime("%Y-%m-%d-%H-59")
 
-        dateNow = today.strftime("%Y-%m-%d-%H")
+        dateNow = today.strftime("%Y-%m-%d-%H-%M")
         dateFin = today.strftime("%Y-%m-%d")
         hourNow = today.strftime("%H")
 
@@ -214,12 +214,13 @@ def lambda_handler(event, context):
                         KeyConditionExpression='GSI1PK = :gsi1pk AND GSI1SK BETWEEN :gsi1sk_ini AND :gsi1sk_fin',
                         ExpressionAttributeValues={
                             ':gsi1pk': {'S': 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + provider['SKID'].replace('PRO#','')},
-                            ':gsi1sk_ini': {'S': str(i)+'#DT#' + dateNow+'-00'},
+                            ':gsi1sk_ini': {'S': str(i)+'#DT#' + dateNow},
                             ':gsi1sk_fin': {'S': str(i)+'#DT#' + dateFin+'-23-59'}
                         }
                     )
                     #DISABLED HOURS FROM NOW TO 23
                     for hr in range(int(hourNow), 24):
+                        #00 MIN
                         res = dynamoQr.query(
                             TableName="TuCita247",
                             ReturnConsumedCapacity='TOTAL',
@@ -253,7 +254,108 @@ def lambda_handler(event, context):
                                 },
                                 ReturnValues='NONE'
                             )
-
+                        #15 MIN
+                        res = dynamoQr.query(
+                            TableName="TuCita247",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='PKID = :key AND SKID = :skey',
+                            ExpressionAttributeValues={
+                                ':key': {'S': 'LOC#' + locationId + '#PRO#' + provider['SKID'].replace('PRO#','') + '#DT#' + dateNow[0:10]},
+                                ':skey': {'S': 'HR#'+str(hr).zfill(2)+'-15'}
+                            }
+                        )
+                        ingresa = 0
+                        for appoRes in json_dynamodb.loads(res['Items']):
+                            ingresa = 1 
+                            updHr = table.update_item(
+                                Key={
+                                    'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow[0:10],
+                                    'SKID': 'HR#'+str(hr).zfill(2)+'-15'
+                                },
+                                UpdateExpression="SET AVAILABLE = :available, CANCEL = :cancel",
+                                ExpressionAttributeValues={
+                                    ':available': 0,
+                                    ':cancel': 1
+                                }
+                            )
+                        if ingresa == 0:
+                            updHr = table.put_item(
+                                Item={
+                                    'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow[0:10],
+                                    'SKID': 'HR#'+str(hr).zfill(2)+'-15',
+                                    'AVAILABLE': 0,
+                                    'CANCEL': 1
+                                },
+                                ReturnValues='NONE'
+                            )
+                        #30 MIN
+                        res = dynamoQr.query(
+                            TableName="TuCita247",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='PKID = :key AND SKID = :skey',
+                            ExpressionAttributeValues={
+                                ':key': {'S': 'LOC#' + locationId + '#PRO#' + provider['SKID'].replace('PRO#','') + '#DT#' + dateNow[0:10]},
+                                ':skey': {'S': 'HR#'+str(hr).zfill(2)+'-30'}
+                            }
+                        )
+                        ingresa = 0
+                        for appoRes in json_dynamodb.loads(res['Items']):
+                            ingresa = 1 
+                            updHr = table.update_item(
+                                Key={
+                                    'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow[0:10],
+                                    'SKID': 'HR#'+str(hr).zfill(2)+'-30'
+                                },
+                                UpdateExpression="SET AVAILABLE = :available, CANCEL = :cancel",
+                                ExpressionAttributeValues={
+                                    ':available': 0,
+                                    ':cancel': 1
+                                }
+                            )
+                        if ingresa == 0:
+                            updHr = table.put_item(
+                                Item={
+                                    'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow[0:10],
+                                    'SKID': 'HR#'+str(hr).zfill(2)+'-30',
+                                    'AVAILABLE': 0,
+                                    'CANCEL': 1
+                                },
+                                ReturnValues='NONE'
+                            )
+                        #45 MIN
+                        res = dynamoQr.query(
+                            TableName="TuCita247",
+                            ReturnConsumedCapacity='TOTAL',
+                            KeyConditionExpression='PKID = :key AND SKID = :skey',
+                            ExpressionAttributeValues={
+                                ':key': {'S': 'LOC#' + locationId + '#PRO#' + provider['SKID'].replace('PRO#','') + '#DT#' + dateNow[0:10]},
+                                ':skey': {'S': 'HR#'+str(hr).zfill(2)+'-45'}
+                            }
+                        )
+                        ingresa = 0
+                        for appoRes in json_dynamodb.loads(res['Items']):
+                            ingresa = 1 
+                            updHr = table.update_item(
+                                Key={
+                                    'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow[0:10],
+                                    'SKID': 'HR#'+str(hr).zfill(2)+'-45'
+                                },
+                                UpdateExpression="SET AVAILABLE = :available, CANCEL = :cancel",
+                                ExpressionAttributeValues={
+                                    ':available': 0,
+                                    ':cancel': 1
+                                }
+                            )
+                        if ingresa == 0:
+                            updHr = table.put_item(
+                                Item={
+                                    'PKID': 'LOC#'+locationId+'#'+provider['SKID']+'#DT#'+dateNow[0:10],
+                                    'SKID': 'HR#'+str(hr).zfill(2)+'-45',
+                                    'AVAILABLE': 0,
+                                    'CANCEL': 1
+                                },
+                                ReturnValues='NONE'
+                            )
                     table = dynamodb.Table('TuCita247')
                     for appo in json_dynamodb.loads(appos['Items']):
                         updAppo = table.update_item(

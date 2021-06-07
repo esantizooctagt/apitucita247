@@ -492,7 +492,9 @@ def lambda_handler(event, context):
     except Exception as e:
         statusCode = 500
         body = json.dumps({'Message': 'Error on request try again ' + str(e)})
-
+        logger.error("catch line no. 492")
+        logger.error(str(e))
+        
     response = {
         'statusCode' : statusCode,
         'headers' : {
