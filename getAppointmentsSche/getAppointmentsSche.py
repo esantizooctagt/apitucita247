@@ -73,8 +73,8 @@ def lambda_handler(event, context):
                 'DateAppo': row['DATE_APPO'],
                 'Unread': row['UNREAD'] if 'UNREAD' in row else 0,
                 'CheckInTime': row['TIMECHEK'] if 'TIMECHEK' in row else '',
-                # 'Purpose': row['PURPOSE'] if 'PURPOSE' in row else '',
-                'Status': row['STATUS']
+                'Status': row['STATUS'],
+                'Comments': row['COMMENTS'] if 'COMMENTS' in row else ''
             }
             record.append(recordset)
         
@@ -123,8 +123,8 @@ def lambda_handler(event, context):
                     'DateAppo': row['DATE_APPO'],
                     'Unread': row['UNREAD'] if 'UNREAD' in row else 0,
                     'CheckInTime': row['TIMECHEK'] if 'TIMECHEK' in row else '',
-                    # 'Purpose': row['PURPOSE'] if 'PURPOSE' in row else '',
-                    'Status': row['STATUS']
+                    'Status': row['STATUS'],
+                    'Comments': row['COMMENTS'] if 'COMMENTS' in row else ''
                 }
                 record.append(recordset)
 

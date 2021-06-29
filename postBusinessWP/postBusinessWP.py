@@ -81,19 +81,11 @@ def lambda_handler(event, context):
         today = datetime.datetime.now(tz=country_date)
         dueDate = (today + datetime.timedelta(days=31)).strftime("%Y-%m-%d")
         dateOpe = today.strftime("%Y-%m-%d-%H-%M-%S")
-
-        cities = dynamodb.query(
-            TableName="TuCita247",
-            ReturnConsumedCapacity='TOTAL',
-            KeyConditionExpression='PKID = :country AND SKID = :city',
-            ExpressionAttributeValues={
-                ':country': {'S': 'COUNTRY#' + data['Country']},
-                ':city': {"S": 'CITY#' + data['City']}
-            }
-        )
-        cityName = ''
-        for city in json_dynamodb.loads(cities['Items']):
-            cityName = city['NAME_ENG']
+        sectorCod = ''
+        for item in data['Locations']:
+            sectorCod = str(item['Sector'])
+            
+        cityName = data['City']
 
         items = []
         locationId = str(uuid.uuid4()).replace("-","")
@@ -158,6 +150,7 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA'},
                     "ADDRESS": {"S": data['Address']},
+                    "SECTOR": {"S": sectorCod},
                     "CITY": {"S": cityName},
                     "COUNTRY": {"S": data['Country']},
                     "EMAIL": {"S": data['Email']},
@@ -341,7 +334,6 @@ def lambda_handler(event, context):
             }
             items.append(cleanNullTerms(plan))
 
-
         logger.info(items)
         response = dynamodb.transact_write_items(
             TransactItems = items
@@ -403,7 +395,7 @@ def lambda_handler(event, context):
                 <p>Thank you for joining Tu Cita 24/7. <a href='https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """'>Click here</a> to activate your account, or copy and paste this link https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """</p>
                 <p>Once you activate your account, you can add images, create keywords, services, opening hours, and much more information about your business. Your customers will love being able to book your services online 24/7, and you will love the benefits of the system.</p>
                 <p><strong>If you need any help, choose your favorite way. Our friendly support staff is here to help you Monday through Friday from 9:00 AM to 6:00 PM. </strong></p>
-                <p>Click “Chat with us” at <a href='https://www.tucita247.com'>www.tucita247.com</a> or on your administration page after activating your account.</p>
+                <p>Click “Chat with us” at <a href='https://www.tucita247.com'>www.tucita247.com</a></p>
                 <p>Email us at <a href='mailto:support@tucita247.com'>support@tucita247.com</a></p>
                 <p>Call us at 939-267-0007.</p>
                 <p><strong>All the best from the Tu Cita 24/7 support team.</strong></p>
@@ -418,7 +410,7 @@ def lambda_handler(event, context):
                 <p>Gracias por unirse a Tu Cita 24/7. Haga <a href='https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """'>Click aquí</a> para activar su cuenta, o copie y pegue este enlace https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """</p>
                 <p>Una vez que active su cuenta, puede agregar imágenes, crear palabras clave, servicios, horarios de apertura y mucha más información sobre su negocio. A sus clientes les encantará poder reservar sus servicios en línea 24/7, y a usted le encantará los beneficios del sistema.</p>
                 <p><strong>Si necesita ayuda, elija su forma favorita. Nuestro amable personal de soporte está aquí para ayudarlo de lunes a viernes de 9:00 AM a 6:00 PM.</strong></p>
-                <p>Hable con nosotros. Haga click en “Chatea con nosotros” en <a href='https://www.tucita247.com'>www.tucita247.com</a> o en su página de administración después de activar su cuenta.</p>
+                <p>Hable con nosotros. Haga click en “Chatea con nosotros” en <a href='https://www.tucita247.com'>www.tucita247.com</a></p>
                 <p>Envíenos un correo electrónico a <a href='mailto:support@tucita247.com'>support@tucita247.com</a></p>
                 <p>Llámanos al 939-267-0007.</p>
                 <p><strong>Mucho éxito de parte del equipo de Tu Cita 24/7.</strong></p>

@@ -168,6 +168,7 @@ def lambda_handler(event, context):
             guest = custBooks['PEOPLE_QTY']
             disability = custBooks['DISABILITY'] if 'DISABILITY' in custBooks else ''
             onbehalf = int(custBooks['ON_BEHALF'])
+            comments = custBooks['COMMENTS'] if 'COMMENTS' in custBooks else ''
             appoDate = datetime.datetime.strptime(custBooks['DATE_APPO'][0:10], '%Y-%m-%d')
             hourDate = custBooks['DATE_APPO'][-5:].replace('-',':')
             dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + hourDate.replace(':','-')
@@ -295,6 +296,7 @@ def lambda_handler(event, context):
                         "SERVICEID": {"S": serviceId},
                         "QRCODE": {"S": qrCode},
                         "TYPE": {"N": "1"},
+                        "COMMENTS": {"S": comments},
                         "DATE_TRANS": {"S": str(dateOpe)},
                         "GSI1PK": {"S": 'BUS#' + businessId + '#LOC#' + locationId + '#PRO#' + providerId}, 
                         "GSI1SK": {"S": '1#DT#' + dateAppointment}, 
@@ -420,7 +422,8 @@ def lambda_handler(event, context):
                 'OpenItem': 0,
                 'DateTrans': str(dateOpe),
                 'Status': 1,
-                'UnRead': ''
+                'UnRead': '',
+                'Comments': comments
             }
             validAppo = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-%M")
             if dateAppointment <= validAppo: 

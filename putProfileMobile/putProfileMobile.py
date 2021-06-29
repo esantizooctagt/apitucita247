@@ -48,6 +48,7 @@ def lambda_handler(event, context):
                 ':email': data['Email'] if data['Email'] != '' else None,
                 ':dob': data['DOB'] if data['DOB'] != '' else None,
                 ':gender': data['Gender'] if data['Gender'] != '' else None,
+                ':custom': data['Custom'] if data['Custom'] != '' else None,
                 ':preferences': data['Preferences'] if data['Preferences'] != '' else None,
                 ':disability': data['Disability'] if data['Disability'] != '' else None,
                 ':mod_date': str(dateOpe)
@@ -55,6 +56,7 @@ def lambda_handler(event, context):
         rem = (" REMOVE EMAIL" if data['Email'] == '' else '') 
         rem = rem + ((", DOB" if rem != '' else " REMOVE DOB") if data['DOB'] == '' else '')
         rem = rem + ((", GENDER" if rem != '' else " REMOVE GENDER") if data['Gender'] == '' else '')
+        rem = rem + ((", CUSTOM" if rem != '' else " REMOVE CUSTOM") if data['Custom'] == '' else '')
         rem = rem + ((", PREFERENCES" if rem != '' else " REMOVE PREFERENCES") if data['Preferences'] == '' else '')
         rem = rem + ((", DISABILITY" if rem != '' else " REMOVE DISABILITY" ) if data['Disability'] == '' else '')
         response = table.update_item(
@@ -62,7 +64,7 @@ def lambda_handler(event, context):
                 'PKID': 'MOB#' + mobile,
                 'SKID': 'CUS#' + customerId
             },
-            UpdateExpression="SET #n = :name, MODIFIED_DATE = :mod_date" + (", EMAIL = :email" if data['Email'] != '' else '') + (", DOB = :dob" if data['DOB'] != '' else '') + (", GENDER = :gender" if data['Gender'] != '' else '') + (", PREFERENCES = :preferences" if data['Preferences'] != '' else '') + (", DISABILITY = :disability" if data['Disability'] != '' else '') + rem,
+            UpdateExpression="SET #n = :name, MODIFIED_DATE = :mod_date" + (", EMAIL = :email" if data['Email'] != '' else '') + (", DOB = :dob" if data['DOB'] != '' else '') + (", GENDER = :gender" if data['Gender'] != '' else '') + (", CUSTOM = :custom" if data['Custom'] != '' else '') + (", PREFERENCES = :preferences" if data['Preferences'] != '' else '') + (", DISABILITY = :disability" if data['Disability'] != '' else '') + rem,
             ExpressionAttributeNames=e,
             ExpressionAttributeValues=cleanNullTerms(expUpdate),
             ConditionExpression="attribute_exists(PKID) AND attribute_exists(SKID)"

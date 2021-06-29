@@ -152,6 +152,7 @@ def lambda_handler(event, context):
         disability = data['Disability']
         customerId = data['CustomerId']
         onbehalf = data['OnBehalf']
+        comments = data['Comments'] if 'Comments' in data else ''
         appoDate = datetime.datetime.strptime(data['AppoDate'], '%m-%d-%Y')
         hourDate = data['AppoHour']
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
@@ -506,6 +507,7 @@ def lambda_handler(event, context):
                                 "DOOR": {"S": door},
                                 "ON_BEHALF": {"N": str(onbehalf)},
                                 "PEOPLE_QTY": {"N": str(guest)},
+                                "COMMENTS": {"S": comments},
                                 "SERVICEID": {"S": serviceId},
                                 "SERVICE_NAME": {"S": servName},
                                 "DISABILITY": {"N": str(disability) if disability != '' else None},

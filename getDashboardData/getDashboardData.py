@@ -59,22 +59,13 @@ def lambda_handler(event, context):
     businessId = event['pathParameters']['businessId']
     dateIni = event['pathParameters']['dateIni']
     dateFin = event['pathParameters']['dateFin']
+    query = ''
+    query = "SELECT c.*, ct.en, ct.es, SUBSTRING(CAST(date_ope AS VARCHAR(25)),1,10) as dateOpe FROM citas c inner join citastype ct on c.type = ct.pk_id WHERE businessid = '"+businessId+"' and date_ope BETWEEN TIMESTAMP '"+dateIni+"' and TIMESTAMP '" + dateFin + "'"
 
-    query_01 = "SELECT service, location, count(*) as citas FROM citas WHERE businessid = '"+businessId+"' and date_ope BETWEEN TIMESTAMP '"+dateIni+"' and TIMESTAMP '" + dateFin + "' GROUP BY service, location"
-    query_02 = "SELECT ct.name, c.location, count(c.citaid) as citas FROM citas c inner join citastype ct on c.type = ct.pk_id  WHERE businessid = '"+businessId+"' and date_ope BETWEEN TIMESTAMP '"+dateIni+"' and TIMESTAMP '" + dateFin + "' GROUP BY ct.name, c.location"
-    query_03 = "SELECT SUBSTRING(CAST(date_ope AS VARCHAR(25)),1,10) as dateOpe, location, count(citaid) as citas FROM citas WHERE businessid = '"+businessId+"' and date_ope BETWEEN TIMESTAMP '"+dateIni+"' and TIMESTAMP '" + dateFin + "' GROUP BY SUBSTRING(CAST(date_ope AS VARCHAR(25)),1,10), location"
-    query_04 = "SELECT SUBSTRING(CAST(date_ope AS VARCHAR(25)),1,10) as dateOpe, location, provider, count(citaid) as citas FROM citas WHERE businessid = '"+businessId+"' and date_ope BETWEEN TIMESTAMP '"+dateIni+"' and TIMESTAMP '" + dateFin + "' GROUP BY SUBSTRING(CAST(date_ope AS VARCHAR(25)),1,10), location, provider"
-
+    result = []
+    result = get_result(query)
     
-    result01 = []
-    result02 = []
-    result03 = []
-    result04 = []
-    result01 = get_result(query_01)
-    result02 = get_result(query_02)
-    result03 = get_result(query_03)
-    result04 = get_result(query_04)
-    body = json.dumps({'Query01': result01, 'Query02': result02, 'Query03': result03, 'Query04': result04, 'Code': 200})
+    body = json.dumps({'Query': result, 'Code': 200})
     statusCode = 200
     
     response = {

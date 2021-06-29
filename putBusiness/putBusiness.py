@@ -126,13 +126,14 @@ def lambda_handler(event, context):
                     "PKID": {"S": 'BUS#' + businessId },
                     "SKID": {"S": 'METADATA' }
                 },
-                "UpdateExpression":"set MODIFIED_DATE = :mod_date, ADDRESS = :address, CITY = :city, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, #l = :language, PHONE = :phone, COUNTRYCODE = :countryCode, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, REASONS = :reasons, GSI4PK = :search, GSI4SK = :search" + (", GSI8PK = :key2, GSI8SK = :skey2" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
+                "UpdateExpression":"set MODIFIED_DATE = :mod_date, ADDRESS = :address, CITY = :city, SECTOR = :sector, COUNTRY = :country, EMAIL = :email, FACEBOOK = :facebook, GEOLOCATION = :geolocation, INSTAGRAM = :instagram, #n = :name, #l = :language, PHONE = :phone, COUNTRYCODE = :countryCode, TWITTER = :twitter, WEBSITE = :website, ZIPCODE = :zipcode, LONGDESCRIPTION = :longDescrip, SHORTDESCRIPTION = :shortDescrip, PARENTBUSINESS = :parentBus, TAGS = :tags, REASONS = :reasons, GSI4PK = :search, GSI4SK = :search" + (", GSI8PK = :key2, GSI8SK = :skey2" if parentBusiness == 1 else "") + (", TU_CITA_LINK = :tucitalink" if data['TuCitaLink'] != "" else ""),
                 "ExpressionAttributeNames": { '#n': 'NAME', '#l': 'LANGUAGE' },
                 "ExpressionAttributeValues": { 
                     ":longDescrip": {"S": data['LongDescription']},
                     ":shortDescrip": {"S": data['ShortDescription']},
                     ":address": {"S": data['Address']},
                     ":city": {"S": data['City']},
+                    ":sector": {"S": data['Sector']},
                     ":country": {"S": data['Country']},
                     ":email": {"S": data['Email']},
                     ":facebook": {"S": data['Facebook']},

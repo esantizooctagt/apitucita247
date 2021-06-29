@@ -216,6 +216,7 @@ def lambda_handler(event, context):
                 'NameBusiness': businessName,
                 'Address': Addr,
                 'DateTrans': row['DATE_TRANS'],
+                'Comments': row['COMMENTS'] if 'COMMENTS' in row else '',
                 'TimeZone': TimeZone,
                 'ManualCheckOut': manualCheckOut,
                 'Qeue': 'PRE' if row['DATE_APPO'] < dateOpe else 'UPC',

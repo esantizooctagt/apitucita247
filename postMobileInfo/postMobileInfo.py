@@ -40,6 +40,7 @@ def lambda_handler(event, context):
                 'Status': item['STATUS'],
                 'Name': item['NAME'],
                 'Gender': item['GENDER'] if 'GENDER' in item else '',
+                'Custom': item['CUSTOM'] if 'CUSTOM' in item else '',
                 'Email': item['EMAIL'] if 'EMAIL' in item else '',
                 'Preferences': item['PREFERENCES'] if 'PREFERENCES' in item else '',
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else '',

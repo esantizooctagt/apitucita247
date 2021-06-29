@@ -68,7 +68,7 @@ def lambda_handler(event, context):
     dateVal = event['pathParameters']['date']
     businessId = event['pathParameters']['businessId']
 
-    query_01 = "SELECT citaid, name, phone, people, date_ope, service, location, customerid, type FROM citas WHERE name LIKE '%" + fullName + "%' AND date_ope >= TIMESTAMP '"+dateVal+":00.000' AND businessid = '" + businessId + "'" #2021-05-26 12:00
+    query_01 = "SELECT citaid, name, phone, people, date_ope, service, location, customerid, type FROM citas WHERE LOWER(name) LIKE '%" + fullName.lower() + "%' AND date_ope >= TIMESTAMP '"+dateVal+":00.000' AND businessid = '" + businessId + "'" #2021-05-26 12:00
     
     result01 = []
     result01 = get_result(query_01)

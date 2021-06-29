@@ -187,6 +187,7 @@ def lambda_handler(event, context):
         hourDate = data['AppoHour']
         businessName = data['BusinessName']
         language = data['Language']
+        comments = data['Comments'] if 'Comments' in data else ''
         dateAppointment = appoDate.strftime("%Y-%m-%d") + '-' + data['AppoHour'].replace(':','-')
 
         country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
@@ -622,6 +623,7 @@ def lambda_handler(event, context):
                                 "PROVIDER_NAME": {"S": proName},
                                 "LOCATION_NAME": {"S": locName},
                                 "BUSINESS_NAME": {"S": busName},
+                                "COMMENTS": {"S": comments},
                                 "QRCODE": {"S": qrCode},
                                 "TYPE": {"N": "1"},
                                 "SOURCE": {"N": "1"},
@@ -749,7 +751,8 @@ def lambda_handler(event, context):
                         'OpenItem': 0,
                         'DateTrans': str(dateOpe),
                         'Status': 1,
-                        'UnRead': ''
+                        'UnRead': '',
+                        'Comments': comments
                     }
 
                     # validAppo = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-%M")

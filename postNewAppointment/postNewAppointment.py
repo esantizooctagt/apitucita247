@@ -4,23 +4,31 @@ import requests
 import json
 
 import boto3
+import pytz
 import botocore.exceptions 
+from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key, Attr
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 from dynamodb_json import json_util as json_dynamodb
 
 from decimal import *
 import datetime
 import dateutil.tz
 from datetime import timezone
+from icalendar import vDatetime
 
 import uuid
 import string
 import math
 import random
 
-import os
+import tempfile, os
+from icalendar import Calendar, Event, vCalAddress, vText
 
 REGION = 'us-east-1'
+CHARSET = 'utf-8'
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -163,6 +171,8 @@ def lambda_handler(event, context):
         gender = data['Gender'] if 'Gender' in data else ''
         preference = data['Preference'] if 'Preference' in data else ''
         disability = data['Disability'] if 'Disability' in data else ''
+        comments = data['Comments'] if 'Comments' in data else ''
+        custom = data['Custom'] if 'Custom' in data else ''
         guests = data['Guests']
         customerId = str(uuid.uuid4()).replace("-","")
         status = data['Status'] if 'Status' in data else 0
@@ -606,6 +616,7 @@ def lambda_handler(event, context):
                             email = (phoneNumber['EMAIL'] if 'EMAIL' in phoneNumber and email == '' else email)
                             dob = (phoneNumber['DOB'] if 'DOB' in phoneNumber and dob == '' else dob)
                             gender = (phoneNumber['GENDER'] if 'GENDER' in phoneNumber and gender == '' else gender)
+                            custom = (phoneNumber['GENDER_CUSTOM'] if 'GENDER_CUSTOM' in phoneNumber and custom == '' else custom)
                             preference = (phoneNumber['PREFERENCES'] if 'PREFERENCES' in phoneNumber and preference == '' else preference)
                             disability = (phoneNumber['DISABILITY'] if 'DISABILITY' in phoneNumber and disability == '' else disability)
                             playerPhone = phoneNumber['PLAYERID'] if 'PLAYERID' in phoneNumber else ''
@@ -628,6 +639,7 @@ def lambda_handler(event, context):
                                     "DOB": {"S": dob if dob != '' else None },
                                     "DISABILITY": {"N": disability if disability != '' else None},
                                     "GENDER": {"S": gender if gender != '' else None},
+                                    "GENDER_CUSTOM": {"S": custom if custom != '' else None},
                                     "PREFERENCES": {"N": str(preference) if str(preference) != '' else None},
                                     "LANGUAGE": {"S": str("en")},
                                     "GSI1PK": {"S": "CUS#" + customerId}, 
@@ -713,6 +725,7 @@ def lambda_handler(event, context):
                                 "PEOPLE_QTY": {"N": str(guests) if str(guests) != '' else None},
                                 "DISABILITY": {"N": str(disability) if str(disability) != '' else None},
                                 "QRCODE": {"S": qrCode},
+                                "COMMENTS": {"S": comments},
                                 "TYPE": {"N": str(typeCita)},
                                 "SOURCE": {"N": str(source)},
                                 "TIMECHECKIN": {"S": str(dateOpe) if status == 3 else None},
@@ -885,7 +898,8 @@ def lambda_handler(event, context):
                         'DateTrans': str(dateOpe),
                         'Address': Addr,
                         'TimeZone': TimeZone,
-                        'ManualCheckOut': ManualCheckOut
+                        'ManualCheckOut': ManualCheckOut,
+                        'Comments': comments
                     }
 
                     # validAppo = (today + datetime.timedelta(hours=6)).strftime("%Y-%m-%d-%H-%M")
@@ -958,6 +972,9 @@ def lambda_handler(event, context):
                     )
                     for lang in json_dynamodb.loads(lanData['Items']):
                         language = lang['LANGUAGE'] if 'LANGUAGE' in lang else 'es'
+                        recipient = lang['EMAIL']
+
+                    sendOwnerMail(name, language, TimeZone, Addr, comments, recipient, dateAppointment, bucket, servName, provName)
 
                     for row in json_dynamodb.loads(response['Items']):
                         preference = int(row['PREFERENCES']) if 'PREFERENCES' in row else 0
@@ -1081,3 +1098,96 @@ def lambda_handler(event, context):
         'body' : body
     }
     return response
+
+def sendOwnerMail(name, language, timeZone, localidad, comments, recipient, dateIni, bucket, service, provider):
+    appo = 'Appointment' if language == 'en' else 'Cita'
+    new = 'New' if language == 'en' else 'Nueva'
+    texto = comments if comments != '' else 'NA'
+    comm = 'Comments' if language == 'en' else 'Comentarios'
+    content = ' | ' + service if service != '' else ''
+    content = content + ' | ' + provider if provider != '' else content
+
+    year = int(dateIni[0:4])
+    month = int(dateIni[5:7])
+    day = int(dateIni[8:10])
+    hour = int(dateIni[11:13])
+    min = int(dateIni[14:16])
+    hr = int(0) if len(str(bucket)) < 3 else int(str(bucket)[0:1])
+    mi = int(str(bucket)) if len(str(bucket)) < 3 else int(str(bucket)[-2:])
+    startDate = datetime.datetime(year,month,day,hour,min,0, tzinfo=dateutil.tz.gettz(timeZone))
+    endDate = startDate + datetime.timedelta(hours=hr, minutes=mi)
+
+    cal = Calendar()
+    cal.add('prodid', '-//My calendar product//mxm.dk//')
+    cal.add('version', '2.0')
+    cal.add('method', 'REQUEST')
+    
+    event = Event()
+    event.add('dtstart', startDate)
+    event.add('dtend', endDate)
+    event.add('dtstamp', startDate)
+    event.add('summary', appo + ': ' + name + ' ' + content)
+    event.add('uid', uuid.uuid1())
+    
+    organizer = vCalAddress('MAILTO:no-reply@tucita247.com')
+    organizer.params['cn'] = vText('Tu Cita 24/7')
+    organizer.params['role'] = vText('SYSTEM')
+    
+    event['organizer'] = organizer
+    event['location'] = vText(localidad)
+     
+    cal.add_component(event)
+
+    directory = tempfile.mkdtemp()
+    f = open(os.path.join(directory, 'tucita247.ics'), 'wb')
+    f.write(cal.to_ical())
+    f.close()
+    
+    SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+    RECIPIENT = recipient
+    SUBJECT = appo + ': ' + name + ' ' + content
+    ATTACHMENT = os.path.join(directory, 'tucita247.ics')
+    BODY_TEXT = comm + ":\r\n " + texto
+    
+    BODY_HTML = """\
+    <html>
+    <head></head>
+    <body>
+    <h1>""" + comm + """:</h1>
+    <p>""" + texto + """</p>
+    </body>
+    </html>
+    """
+    msg = MIMEMultipart('mixed')
+    msg['Subject'] = SUBJECT 
+    msg['From'] = SENDER 
+    msg['To'] = RECIPIENT
+    
+    msg_body = MIMEMultipart('alternative')
+    textpart = MIMEText(BODY_TEXT.encode(CHARSET), 'plain', CHARSET)
+    htmlpart = MIMEText(BODY_HTML.encode(CHARSET), 'html', CHARSET)
+    
+    msg_body.attach(textpart)
+    msg_body.attach(htmlpart)
+    
+    att = MIMEApplication(open(ATTACHMENT, 'rb').read())
+    
+    att.add_header('Content-Disposition','attachment',filename=os.path.basename(ATTACHMENT))
+    msg.attach(msg_body)
+    msg.attach(att)
+    try:
+        response = ses.send_raw_email(
+            Source=SENDER,
+            Destinations=[
+                RECIPIENT
+            ],
+            RawMessage={
+                'Data':msg.as_string(),
+            }
+        )
+    # Display an error if something goes wrong. 
+    except ClientError as e:
+        logger.error(e.response['Error']['Message'])
+    else:
+        logger.info("Email sent! Message ID:"),
+        logger.info(response['MessageId'])

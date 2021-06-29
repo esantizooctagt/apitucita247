@@ -151,7 +151,7 @@ def lambda_handler(event, context):
             recordset = {
                 'BusinessId': row['PKID'].replace('BUS#',''),
                 'Name': row['NAME'],
-                'Imagen': row['IMGLINK'] if 'IMGLINK' in row else '',
+                'Imagen': row['IMGBUSINESS'] if 'IMGBUSINESS' in row else '',
                 'LongDescrip': row['LONGDESCRIPTION'] if 'LONGDESCRIPTION' in row else '',
                 'Phone': row['PHONE'] if 'PHONE' in row else '',
                 'ShortDescript': row['SHORTDESCRIPTION'] if 'SHORTDESCRIPTION' in row else '',

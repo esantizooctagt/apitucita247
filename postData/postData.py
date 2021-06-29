@@ -291,6 +291,7 @@ def lambda_handler(event, context):
                     'Source': cita['SOURCE'] if 'SOURCE' in cita else 2,
                     'Phone': cita['PHONE'],
                     'People': int(cita['PEOPLE_QTY']),
+                    'Comments': cita['COMMENTS'] if 'COMMENTS' in cita else '',
                     'Created_Date': citaDT
                 }
                 appoArr.append(citaRecord)
