@@ -316,6 +316,10 @@ def lambda_handler(event, context):
                         }
                     }
                 )
+                if status == 2:
+                    logger.info('Send SMS Ready to serve you : ' + bodyStr)
+                else:
+                    logger.info('Send SMS Cancel : ' + bodyStr)
                 
             if int(preference) == 2 and email != '':
                 #EMAIL

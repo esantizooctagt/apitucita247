@@ -78,7 +78,8 @@ def lambda_handler(event, context):
                 'Used': row['APPOINTMENTS']-row['AVAILABLE'],
                 'DueDate': row['DUE_DATE'],
                 'Name': row['NAME'],
-                'Packs': records
+                'Packs': records,
+                'Order': row['SUBID']
             } 
             
             statusCode = 200

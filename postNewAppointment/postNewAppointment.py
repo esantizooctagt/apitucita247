@@ -185,6 +185,8 @@ def lambda_handler(event, context):
         opeHours = ''
         daysOff = []
         dateAppo = ''
+        tel = ''
+        telCode = ''
         qrCode = 'VALID' if phone == '00000000000' else ''.join(random.choice(letters) for i in range(6))
 
         country_date = dateutil.tz.gettz(findTimeZone(businessId, locationId))
@@ -543,6 +545,9 @@ def lambda_handler(event, context):
                     busName = ''
                     for bRes in json_dynamodb.loads(busN['Items']):
                         busName = bRes['NAME']
+                        tel = bRes['PHONE']
+                        telCode = bRes['COUNTRYCODE']
+                        tel = setFormat(tel, telCode)
 
                     locN = dynamodb.query(
                         TableName="TuCita247",
@@ -557,6 +562,20 @@ def lambda_handler(event, context):
                     for lRes in json_dynamodb.loads(locN['Items']):
                         locName = lRes['NAME']
 
+                    count = 0
+                    links = dynamodb.query(
+                        TableName="TuCita247",
+                        IndexName="TuCita247_Index",
+                        ReturnConsumedCapacity='TOTAL',
+                        KeyConditionExpression='GSI1PK = :businessId AND begins_with(GSI1SK , :serv)',
+                        ExpressionAttributeValues={
+                            ':businessId': {'S': 'BUS#'+businessId+'#PRO#'+providerId},
+                            ':serv': {'S': 'SER#' }
+                        }
+                    )
+                    for link in json_dynamodb.loads(links['Items']):
+                        count = count + 1
+
                     servs = dynamodb.query(
                         TableName="TuCita247",
                         ReturnConsumedCapacity='TOTAL',
@@ -566,14 +585,13 @@ def lambda_handler(event, context):
                             ':serv': {'S': 'SER#' }
                         }
                     )
-                    count = 0
                     servName = ''
                     serName = ''
                     for serv in json_dynamodb.loads(servs['Items']):
-                        count = count + 1
-                        if serv['SKID'].replace('SER#','') == serviceId:
-                            servName = serv['NAME']
-                            serName = servName
+                        if serv['STATUS'] == 1:
+                            if serv['SKID'].replace('SER#','') == serviceId:
+                                servName = serv['NAME']
+                                serName = servName
                     if count == 1:
                         servName = ''
                     
@@ -590,10 +608,11 @@ def lambda_handler(event, context):
                     provName = ''
                     proName = ''
                     for prov in json_dynamodb.loads(provs['Items']):
-                        countp = countp + 1
-                        if prov['SKID'].replace('PRO#','') == providerId:
-                            provName = prov['NAME']
-                            proName = provName
+                        if prov['STATUS'] == 1:
+                            countp = countp + 1
+                            if prov['SKID'].replace('PRO#','') == providerId:
+                                provName = prov['NAME']
+                                proName = provName
                     if countp == 1:
                         provName = ''
 
@@ -841,7 +860,7 @@ def lambda_handler(event, context):
                     sTime = ''
                     hTime = int(str(dateAppointment[-5:].replace('-','')))
                     if hTime >= 1200:
-                        if hTime == 1200:
+                        if hTime <= 1259:
                             sTime = dateAppointment[-5:].replace('-',':') + ' PM'
                         else:
                             hTime = hTime-1200
@@ -990,20 +1009,21 @@ def lambda_handler(event, context):
                     strQrCode = ''
                     if language == 'en':
                         if qrCode != 'VALID':
-                            strQrCode = 'Code: '+qrCode+'. Tu Cita 24/7.'
+                            strQrCode = 'Code '+qrCode+'. Tu Cita 24/7.'
                         if playerId != '':
-                            msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
+                            msg = 'Your booking at ' + busName + ', Tel. ' + tel + ', ' + ('for ' + provName + ' : ' + servName if provName != '' and servName != '' else ('for ' + provName + servName if provName != '' or servName != '' else '')) + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', for ' + str(guests) + ' person/s. Located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
                         else:
-                            msg = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Download Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247.' + strQrCode
-                        msgPush = 'Your booking at ' + businessName + ' was confirmed for ' + dayAppo + ', ' + hrAppo + '. '+strQrCode
+                            msg = 'Your booking at ' + busName + ', Tel. ' + tel + ', ' + ('for ' + provName + ' : ' + servName if provName != '' and servName != '' else ('for ' + provName + servName if provName != '' or servName != '' else '')) + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', for ' + str(guests) + ' person/s. Located at https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Download Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247.app ' + strQrCode
+                        msgPush = 'Your booking at ' + busName + ', Tel. ' + tel + ', ' + ('for ' + provName + ' : ' + servName if provName != '' and servName != '' else ('for ' + provName + servName if provName != '' or servName != '' else '')) + ' was confirmed for ' + dayAppo + ', ' + hrAppo + ', for ' + str(guests) + ' person/s. '+strQrCode
                     else:
                         if qrCode != 'VALID':
-                            strQrCode = 'Código: '+qrCode+'. Tu Cita 24/7.'
+                            strQrCode = 'Código '+qrCode+'. Tu Cita 24/7.'
                         if playerId != '':
-                            msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
+                            msg = 'Su cita en ' + busName + ', Tel. ' + tel + ', ' + ('para ' + provName + ' : ' + servName if provName != '' and servName != '' else ('para ' + provName + servName if provName != '' or servName != '' else '')) + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', para ' + str(guests) + ' persona/s. Ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. ' + strQrCode
                         else:
-                            msg = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Descarga Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247.'+ strQrCode
-                        msgPush = 'Su cita en ' + businessName + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + '. '+strQrCode
+                            msg = 'Su cita en ' + busName + ', Tel. ' + tel + ', ' + ('para ' + provName + ' : ' + servName if provName != '' and servName != '' else ('para ' + provName + servName if provName != '' or servName != '' else '')) + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', para ' + str(guests) + ' persona/s. Ubicado en https://www.google.com/maps/search/?api=1&query='+lat+','+lng+'. Descarga Tu Cita 24/7 https://play.google.com/store/apps/details?id=com.tucita247.app '+ strQrCode
+                        msgPush = 'Su cita en ' + busName + ', Tel. ' + tel + ', ' + ('para ' + provName + ' : ' + servName if provName != '' and servName != '' else ('para ' + provName + servName if provName != '' or servName != '' else '')) + ' fue confirmada para ' + dayAppo + ', ' + hrAppo + ', para ' + str(guests) + ' persona/s. '+strQrCode
+
 
                     #CODIGO UNICO DEL TELEFONO PARA PUSH NOTIFICATION ONESIGNAL
                     if playerId != '':
@@ -1191,3 +1211,13 @@ def sendOwnerMail(name, language, timeZone, localidad, comments, recipient, date
     else:
         logger.info("Email sent! Message ID:"),
         logger.info(response['MessageId'])
+
+def setFormat(tel, code):
+    if code == 'PRI' or code == 'DOM' or code == 'USA':
+        return '+'+tel[0:1]+' ('+tel[1:4]+') ' + tel[4:7] +'-'+tel[-4:]
+    if code == 'GTM':
+        return '+'+tel[0:3] + ' ' + tel[3:7] + '-'+tel[-4:]
+    if code == 'DEU':
+        return '+'+tel[0:2] + ' ' + tel[2:5] + ' ' + tel[-8:]
+    if code == 'ESP':
+        return '+'+tel[0:2] + ' ' + tel[2:5] + ' ' + tel[5:8] + ' ' + tel[-3:]

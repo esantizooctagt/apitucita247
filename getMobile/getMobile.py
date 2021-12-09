@@ -49,7 +49,8 @@ def lambda_handler(event, context):
                 'Email': item['EMAIL_COMM'] if 'EMAIL_COMM' in item else item['EMAIL'] if 'EMAIL' in item else '',
                 'Preferences': item['PREFERENCES'] if 'PREFERENCES' in item else 0,
                 'Disability': item['DISABILITY'] if 'DISABILITY' in item else '',
-                'DOB': item['DOB'] if 'DOB' in item else ''
+                'DOB': item['DOB'] if 'DOB' in item else '',
+                'CUSTOM': item['CUSTOM'] if 'CUSTOM' in item else ''
             }
 
         statusCode = 200

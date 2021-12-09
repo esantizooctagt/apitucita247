@@ -158,10 +158,7 @@ def lambda_handler(event, context):
         response = ses.send_email(
             Destination={
                 'ToAddresses': [
-                    email
-                ],
-                'BccAddresses': [
-                    'rita@lutorio.com', 'carlos@lutorio.com', 'esantizo@octagt.com'
+                    'sales@tucita247.com'
                 ],
             },
             Message={

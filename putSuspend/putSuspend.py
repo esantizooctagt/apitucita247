@@ -108,6 +108,48 @@ def lambda_handler(event, context):
             TransactItems = items
         )
 
+        respEmail = dynamodb.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId AND SKID = :metadata',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#' + businessId},
+                ':metadata': {'S': 'METADATA'}
+            }
+        )
+        email = ''
+        language = 'en'
+        for item in json_dynamodb.loads(respEmail['Items']):
+            email = str(item['EMAIL']) if 'EMAIL' in item else ''
+            language = str(item['LANGUAGE']) if 'LANGUAGE' in item else ''
+            
+        if value == 1:    
+            #EMAIL
+            SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+            RECIPIENT = email
+            data = ''
+            subj = ''
+            if language == 'en':
+                LAN = 'EN'
+                subj = 'Your account has been suspended'
+                data = "<h3><strong>Hi! Your account has been temporarily suspended.</strong></h3><br><p>For more information, or if you think your account was suspended by mistake, please contact us at <a href='mailto:support@tucita247.com'>support@tucita247.com</a>.</p><br><p>Thank you for using tucita247.com!</p>"
+            else:
+                LAN = 'ES'
+                subj = 'Su cuenta ha sido suspendida'
+                data = "<h3><strong>¡Hola! Su cuenta ha sido suspendida.</strong></h3><br><p>Para más información, o si entiende que su cuenta se suspendió por error, comuníquese con nosotros a <a href='mailto:support@tucita247.com'>support@tucita247.com</a>.</p><br><p>¡Gracias por usar tucita247.com!</p>"
+
+            logger.info("prev send email")
+            response = ses.send_templated_email(
+                Source=SENDER,
+                Destination={
+                    'ToAddresses': [
+                        RECIPIENT,
+                    ],
+                },
+                Template ='REACTIVATE_' + LAN, 
+                TemplateData='{ "data": "'+ data +'", "subject" : "'+subj+'" }'
+            )
+
         if value == 2:
             record = [{
                 "type" : "delete",
@@ -116,6 +158,59 @@ def lambda_handler(event, context):
             response = search.upload_documents(
                 documents=json.dumps(record),
                 contentType='application/json'
+            )
+
+            #EMAIL
+            SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+            RECIPIENT = email
+            data = ''
+            subj = ''
+            if language == 'en':
+                LAN = 'EN'
+                subj = 'Your account has been canceled'
+                data = "<h3><strong>Hi! Your account has been canceled.</strong></h3><br><p>For more information, or if you think your account was canceled by mistake, please contact us at <a href='mailto:support@tucita247.com'>support@tucita247.com</a>.</p><br><p>Thank you for using tucita247.com!</p>"
+            else:
+                LAN = 'ES'
+                subj = 'Su cuenta ha sido cancelada'
+                data = "<h3><strong>¡Hola! Su cuenta ha sido cancelada.</strong></h3><br><p>Para más información, o si entiende que su cuenta se canceló por error, comuníquese con nosotros a <a href='mailto:support@tucita247.com'>support@tucita247.com</a>.</p><br><p>¡Gracias por usar tucita247.com!</p>"
+
+            logger.info("prev send email")
+            response = ses.send_templated_email(
+                Source=SENDER,
+                Destination={
+                    'ToAddresses': [
+                        RECIPIENT,
+                    ],
+                },
+                Template ='REACTIVATE_' + LAN, 
+                TemplateData='{ "data": "'+ data +'", "subject" : "'+subj+'" }'
+            )
+
+        if value == 3:
+            #EMAIL
+            SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
+            RECIPIENT = email
+            data = ''
+            subj = ''
+            if language == 'en':
+                LAN = 'EN'
+                subj = 'Your account has been reactivated'
+                data = "<h3><strong>Hi! Your account has been reactivated.</strong></h3><br><p>You can visit <a href='https://console.tucita247.com/en'>https://console.tucita247.com/en</a> and log in with your account.</p><p>For more information, please contact us at <a href='mailto:support@tucita247.com'>support@tucita247.com</a>.</p><br><p>Thank you for using tucita247.com!</p>"
+            else:
+                LAN = 'ES'
+                subj = 'Su cuenta ha sido reactivada'
+                data = "<h3><strong>¡Hola! Su cuenta ha sido reactivada.</strong></h3><br><p>Puede visitar <a href='https://console.tucita247.com/es'>https://console.tucita247.com/es</a> e ingresar con los datos de su cuenta.</p><p>Para más información, comuníquese con nosotros a <a href='mailto:support@tucita247.com'>support@tucita247.com</a>.</p><br><p>¡Gracias por usar tucita247.com!</p>"
+
+            logger.info("prev send email")
+            response = ses.send_templated_email(
+                Source=SENDER,
+                Destination={
+                    'ToAddresses': [
+                        RECIPIENT,
+                    ],
+                },
+                Template ='REACTIVATE_' + LAN, 
+                TemplateData='{ "data": "'+ data +'", "subject" : "'+subj+'" }'
             )
 
         if subId != '':

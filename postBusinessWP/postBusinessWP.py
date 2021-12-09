@@ -377,71 +377,22 @@ def lambda_handler(event, context):
             #EMAIL
             SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
             RECIPIENT = data['Email']
-            SUBJECT = "Tu Cita 24/7 - Welcome Email" if language == 'en' else "Tu Cita 24/7 - Correo de Bienvenida"
-            if language == 'en':
-                BODY_TEXT = ("Hello and welcome! Thank you for joining Tu Cita 24/7. Copy and paste this link https://console.tucita247.com/en/verification/" + userId + "/0/"+passDecrypt+" .Once you activate your account, you can add images, create keywords, services, opening hours, and much more information about your business. Your customers will love being able to book your services online 24/7, and you will love the benefits of the system. If you need any help, choose your favorite way. Our friendly support staff is here to help you Monday through Friday from 9:00 AM to 6:00 PM. " +
-                        "Click “Chat with us” at https://www.tucita247.com . Email us at support@tucita247.com. Call us at 939-267-0007. All the best from the Tu Cita 24/7 support team.")
-            else:
-                BODY_TEXT = ("¡Hola y bienvenido! Gracias por unirse a Tu Cita 24/7. Copie y pegue este enlace https://console.tucita247.com/en/verification/" + userId + "/0/"+passDecrypt+" .Una vez que active su cuenta, puede agregar imágenes, crear palabras clave, servicios, horarios de apertura y mucha más información sobre su negocio. A sus clientes les encantará poder reservar sus servicios en línea 24/7, y a usted le encantará los beneficios del sistema. Si necesita ayuda, elija su forma favorita. Nuestro amable personal de soporte está aquí para ayudarlo de lunes a viernes de 9:00 AM a 6:00 PM." +
-                        "Hable con nosotros. Haga click en “Chatea con nosotros” en https://www.tucita247.com . Envíenos un correo electrónico a support@tucita247.com. Llámanos al 939-267-0007. Mucho éxito de parte del equipo de Tu Cita 24/7.")
 
-            # The HTML body of the email.
             if language == 'en':
-                BODY_HTML = """<html>
-                <head></head>
-                <body>
-                <h1>Tu Cita 24/7</h1>
-                <h3>Hello and welcome!</h3>
-                <p>Thank you for joining Tu Cita 24/7. <a href='https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """'>Click here</a> to activate your account, or copy and paste this link https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """</p>
-                <p>Once you activate your account, you can add images, create keywords, services, opening hours, and much more information about your business. Your customers will love being able to book your services online 24/7, and you will love the benefits of the system.</p>
-                <p><strong>If you need any help, choose your favorite way. Our friendly support staff is here to help you Monday through Friday from 9:00 AM to 6:00 PM. </strong></p>
-                <p>Click “Chat with us” at <a href='https://www.tucita247.com'>www.tucita247.com</a></p>
-                <p>Email us at <a href='mailto:support@tucita247.com'>support@tucita247.com</a></p>
-                <p>Call us at 939-267-0007.</p>
-                <p><strong>All the best from the Tu Cita 24/7 support team.</strong></p>
-                </body>
-                </html>"""
+                LAN = 'EN'
             else:
-                BODY_HTML = """<html>
-                <head></head>
-                <body>
-                <h1>Tu Cita 24/7</h1>
-                <h3>¡Hola y bienvenido!</h3>
-                <p>Gracias por unirse a Tu Cita 24/7. Haga <a href='https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """'>Click aquí</a> para activar su cuenta, o copie y pegue este enlace https://console.tucita247.com/en/verification/""" + userId + """/0/""" + passDecrypt + """</p>
-                <p>Una vez que active su cuenta, puede agregar imágenes, crear palabras clave, servicios, horarios de apertura y mucha más información sobre su negocio. A sus clientes les encantará poder reservar sus servicios en línea 24/7, y a usted le encantará los beneficios del sistema.</p>
-                <p><strong>Si necesita ayuda, elija su forma favorita. Nuestro amable personal de soporte está aquí para ayudarlo de lunes a viernes de 9:00 AM a 6:00 PM.</strong></p>
-                <p>Hable con nosotros. Haga click en “Chatea con nosotros” en <a href='https://www.tucita247.com'>www.tucita247.com</a></p>
-                <p>Envíenos un correo electrónico a <a href='mailto:support@tucita247.com'>support@tucita247.com</a></p>
-                <p>Llámanos al 939-267-0007.</p>
-                <p><strong>Mucho éxito de parte del equipo de Tu Cita 24/7.</strong></p>
-                </body>
-                </html>"""
+                LAN = 'ES'
 
-            CHARSET = "UTF-8"
             logger.info("prev send email")
-            response = ses.send_email(
+            response = ses.send_templated_email(
+                Source=SENDER,
                 Destination={
                     'ToAddresses': [
                         RECIPIENT,
                     ],
                 },
-                Message={
-                    'Body': {
-                        'Html': {
-                            'Charset': CHARSET,
-                            'Data': BODY_HTML,
-                        },
-                        'Text': {
-                            'Charset': CHARSET,
-                            'Data': BODY_TEXT,
-                        },
-                    },
-                    'Subject': {
-                        'Charset': CHARSET,
-                        'Data': SUBJECT,
-                    },
-                },
-                Source=SENDER
+                Template ='WELCOME_' + LAN, 
+                TemplateData='{ "userId": "'+ userId +'", "passDecrypt": "' + passDecrypt + '" }'
             )
             logger.info("Success BUsinessId --> " + businessId)
             statusCode = 200

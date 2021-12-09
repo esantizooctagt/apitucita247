@@ -387,15 +387,15 @@ def lambda_handler(event, context):
                 TransactItems = items
             )
             sTime = ''
-            hTime = int(str(hourDate)[0:2])
-            if hTime >= 12:
-                if hTime == 12:
-                    sTime = str(hTime) + ':00 PM'
+            hTime = int(str(hourDate).replace(':',''))
+            if hTime >= 1200:
+                if hTime <= 1259:
+                    sTime = str(hourDate) + ' PM'
                 else:
-                    hTime = hTime-12
-                    sTime = str(hTime).rjust(2,'0') + ':00 PM'
+                    hTime = hTime-1200
+                    sTime = str(hTime).rjust(4,'0')[0:2] + ':' + str(hTime).rjust(4,'0')[-2:] + ' PM'
             else:
-                sTime = str(hTime).rjust(2,'0') + ':00 AM'
+                sTime = str(hTime).rjust(4,'0')[0:2] + ':' + str(hTime).rjust(4,'0')[-2:] + ' AM'
 
             appoInfo = {
                 'Tipo': 'APPO',

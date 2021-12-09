@@ -290,6 +290,8 @@ def lambda_handler(event, context):
                                 }
                             }
                         )
+
+                        logger.info('Send SMS Cancel : ' + bodyStr)
                         
                     if preference == 2 and email != '':
                         #EMAIL

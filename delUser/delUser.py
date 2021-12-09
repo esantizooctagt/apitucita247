@@ -14,6 +14,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
+dynamodbQry = boto3.client('dynamodb', region_name=REGION)
 logger.info("SUCCESS: Connection to DynamoDB succeeded")
 
 def lambda_handler(event, context):
@@ -25,18 +26,35 @@ def lambda_handler(event, context):
         
     try:
         statusCode = ''
+        isAdmin = 0
         userId = event['pathParameters']['id']
         businessId = event['pathParameters']['businessId']
-        
-        table = dynamodb.Table('TuCita247')
-        response = table.delete_item(
-            Key={
-                'PKID': 'BUS#' + businessId,
-                'SKID': 'USER#' + userId
+
+        getUser = dynamodbQry.query(
+            TableName="TuCita247",
+            ReturnConsumedCapacity='TOTAL',
+            KeyConditionExpression='PKID = :businessId AND SKID = :userId',
+            ExpressionAttributeValues={
+                ':businessId': {'S': 'BUS#'+businessId},
+                ':userId': {'S': 'USER#'+userId}
             }
         )
-        statusCode = 200
-        body = json.dumps({'Message': 'User deleted successfully'})
+        for item in json_dynamodb.loads(getUser['Items']):
+            isAdmin = item['IS_ADMIN'] if 'IS_ADMIN' in item else 0
+        
+        if isAdmin == 0:
+            table = dynamodb.Table('TuCita247')
+            response = table.delete_item(
+                Key={
+                    'PKID': 'BUS#' + businessId,
+                    'SKID': 'USER#' + userId
+                }
+            )
+            statusCode = 200
+            body = json.dumps({'Code': 200, 'Message': 'User deleted successfully'})
+        else:
+            statusCode = 200
+            body = json.dumps({'Code': 400, 'Message': "Admin user can't be deleted"})
 
         if statusCode == '':
             statusCode = 500

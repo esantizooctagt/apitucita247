@@ -179,18 +179,19 @@ def lambda_handler(event, context):
             response = dynamodb.transact_write_items(
                 TransactItems = items
             )
-            
+
             sTime = ''
             dateAppointment = str(row['DATE_APPO'])
-            hTime = int(str(dateAppointment[-5:])[0:2])
-            if hTime >= 12:
-                if hTime == 12:
-                    sTime = str(hTime) + ':'+dateAppointment[-2:]+' PM'
+            hTime = int(str(dateAppointment[-5:].replace('-','')))
+            if hTime >= 1200:
+                if hTime <= 1259:
+                    sTime = dateAppointment[-5:].replace('-',':') + ' PM'
                 else:
-                    hTime = hTime-12
-                    sTime = str(hTime).rjust(2,'0') + ':'+dateAppointment[-2:]+' PM'
+                    hTime = hTime-1200
+                    sTime = str(hTime).rjust(4,'0')[0:2] + ':' + str(hTime).rjust(4,'0')[-2:] + ' PM'
             else:
-                sTime = str(hTime).rjust(2,'0') + ':'+dateAppointment[-2:]+' AM'
+                sTime = str(hTime).rjust(4,'0')[0:2] + ':' + str(hTime).rjust(4,'0')[-2:] + ' AM'
+
             data = {
                 'BusinessId': businessId,
                 'LocationId': locationId,

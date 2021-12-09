@@ -106,7 +106,8 @@ def lambda_handler(event, context):
                             for itemSer in json_dynamodb.loads(getService['Items']):
                                 serRec = {
                                     'ServiceId': item['GSI1SK'].replace('SER#',''),
-                                    'Name': itemSer['NAME']
+                                    'Name': itemSer['NAME'],
+                                    'MaxGuests': itemSer['CUSTOMER_PER_BOOKING'] if 'CUSTOMER_PER_BOOKING' in itemSer else 1
                                 }
                             if serRec != {}:
                                 servicesAv.append(serRec)
@@ -144,7 +145,8 @@ def lambda_handler(event, context):
             for results in json_dynamodb.loads(services['Items']):
                 record = {
                     'ServiceId': results['SKID'].replace('SER#',''),
-                    'Name': results['NAME']
+                    'Name': results['NAME'],
+                    'MaxGuests': results['CUSTOMER_PER_BOOKING'] if 'CUSTOMER_PER_BOOKING' in results else 1
                 }
                 servs.append(record)
 

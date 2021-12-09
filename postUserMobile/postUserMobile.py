@@ -87,6 +87,7 @@ def lambda_handler(event, context):
                     "GSI1SK": {"S": 'CUS#' + customerId},
                     "NAME": {"S": data['Name']},
                     "EMAIL": {"S": str(data['Email']) if str(data['Email']) != '' else None},
+                    "EMAIL_COMM": {"S": str(data['Email_Comm']) if data['Email_Comm'] in data else None},
                     "DOB": {"S": str(data['DOB']) if str(data['DOB']) != '' else None},
                     "GENDER": {"S": str(data['Gender']) if str(data['Gender']) != '' else None},
                     "PREFERENCES": {"N": str(data['Preferences']) if str(data['Preferences']) != '' else None},

@@ -58,43 +58,17 @@ def lambda_handler(event, context):
             #EMAIL
             SENDER = "Tu Cita 24/7 <no-reply@tucita247.com>"
             RECIPIENT = email
-            SUBJECT = "Tu Cita 24/7 Validation Account"
-            BODY_TEXT = ("Your Cita 24/7 ID Verification Code is: " + code)
-                        
-            # The HTML body of the email.
-            BODY_HTML = """<html>
-            <head></head>
-            <body>
-            <h1>Tu Cita 24/7</h1>
-            <p>Your Cita 24/7 ID Verification Code is: """ + code + """</p>
-            </body>
-            </html>"""
 
-            CHARSET = "UTF-8"
-
-            response = ses.send_email(
+            logger.info("prev send email")
+            response = ses.send_templated_email(
+                Source=SENDER,
                 Destination={
                     'ToAddresses': [
                         RECIPIENT,
                     ],
                 },
-                Message={
-                    'Body': {
-                        'Html': {
-                            'Charset': CHARSET,
-                            'Data': BODY_HTML,
-                        },
-                        'Text': {
-                            'Charset': CHARSET,
-                            'Data': BODY_TEXT,
-                        },
-                    },
-                    'Subject': {
-                        'Charset': CHARSET,
-                        'Data': SUBJECT,
-                    },
-                },
-                Source=SENDER
+                Template ='VALIDATEEMAIL_EN', 
+                TemplateData='{ "code": "'+ code +'" }'
             )
 
         statusCode = 200
